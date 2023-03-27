@@ -7,15 +7,15 @@ import (
 // Identitylink 用户组同任务的关系
 type Identitylink struct {
 	Model
-	Group      string `json:"group,omitempty"`
-	Type       string `json:"type,omitempty"`
-	UserID     string `json:"userid,omitempty"`
-	UserName   string `json:"username,omitempty"`
-	TaskID     int    `json:"taskID,omitempty"`
-	Step       int    `json:"step"`
-	ProcInstID int    `json:"procInstID,omitempty"`
-	Company    string `json:"company,omitempty"`
-	Comment    string `json:"comment,omitempty"`
+	Group      string `gorm:"comment:'集团'" json:"group,omitempty"`
+	Type       string `gorm:"comment:'类型'" json:"type,omitempty"`
+	UserID     string `gorm:"comment:'用户ID'" json:"userid,omitempty"`
+	UserName   string `gorm:"comment:'用户名'" json:"username,omitempty"`
+	TaskID     int    `gorm:"comment:'任务ID'" json:"taskID,omitempty"`
+	Step       int    `gorm:"comment:'一步'" json:"step"`
+	ProcInstID int    `gorm:"comment:'Proc机构ID'" json:"procInstID,omitempty"`
+	Company    string `gorm:"comment:'公司'" json:"company,omitempty"`
+	Comment    string `gorm:"comment:'评论'" json:"comment,omitempty"`
 }
 
 // IdentityType 类型

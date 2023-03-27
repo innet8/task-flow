@@ -8,19 +8,15 @@ import (
 )
 
 // Execution 流程实例（执行流）表
-// ProcInstID 流程实例ID
-// BusinessKey 启动业务时指定的业务主键
-// ProcDefID 流程定义数据的ID
 type Execution struct {
 	Model
-	Rev         int    `json:"rev"`
-	ProcInstID  int    `json:"procInstID"`
-	ProcDefID   int    `json:"procDefID"`
-	ProcDefName string `json:"procDefName"`
-	// NodeInfos 执行流经过的所有节点
-	NodeInfos string `gorm:"size:4000" json:"nodeInfos"`
-	IsActive  int8   `json:"isActive"`
-	StartTime string `json:"startTime"`
+	Rev         int    `gorm:"comment:'牧师'" json:"rev"`
+	ProcInstID  int    `gorm:"comment:'流程实例ID'" json:"procInstID"`
+	ProcDefID   int    `gorm:"comment:'流程定义数据的ID'" json:"procDefID"`
+	ProcDefName string `gorm:"comment:'流程定义数据的名字'" json:"procDefName"`
+	NodeInfos   string `gorm:"size:4000;comment:'NodeInfos 执行流经过的所有节点'" json:"nodeInfos"`
+	IsActive    int8   `gorm:"comment:'是活跃的'" json:"isActive"`
+	StartTime   string `gorm:"comment:'开始时间'" json:"startTime"`
 }
 
 // Save save

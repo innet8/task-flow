@@ -10,27 +10,20 @@ import (
 // ProcInst 流程实例
 type ProcInst struct {
 	Model
-	// 流程定义ID
-	ProcDefID int `json:"procDefId"`
-	// 流程定义名
-	ProcDefName string `json:"procDefName"`
-	// title 标题
-	Title string `json:"title"`
-	// 用户部门
-	Department string `json:"department"`
-	Company    string `json:"company"`
-	// 当前节点
-	NodeID string `json:"nodeID"`
-	// 审批人
-	Candidate string `json:"candidate"`
-	// 当前任务
-	TaskID        int    `json:"taskID"`
-	StartTime     string `json:"startTime"`
-	EndTime       string `json:"endTime"`
-	Duration      int64  `json:"duration"`
-	StartUserID   string `json:"startUserId"`
-	StartUserName string `json:"startUserName"`
-	IsFinished    bool   `gorm:"default:false" json:"isFinished"`
+	ProcDefID     int    `gorm:"not null;default:0;comment:'流程定义ID'" json:"procDefId"`
+	ProcDefName   string `gorm:"comment:'流程定义名'" json:"procDefName"`
+	Title         string `gorm:"comment:'标题'" json:"title"`
+	Department    string `gorm:"comment:'用户部门'" json:"department"`
+	Company       string `gorm:"comment:'用户公司'" json:"company"`
+	NodeID        string `gorm:"comment:'当前节点'" json:"nodeID"`
+	Candidate     string `gorm:"comment:'审批人'" json:"candidate"`
+	TaskID        int    `gorm:"comment:'当前任务'" json:"taskID"`
+	StartTime     string `gorm:"comment:'开始时间'" json:"startTime"`
+	EndTime       string `gorm:"comment:'结束时间'" json:"endTime"`
+	Duration      int64  `gorm:"comment:'持续时间'" json:"duration"`
+	StartUserID   string `gorm:"comment:'开始用户ID'" json:"startUserId"`
+	StartUserName string `gorm:"comment:'开始用户名'" json:"startUserName"`
+	IsFinished    bool   `gorm:"default:false;comment:'开始用户名'" json:"isFinished"`
 }
 
 // GroupsNotNull 候选组

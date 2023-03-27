@@ -5,16 +5,13 @@ import "github.com/jinzhu/gorm"
 // Procdef 流程定义表
 type Procdef struct {
 	Model
-	Name    string `json:"name,omitempty"`
-	Version int    `json:"version,omitempty"`
-	// 流程定义json字符串
-	Resource string `gorm:"size:10000" json:"resource,omitempty"`
-	// 用户id
-	Userid   string `json:"userid,omitempty"`
-	Username string `json:"username,omitempty"`
-	// 用户所在公司
-	Company    string `json:"company,omitempty"`
-	DeployTime string `json:"deployTime,omitempty"`
+	Name       string `gorm:"comment:'名字'" json:"name,omitempty"`
+	Version    int    `gorm:"comment:'版本'" json:"version,omitempty"`
+	Resource   string `gorm:"size:10000;comment:'流程定义json字符串'"  json:"resource,omitempty"`
+	Userid     string `gorm:"comment:'用户id'" json:"userid,omitempty"`
+	Username   string `gorm:"comment:'用户名称'" json:"username,omitempty"`
+	Company    string `gorm:"comment:'用户所在公司'" json:"company,omitempty"`
+	DeployTime string `gorm:"comment:'部署时间'" json:"deployTime,omitempty"`
 }
 
 // Save save and return id

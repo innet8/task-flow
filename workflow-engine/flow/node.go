@@ -92,12 +92,11 @@ type NodeProperties struct {
 	NoneActionerAction string             `json:"noneActionerAction,omitempty"`
 }
 type NodeCondition struct {
-	Type       string `json:"type,omitempty"`
-	ParamKey   string `json:"paramKey,omitempty"`
-	ParamLabel string `json:"paramLabel,omitempty"`
-	IsEmpty    bool   `json:"isEmpty,omitempty"`
-	// 类型为range
-	LowerBound      string `json:"lowerBound,omitempty"`
+	Type            string `json:"type,omitempty"`
+	ParamKey        string `json:"paramKey,omitempty"`
+	ParamLabel      string `json:"paramLabel,omitempty"`
+	IsEmpty         bool   `json:"isEmpty,omitempty"`
+	LowerBound      string `json:"lowerBound,omitempty"` // 类型为range
 	LowerBoundEqual string `json:"lowerBoundEqual,omitempty"`
 	UpperBoundEqual string `json:"upperBoundEqual,omitempty"`
 	UpperBound      string `json:"upperBound,omitempty"`
