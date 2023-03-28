@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -11,7 +13,7 @@ type IdentitylinkHistory struct {
 
 // CopyIdentitylinkToHistoryByProcInstID CopyIdentitylinkToHistoryByProcInstID
 func CopyIdentitylinkToHistoryByProcInstID(procInstID int, tx *gorm.DB) error {
-	return tx.Exec("insert into identitylink_history select * from identitylink where proc_inst_id=?", procInstID).Error
+	return tx.Exec(fmt.Sprintf("insert into %sdentitylink_history select * from %sdentitylink where proc_inst_id=?", conf.DbPrefix, conf.DbPrefix), procInstID).Error
 }
 
 // FindParticipantHistoryByProcInstID FindParticipantHistoryByProcInstID

@@ -1,6 +1,10 @@
 package model
 
-import "github.com/jinzhu/gorm"
+import (
+	"fmt"
+
+	"github.com/jinzhu/gorm"
+)
 
 // Procdef 流程定义表
 type Procdef struct {
@@ -79,7 +83,7 @@ func FindProcdefsWithCountAndPaged(pageIndex, pageSize int, maps map[string]inte
 
 // MoveProcdefToHistoryByIDTx 将流程定义移至历史纪录表
 func MoveProcdefToHistoryByIDTx(ID int, tx *gorm.DB) error {
-	err := tx.Exec("insert into procdef_history select * from procdef where id=?", ID).Error
+	err := tx.Exec(fmt.Sprintf("insert into %sprocdef_history select * from %sprocdef where id=?", conf.DbPrefix, conf.DbPrefix), ID).Error
 	if err != nil {
 		return err
 	}
