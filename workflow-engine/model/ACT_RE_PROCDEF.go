@@ -11,7 +11,7 @@ type Procdef struct {
 	Model
 	Name       string `gorm:"comment:'名字'" json:"name,omitempty"`
 	Version    int    `gorm:"comment:'版本'" json:"version,omitempty"`
-	Resource   string `json:"resource"` // 流程定义json字符串
+	Resource   string `gorm:"type:text;comment:'流程定义json字符串'" json:"resource"` // 流程定义json字符串
 	Userid     string `gorm:"comment:'用户id'" json:"userid,omitempty"`
 	Username   string `gorm:"comment:'用户名称'" json:"username,omitempty"`
 	Company    string `gorm:"comment:'用户所在公司'" json:"company,omitempty"`

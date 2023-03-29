@@ -22,5 +22,5 @@ func GetToken(request *http.Request) (string, error) {
 		}
 		token = request.Form["token"][0]
 	}
-	return token,nil
+	return token, nil
 }
