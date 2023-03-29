@@ -126,7 +126,7 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 		task.IsFinished = true
 	}
 	// 未审批人数减一
-	task.UnCompleteNum--
+	task.UnCompleteNum = task.UnCompleteNum - 1
 	// 判断是否结束
 	if task.UnCompleteNum == 0 {
 		task.IsFinished = true
@@ -149,6 +149,7 @@ func CompleteTaskTx(taskID int, userID, username, company, comment, candidate st
 	if err != nil {
 		return err
 	}
+
 	// 如果是会签
 	if task.ActType == "and" {
 		// fmt.Println("------------------是会签，判断用户是否已经审批过了，避免重复审批-------")

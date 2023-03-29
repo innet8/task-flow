@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -23,7 +24,7 @@ type ProcInst struct {
 	Duration      int64  `gorm:"comment:'持续时间'" json:"duration"`
 	StartUserID   string `gorm:"comment:'开始用户ID'" json:"startUserId"`
 	StartUserName string `gorm:"comment:'开始用户名'" json:"startUserName"`
-	IsFinished    bool   `gorm:"default:false;comment:'开始用户名'" json:"isFinished"`
+	IsFinished    bool   `gorm:"default:false;comment:'是否完成'" json:"isFinished"`
 }
 
 // GroupsNotNull 候选组
@@ -79,11 +80,11 @@ func FindProcNotify(userID, company string, groups []string, pageIndex, pageSize
 		for _, val := range groups {
 			s = append(s, "\""+val+"\"")
 		}
-		sql = "select proc_inst_id from identitylink i where i.type='notifier' and i.company='" + company + "' and (i.user_id='" + userID + "' or i.group in (" + strings.Join(s, ",") + "))"
+		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and (i.user_id='" + userID + "' or i.group in (" + strings.Join(s, ",") + "))"
 	} else {
-		sql = "select proc_inst_id from identitylink i where i.type='notifier' and i.company='" + company + "' and i.user_id='" + userID + "'"
+		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and i.user_id='" + userID + "'"
 	}
-	err := db.Where("id in (" + sql + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
+	err := db.Where("id in (" + fmt.Sprintf(sql, conf.DbPrefix) + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
 	if err != nil {
 		return datas, count, err
 	}

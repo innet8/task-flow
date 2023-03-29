@@ -19,7 +19,7 @@ type Task struct {
 	UnCompleteNum int8   `gorm:"default:1;comment:'完整的数字'" json:"unCompleteNum"`
 	AgreeNum      int8   `gorm:"comment:'审批通过数'" json:"agreeNum"`
 	ActType       string `gorm:"default:'or';comment:'and 为会签，or为或签，默认为or'" json:"actType"`
-	IsFinished    bool   `gorm:"default:false;comment:'审批通过数'" json:"isFinished"`
+	IsFinished    bool   `gorm:"default:false;comment:'是否完成'" json:"isFinished"`
 }
 
 // NewTask 新建任务

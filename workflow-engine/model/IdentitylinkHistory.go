@@ -13,7 +13,7 @@ type IdentitylinkHistory struct {
 
 // CopyIdentitylinkToHistoryByProcInstID CopyIdentitylinkToHistoryByProcInstID
 func CopyIdentitylinkToHistoryByProcInstID(procInstID int, tx *gorm.DB) error {
-	return tx.Exec(fmt.Sprintf("insert into %sdentitylink_history select * from %sdentitylink where proc_inst_id=?", conf.DbPrefix, conf.DbPrefix), procInstID).Error
+	return tx.Exec(fmt.Sprintf("insert into %sidentitylink_history select * from %sidentitylink where proc_inst_id=?", conf.DbPrefix, conf.DbPrefix), procInstID).Error
 }
 
 // FindParticipantHistoryByProcInstID FindParticipantHistoryByProcInstID

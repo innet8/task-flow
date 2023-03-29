@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"workflow/workflow-engine/flow"
 	"workflow/workflow-engine/service"
 
 	"github.com/mumushuiding/util"
@@ -43,7 +45,7 @@ func SaveProcdefByToken(writer http.ResponseWriter, request *http.Request) {
 	util.Response(writer, fmt.Sprintf("%d", id), true)
 }
 
-// SaveProcdef save new procdefnition
+// SaveProcdef save new procdefnition1
 // 保存流程定义
 func SaveProcdef(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
@@ -94,7 +96,54 @@ func FindAllProcdefPage(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, "%s", datas)
+	util.ResponseData(writer, datas)
+}
+
+// 根据 id 查询流程详情
+func FindByIdProcdef(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != "GET" {
+		util.ResponseErr(writer, "只支持get方法！！")
+		return
+	}
+
+	request.ParseForm()
+	if len(request.Form["id"]) == 0 {
+		util.ResponseErr(writer, "流程ID不能为空")
+		return
+	}
+	Id, err := strconv.Atoi(request.Form["id"][0])
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+
+	prodef, err := service.GetProcdefByID(Id)
+	if err != nil {
+		util.ResponseErr(writer, "err")
+		return
+	}
+
+	flowNode := &flow.Node{}
+	err = util.Str2Struct(prodef.Resource, flowNode)
+	if err != nil {
+		util.ResponseErr(writer, "流程不存在")
+		return
+	}
+
+	datas, err := json.Marshal(&service.Procdefs{
+		Id:       prodef.ID,
+		Name:     prodef.Name,
+		Userid:   prodef.Userid,
+		Username: prodef.Username,
+		Company:  prodef.Company,
+		Resource: flowNode,
+	})
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+
+	util.ResponseData(writer, fmt.Sprintf("%s", datas))
 }
 
 // DelProcdefByID del by id

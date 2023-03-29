@@ -15,17 +15,19 @@ import (
 var saveLock sync.Mutex
 
 // Procdef 流程定义表
+type Procdefs struct {
+	Id       int        `json:"id"`
+	Name     string     `json:"name"`
+	Resource *flow.Node `json:"resource"` // 流程定义json字符串
+	Userid   string     `json:"userid"`   // 用户id
+	Username string     `json:"username"`
+	Company  string     `json:"company"` // 用户所在公司
+}
+
 type Procdef struct {
-	Name string `json:"name"`
-	// 流程定义json字符串
-	Resource *flow.Node `json:"resource"`
-	// 用户id
-	Userid   string `json:"userid"`
-	Username string `json:"username"`
-	// 用户所在公司
-	Company   string `json:"company"`
-	PageSize  int    `json:"pageSize"`
-	PageIndex int    `json:"pageIndex"`
+	Procdefs
+	PageSize  int `json:"pageSize"`
+	PageIndex int `json:"pageIndex"`
 }
 
 // GetProcdefByID 根据流程定义id获取流程定义
@@ -170,6 +172,7 @@ func (p *Procdef) FindAll() ([]*model.Procdef, int, error) {
 	maps := p.getMaps()
 	return model.FindProcdefsWithCountAndPaged(page.PageIndex, page.PageSize, maps)
 }
+
 func (p *Procdef) getMaps() map[string]interface{} {
 	maps := make(map[string]interface{})
 	if len(p.Name) > 0 {
@@ -188,6 +191,5 @@ func DelProcdefByID(id int) error {
 
 // IsProdefValid 流程定义格式是否有效
 func IsProdefValid(node *flow.Node) error {
-
 	return flow.IfProcessConifgIsValid(node)
 }

@@ -28,15 +28,13 @@ type ProcessReceiver struct {
 // ProcessPageReceiver 分页参数
 type ProcessPageReceiver struct {
 	util.Page
-	// 我分管的部门
-	Departments []string `json:"departments"`
-	// 我所属于的用户组或者角色
-	Groups     []string `josn:"groups"`
-	UserID     string   `json:"userID"`
-	Username   string   `json:"username"`
-	Company    string   `json:"company"`
-	ProcName   string   `json:"procName"`
-	ProcInstID string   `json:"procInstID"`
+	Departments []string `json:"departments"` // 我分管的部门
+	Groups      []string `josn:"groups"`      // 我所属于的用户组或者角色
+	UserID      string   `json:"userID"`
+	Username    string   `json:"username"`
+	Company     string   `json:"company"`
+	ProcName    string   `json:"procName"`
+	ProcInstID  string   `json:"procInstID"`
 }
 
 var copyLock sync.Mutex

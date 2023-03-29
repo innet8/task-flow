@@ -17,13 +17,17 @@ import (
 // in a workflow.
 // 流程中的一个节点
 type Node struct {
-	Name           string          `json:"name,omitempty"`
-	Type           string          `json:"type,omitempty"`
-	NodeID         string          `json:"nodeId,omitempty"`
-	PrevID         string          `json:"prevId,omitempty"`
-	ChildNode      *Node           `json:"childNode,omitempty"`
-	ConditionNodes []*Node         `json:"conditionNodes,omitempty"`
-	Properties     *NodeProperties `json:"properties,omitempty"`
+	Name                    string          `json:"name,omitempty"`
+	Type                    string          `json:"type,omitempty"`
+	NodeID                  string          `json:"nodeId,omitempty"`
+	PrevID                  string          `json:"prevId,omitempty"`
+	ChildNode               *Node           `json:"childNode,omitempty"`
+	ConditionNodes          []*Node         `json:"conditionNodes,omitempty"`
+	Properties              *NodeProperties `json:"properties,omitempty"`
+	DirectorLevel           int             `json:"directorLevel,omitempty"`
+	ExamineEndDirectorLevel int             `json:"examineEndDirectorLevel,omitempty"`
+	ExamineMode             int             `json:"examineMode,omitempty"`
+	NodeUserList            []string        `json:"nodeUserList"`
 }
 
 // ActionConditionType 条件类型
@@ -72,40 +76,36 @@ const (
 var NodeInfoTypes = [...]string{STARTER: "starter"}
 
 type ActionerRule struct {
-	Type       string `json:"type,omitempty"`
-	LabelNames string `json:"labelNames,omitempty"`
-	Labels     int    `json:"labels,omitempty"`
-	IsEmpty    bool   `json:"isEmpty,omitempty"`
-	// 表示需要通过的人数 如果是会签
-	MemberCount int8 `json:"memberCount,omitempty"`
-	// and 表示会签 or表示或签，默认为或签
-	ActType string `json:"actType,omitempty"`
-	Level   int8   `json:"level,omitempty"`
-	AutoUp  bool   `json:"autoUp,omitempty"`
+	Type        string `json:"type,omitempty"`
+	LabelNames  string `json:"labelNames,omitempty"`
+	Labels      int    `json:"labels,omitempty"`
+	IsEmpty     bool   `json:"isEmpty,omitempty"`
+	MemberCount int8   `json:"memberCount,omitempty"` // 表示需要通过的人数 如果是会签
+	ActType     string `json:"actType,omitempty"`     // and 表示会签 or表示或签，默认为或签
+	Level       int8   `json:"level,omitempty"`
+	AutoUp      bool   `json:"autoUp,omitempty"`
 }
 type NodeProperties struct {
-	// ONE_BY_ONE 代表依次审批
-	ActivateType       string             `json:"activateType,omitempty"`
+	ActivateType       string             `json:"activateType,omitempty"` // ONE_BY_ONE 代表依次审批
 	AgreeAll           bool               `json:"agreeAll,omitempty"`
 	Conditions         [][]*NodeCondition `json:"conditions,omitempty"`
 	ActionerRules      []*ActionerRule    `json:"actionerRules,omitempty"`
 	NoneActionerAction string             `json:"noneActionerAction,omitempty"`
 }
 type NodeCondition struct {
-	Type            string `json:"type,omitempty"`
-	ParamKey        string `json:"paramKey,omitempty"`
-	ParamLabel      string `json:"paramLabel,omitempty"`
-	IsEmpty         bool   `json:"isEmpty,omitempty"`
-	LowerBound      string `json:"lowerBound,omitempty"` // 类型为range
-	LowerBoundEqual string `json:"lowerBoundEqual,omitempty"`
-	UpperBoundEqual string `json:"upperBoundEqual,omitempty"`
-	UpperBound      string `json:"upperBound,omitempty"`
-	BoundEqual      string `json:"boundEqual,omitempty"`
-	Unit            string `json:"unit,omitempty"`
-	// 类型为 value
-	ParamValues []string    `json:"paramValues,omitempty"`
-	OriValue    []string    `json:"oriValue,omitempty"`
-	Conds       []*NodeCond `json:"conds,omitempty"`
+	Type            string      `json:"type,omitempty"`
+	ParamKey        string      `json:"paramKey,omitempty"`
+	ParamLabel      string      `json:"paramLabel,omitempty"`
+	IsEmpty         bool        `json:"isEmpty,omitempty"`
+	LowerBound      string      `json:"lowerBound,omitempty"` // 类型为range
+	LowerBoundEqual string      `json:"lowerBoundEqual,omitempty"`
+	UpperBoundEqual string      `json:"upperBoundEqual,omitempty"`
+	UpperBound      string      `json:"upperBound,omitempty"`
+	BoundEqual      string      `json:"boundEqual,omitempty"`
+	Unit            string      `json:"unit,omitempty"`
+	ParamValues     []string    `json:"paramValues,omitempty"` // 类型为 value
+	OriValue        []string    `json:"oriValue,omitempty"`
+	Conds           []*NodeCond `json:"conds,omitempty"`
 }
 type NodeCond struct {
 	Type  string    `json:"type,omitempty"`
@@ -203,7 +203,7 @@ func IfProcessConifgIsValid(node *Node) error {
 	}
 
 	// 子节点是否存在
-	if node.ChildNode != nil {
+	if node.ChildNode != nil && node.ChildNode.Name != "" {
 		return IfProcessConifgIsValid(node.ChildNode)
 	}
 	return nil

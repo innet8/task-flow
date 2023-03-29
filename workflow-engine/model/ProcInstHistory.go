@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -65,7 +66,7 @@ func FindProcHistory(userID, company string, pageIndex, pageSize int) ([]*ProcIn
 	errStream := make(chan error, numberOfRoutine)
 	selectDatas := func(wg *sync.WaitGroup) {
 		go func() {
-			err := db.Where("id in (select distinct proc_inst_id from identitylink_history where company=? and user_id=?)", company, userID).
+			err := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID).
 				Offset((pageIndex - 1) * pageSize).Limit(pageSize).
 				Order("start_time desc").Find(&datas).Error
 			errStream <- err
@@ -75,7 +76,7 @@ func FindProcHistory(userID, company string, pageIndex, pageSize int) ([]*ProcIn
 	selectCount := func(wg *sync.WaitGroup) {
 		go func() {
 			err := db.Model(&ProcInstHistory{}).
-				Where("id in (select distinct proc_inst_id from identitylink_history where company=? and user_id=?)", company, userID).
+				Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID).
 				Count(&count).Error
 			errStream <- err
 			wg.Done()
@@ -97,7 +98,7 @@ func FindProcHistory(userID, company string, pageIndex, pageSize int) ([]*ProcIn
 
 // SaveProcInstHistory SaveProcInstHistory
 func SaveProcInstHistory(p *ProcInst) error {
-	return db.Table("proc_inst_history").Create(p).Error
+	return db.Table(conf.DbPrefix + "proc_inst_history").Create(p).Error
 }
 
 // DelProcInstHistoryByID DelProcInstHistoryByID
@@ -107,7 +108,7 @@ func DelProcInstHistoryByID(id int) error {
 
 // SaveProcInstHistoryTx SaveProcInstHistoryTx
 func SaveProcInstHistoryTx(p *ProcInst, tx *gorm.DB) error {
-	return tx.Table("proc_inst_history").Create(p).Error
+	return tx.Table(conf.DbPrefix + "proc_inst_history").Create(p).Error
 }
 
 // FindProcHistoryNotify 查询抄送我的历史纪录
@@ -120,11 +121,11 @@ func FindProcHistoryNotify(userID, company string, groups []string, pageIndex, p
 		for _, val := range groups {
 			s = append(s, "\""+val+"\"")
 		}
-		sql = "select proc_inst_id from identitylink_history i where i.type='notifier' and i.company='" + company + "' and (i.user_id='" + userID + "' or i.group in (" + strings.Join(s, ",") + "))"
+		sql = "select proc_inst_id from %sidentitylink_history i where i.type='notifier' and i.company='" + company + "' and (i.user_id='" + userID + "' or i.group in (" + strings.Join(s, ",") + "))"
 	} else {
-		sql = "select proc_inst_id from identitylink_history i where i.type='notifier' and i.company='" + company + "' and i.user_id='" + userID + "'"
+		sql = "select proc_inst_id from %sidentitylink_history i where i.type='notifier' and i.company='" + company + "' and i.user_id='" + userID + "'"
 	}
-	err := db.Where("id in (" + sql + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
+	err := db.Where("id in (" + fmt.Sprintf(sql, conf.DbPrefix) + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
 	if err != nil {
 		return datas, count, err
 	}
