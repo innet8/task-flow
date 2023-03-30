@@ -68,8 +68,7 @@ func Setup() {
 		AutoMigrate(&IdentitylinkHistory{}).
 		AutoMigrate(&ProcInstHistory{}).
 		AutoMigrate(&TaskHistory{}).
-		AutoMigrate(&ProcdefHistory{}).
-		AutoMigrate(&Test{})
+		AutoMigrate(&ProcdefHistory{})
 
 	// 添加索引
 	db.Model(&Procdef{}).AddIndex("idx_id", "id")

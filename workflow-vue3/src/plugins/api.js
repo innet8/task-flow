@@ -21,7 +21,7 @@ export function getRoles(data) {
  * @returns 
  */
 export function getDepartments(data) {
-    return http.get(`departments.json`, { params: data })
+    return http.get(`/workflow/dootask/getAllDept`, { params: data })
 }
 
 /**

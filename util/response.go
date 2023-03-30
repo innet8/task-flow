@@ -9,14 +9,12 @@ import (
 
 // Response 返回信息给前台
 func Response(writer http.ResponseWriter, data string, ok bool) {
-	fmt.Fprintf(writer, "{\"message\":\"%s\",\"ok\":%t}", data, ok)
-	// return err
+	fmt.Fprintf(writer, "{\"data\":%s,\"message\":\"ok\",\"ok\":%t,\"status\":200}", data, ok)
 }
 
 // ResponseData 返回信息给前台
 func ResponseData(writer http.ResponseWriter, data string) {
-	fmt.Fprintf(writer, "{\"message\":%s,\"status\":200}", data)
-	// return err
+	fmt.Fprintf(writer, "{\"data\":%s,\"message\":\"ok\",\"ok\":%t,\"status\":200}", data, true)
 }
 
 // ResponseErr 返回错误给前台
@@ -33,5 +31,5 @@ func ResponseOk(w http.ResponseWriter) {
 
 // ResponseNo 返回失败
 func ResponseNo(w http.ResponseWriter, data string) {
-	fmt.Fprintf(w, "{\"message\":\"%s\",\"ok\":%t}", data, false)
+	fmt.Fprintf(w, "{\"message\":\"%s\",\"ok\":%t,\"status\":500}", data, false)
 }
