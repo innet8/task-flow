@@ -147,11 +147,39 @@ const removeStrEle = (item, key) => {
     a.splice(includesIndex, 1);
     item.zdy1 = a.toString()
 }
+
 const addCondition = async () => {
     conditionList.value = [];
     conditionVisible.value = true;
-    let { data } = await getConditions({ tableId: tableId.value })
-    conditions.value = data;
+    // let { data } = await getConditions({ tableId: tableId.value })
+    // conditions.value = data;
+    conditions.value = [
+        // {
+        //     "columnId": "1090",
+        //     "showType": "1",
+        //     "showName": "预计采购总费用",
+        //     "columnName": "planProcurementTotalMoney",
+        //     "columnType": "Double",
+        //     "fixedDownBoxValue": ""
+        // },
+        // {
+        //     "columnId": "1092",
+        //     "showType": "3",
+        //     "showName": "采购类型",
+        //     "columnName": "procurementType",
+        //     "columnType": "String",
+        //     "fixedDownBoxValue": "{\"1\":{\"key\":\"1\",\"value\":\"新开园区集中采购\",\"column\":\"\",\"type\":\"1\"}}"
+        // },
+        // {
+        //     "columnId": "1093",
+        //     "showType": "1",
+        //     "showName": "园区面积",
+        //     "columnName": "parkArea",
+        //     "columnType": "Double",
+        //     "fixedDownBoxValue": ""
+        // }
+    ];
+    
     if (conditionConfig.value.conditionList) {
         for (var i = 0; i < conditionConfig.value.conditionList.length; i++) {
             var { columnId } = conditionConfig.value.conditionList[i]
@@ -163,6 +191,7 @@ const addCondition = async () => {
         }
     }
 }
+
 const sureCondition = () => {
     //1.弹窗有，外面无+
     //2.弹窗有，外面有不变
@@ -244,6 +273,7 @@ const closeDrawer = (val) => {
     setCondition(false)
 }
 </script>
+
 <style lang="less">
 .condition_copyer {
     .priority_level {

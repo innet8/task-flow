@@ -101,9 +101,10 @@ let props = defineProps({
 let defaultText = computed(() => {
     return placeholderList[props.nodeConfig.type]
 });
+
 let showText = computed(() => {
     if (props.nodeConfig.type == 'start') return $func.arrToStr(props.flowPermission) || '所有人'
-    if (props.nodeConfig.type == 1) return $func.setApproverStr(props.nodeConfig)
+    if (props.nodeConfig.type == 'approver') return $func.setApproverStr(props.nodeConfig)
     return $func.copyerStr(props.nodeConfig)
 });
 

@@ -88,7 +88,21 @@ const addType = (type)=> {
                 "type": type,
                 "ccSelfSelectFlag": 1,
                 "childNode": props.childNodeP,
-                "nodeUserList": []
+                "nodeUserList": [],
+                "properties": {
+                    "activateType": "ALL",
+                    "agreeAll": true,
+                    "actionerRules": [
+                        {
+                            "type": "target_label",
+                            "labelNames": "人事",
+                            "labels": 427529104,
+                            "isEmpty": false,
+                            "memberCount": 1,
+                            "actType": "and"
+                        }
+                    ]
+                }
             }
         }
         emits("update:childNodeP", data)

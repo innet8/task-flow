@@ -41,12 +41,14 @@ export let getDepartmentList = async (parentId = 0) => {
             "departmentNames": "法务部"
         }
     ],
-    "employees": [{
-        "id": "53128111",
-        "employeeName": "雅楠",
-        "isLeave": "0",
-        "open": "false"
-    }],
+    "employees": [
+        {
+            "id": "53128111",
+            "employeeName": "雅楠",
+            "isLeave": "0",
+            "open": "false"
+        }
+    ],
     "titleDepartments": []
   }
   

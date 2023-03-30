@@ -13,31 +13,12 @@ import (
 	"workflow/util"
 )
 
-// Node represents a specific logical unit of processing and routing
-// in a workflow.
-// 流程中的一个节点
-type Node struct {
-	Name                    string          `json:"name,omitempty"`
-	Type                    string          `json:"type,omitempty"`
-	NodeID                  string          `json:"nodeId,omitempty"`
-	PrevID                  string          `json:"prevId,omitempty"`
-	ChildNode               *Node           `json:"childNode,omitempty"`
-	ConditionNodes          []*Node         `json:"conditionNodes,omitempty"`
-	Properties              *NodeProperties `json:"properties,omitempty"`
-	DirectorLevel           int             `json:"directorLevel,omitempty"`
-	ExamineEndDirectorLevel int             `json:"examineEndDirectorLevel,omitempty"`
-	ExamineMode             int             `json:"examineMode,omitempty"`
-	NodeUserList            []string        `json:"nodeUserList"`
-}
-
 // ActionConditionType 条件类型
 type ActionConditionType int
 
 const (
-	// RANGE 条件类型: 范围
-	RANGE ActionConditionType = iota
-	// VALUE 条件类型： 值
-	VALUE
+	RANGE ActionConditionType = iota // RANGE 条件类型: 范围
+	VALUE                            // VALUE 条件类型： 值
 )
 
 // ActionConditionTypes 所有条件类型
@@ -75,6 +56,27 @@ const (
 
 var NodeInfoTypes = [...]string{STARTER: "starter"}
 
+// Node represents a specific logical unit of processing and routing
+// in a workflow.
+// 流程中的一个节点
+type Node struct {
+	Name                    string               `json:"name,omitempty"`                    // 节点名称
+	Type                    string               `json:"type,omitempty"`                    // 节点类型
+	NodeID                  string               `json:"nodeId,omitempty"`                  // 节点id
+	PrevID                  string               `json:"prevId,omitempty"`                  // 父级id
+	ChildNode               *Node                `json:"childNode,omitempty"`               // 子节点
+	ConditionNodes          []*Node              `json:"conditionNodes,omitempty"`          // 条件节点
+	ConditionList           []*NodeConditionList `json:"conditionList,omitempty"`           // 条件列表
+	Properties              *NodeProperties      `json:"properties,omitempty"`              // 属性
+	Settype                 int                  `json:"settype,omitempty"`                 // 审批设置类型 1指定成员,2主管，7连续多级主管
+	DirectorLevel           int                  `json:"directorLevel,omitempty"`           // 主管级别，1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
+	ExamineEndDirectorLevel int                  `json:"examineEndDirectorLevel,omitempty"` // 最终主管级别
+	ExamineMode             int                  `json:"examineMode,omitempty"`             // 多人审批时采用的审批方式 1依次审批
+	NoHanderAction          int                  `json:"noHanderAction,omitempty"`          // 审批人为空时 1自动审批通过/不允许发起, 2转交给审核管理员
+	NodeUserList            []*NodeUser          `json:"nodeUserList,omitempty"`            // 节点用户列表
+}
+
+// 活动规则
 type ActionerRule struct {
 	Type        string `json:"type,omitempty"`
 	LabelNames  string `json:"labelNames,omitempty"`
@@ -85,6 +87,8 @@ type ActionerRule struct {
 	Level       int8   `json:"level,omitempty"`
 	AutoUp      bool   `json:"autoUp,omitempty"`
 }
+
+// 节点属性
 type NodeProperties struct {
 	ActivateType       string             `json:"activateType,omitempty"` // ONE_BY_ONE 代表依次审批
 	AgreeAll           bool               `json:"agreeAll,omitempty"`
@@ -92,6 +96,8 @@ type NodeProperties struct {
 	ActionerRules      []*ActionerRule    `json:"actionerRules,omitempty"`
 	NoneActionerAction string             `json:"noneActionerAction,omitempty"`
 }
+
+// 节点条件
 type NodeCondition struct {
 	Type            string      `json:"type,omitempty"`
 	ParamKey        string      `json:"paramKey,omitempty"`
@@ -107,14 +113,27 @@ type NodeCondition struct {
 	OriValue        []string    `json:"oriValue,omitempty"`
 	Conds           []*NodeCond `json:"conds,omitempty"`
 }
+
+// 节点条件列表
+type NodeConditionList struct {
+	Type     int    `json:"type,omitempty"`
+	ColumnId int    `json:"columnId,omitempty"`
+	ShowName string `json:"showName,omitempty"` //发起人
+}
+
+// 节点气孔导度
 type NodeCond struct {
 	Type  string    `json:"type,omitempty"`
 	Value string    `json:"value,omitempty"`
 	Attrs *NodeUser `json:"attrs,omitempty"`
 }
+
+// 节点用户
 type NodeUser struct {
-	Name   string `json:"name,omitempty"`
-	Avatar string `json:"avatar,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Avatar   string `json:"avatar,omitempty"`
+	TargetId string `json:"targetId,omitempty"`
+	Type     int    `json:"type,omitempty"`
 }
 
 // NodeInfo 节点信息
@@ -141,6 +160,7 @@ func (n *Node) GetProcessConfigFromJSONFile() {
 		log.Printf("decode processConfig.json failed:%v", err)
 	}
 }
+
 func (n *Node) add2ExecutionList(list *list.List) {
 	switch n.Type {
 	case NodeTypes[APPROVER], NodeTypes[NOTIFIER]:
@@ -215,9 +235,9 @@ func CheckConditionNode(nodes []*Node) error {
 		if node.Properties == nil {
 			return errors.New("节点【" + node.NodeID + "】的Properties对象为空值！！")
 		}
-		if len(node.Properties.Conditions) == 0 {
-			return errors.New("节点【" + node.NodeID + "】的Conditions对象为空值！！")
-		}
+		// if len(node.Properties.Conditions) == 0 {
+		// 	return errors.New("节点【" + node.NodeID + "】的Conditions对象为空值！！")
+		// }
 		err := IfProcessConifgIsValid(node)
 		if err != nil {
 			return err
@@ -298,6 +318,7 @@ func GetConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err
 	}
 	return result, nil
 }
+
 func getConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err error) {
 	map2 := *maps
 	// 获取所有conditionNodes
@@ -390,6 +411,7 @@ func getConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err
 	// log.Println("----------寻找节点结束--------")
 	// return result, err
 }
+
 func checkConditions(cond *NodeCondition, value string) (bool, error) {
 	// 判断类型
 	switch cond.Type {

@@ -109,11 +109,10 @@ All.prototype = {
         return arr.join("或")
     },  
     conditionStr(nodeConfig, index) {
-        var { properties, nodeUserList } = nodeConfig.conditionNodes[index];
-        var conditionList = properties?.conditions || [];
+         var { conditionList, nodeUserList } = nodeConfig.conditionNodes[index];
         if (conditionList.length == 0) {
-            return (index == nodeConfig.conditionNodes.length - 1) && conditionList.length != 0 ? '其他条件进入此流程' : '请设置条件'
-        } else {
+            return (index == nodeConfig.conditionNodes.length - 1) && nodeConfig.conditionNodes[0].conditionList.length != 0 ? '其他条件进入此流程' : '请设置条件'
+        }else {
             let str = ""
             for (var i = 0; i < conditionList.length; i++) {
                 var { columnId, columnType, showType, showName, optType, zdy1, opt1, zdy2, opt2, fixedDownBoxValue } = conditionList[i];

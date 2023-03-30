@@ -1,6 +1,5 @@
 <template>
     <div>
-        <iframe src="http://127.0.0.1:5173/2/#/?workFlowDefId=32"></iframe>
         <div class="fd-nav">
             <div class="fd-nav-left">
                 <div class="fd-nav-back" @click="toReturn">
