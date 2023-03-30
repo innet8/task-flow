@@ -52,7 +52,7 @@ func Setup() {
 	//添加表前缀
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
 		// 判断defaultTableName等于Department时返回defaultTableName
-		if defaultTableName == "user_departments" {
+		if defaultTableName == "user_departments" || defaultTableName == "users" {
 			return "pre_" + defaultTableName
 		}
 		return conf.DbPrefix + defaultTableName

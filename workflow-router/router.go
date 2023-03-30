@@ -63,6 +63,8 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/identitylinkHistory/findParticipant", intercept(controller.FindParticipantHistoryByProcInstID))
 
 	// ******************************** dootask ***********************************
-	Mux.HandleFunc("/api/v1/workflow/dootask/getAllDept", intercept(controller.GetAllDept)) // 查询所有部门
+	Mux.HandleFunc("/api/v1/workflow/dootask/getAllDept", intercept(controller.GetAllDept))                     // 查询所有部门
+	Mux.HandleFunc("/api/v1/workflow/dootask/getDeptUserByDept", intercept(controller.GetDeptUserByDept))       // 根据部门单一获取用户和子部门
+	Mux.HandleFunc("/api/v1/workflow/dootask/getAllDeptUserByDept", intercept(controller.GetAllDeptUserByDept)) // 根据部门全部获取用户和子部门
 
 }
