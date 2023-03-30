@@ -108,6 +108,9 @@ const addType = (type)=> {
                 "type": type,
                 "priorityLevel": 1,
                 "conditionList": [],
+                "properties": {
+                   "conditions": []
+                },
                 "nodeUserList": [],
                 "childNode": props.childNodeP,
             }, {
@@ -117,6 +120,9 @@ const addType = (type)=> {
                 "type": type,
                 "priorityLevel": 2,
                 "conditionList": [],
+                "properties": {
+                   "conditions": []
+                },
                 "nodeUserList": [],
                 "childNode": null
             }]

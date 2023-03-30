@@ -119,7 +119,7 @@ func FindByIdProcdef(writer http.ResponseWriter, request *http.Request) {
 
 	prodef, err := service.GetProcdefByID(Id)
 	if err != nil {
-		util.ResponseErr(writer, "err")
+		util.ResponseErr(writer, err)
 		return
 	}
 

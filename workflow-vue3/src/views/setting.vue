@@ -1,11 +1,11 @@
 <template>
     <div>
-
+        <iframe src="http://127.0.0.1:5173/2/#/?workFlowDefId=32"></iframe>
         <div class="fd-nav">
             <div class="fd-nav-left">
-                <!-- <div class="fd-nav-back" @click="toReturn">
+                <div class="fd-nav-back" @click="toReturn">
                     <i class="anticon anticon-left"></i>
-                </div> -->
+                </div>
                 <div class="fd-nav-title">{{ workFlowDef.name || '' }}</div>
             </div>
             <div class="fd-nav-right">
@@ -48,11 +48,13 @@ import copyerDrawer from "@/components/drawer/copyerDrawer.vue";
 import conditionDrawer from "@/components/drawer/conditionDrawer.vue";
 import { ElMessage } from 'element-plus'
 import { ref, onMounted } from "vue";
-import { useRoute } from 'vue-router'
+import { useRoute,useRouter } from 'vue-router'
 import { getWorkFlowData, setWorkFlowData } from "@/plugins/api.js";
 import { mapMutations } from "@/plugins/lib.js";
-let { setTableId, setIsTried } = mapMutations()
 
+const router=useRouter()
+const route=useRoute()
+let { setTableId, setIsTried } = mapMutations()
 let tipList = ref([]);
 let tipVisible = ref(false);
 let nowVal = ref(100);
@@ -61,23 +63,41 @@ let nodeConfig = ref({});
 let workFlowDef = ref({});
 let flowPermission = ref([]);
 let directorMaxLevel = ref(0);
+let workFlowDefId = ref(0);
 
 onMounted(async () => {
-    let route = useRoute()
-    let {data,status,message} = await getWorkFlowData({ id: route.query.workFlowDefId })
-    // 
-    processConfig.value = data || {};
-    nodeConfig.value = data?.resource || {
-        "name": "发起人",
-        "type": "start",
-        "nodeId": "sid-startevent",
-        "childNode": {},
-        "conditionNodes": []
-    };
+    workFlowDefId.value =  route.query.workFlowDefId;
+    if(workFlowDefId.value < 1 && !route.query.name){
+        ElMessage.error("流程名称不能为空")
+        return;
+    }
+    if(workFlowDefId.value > 0){
+        let {data,status,message} = await getWorkFlowData({ id: workFlowDefId.value })
+        if (status != 200) {
+            ElMessage.error(message)
+            return;
+        }
+        processConfig.value = data;
+        nodeConfig.value = data?.resource;
+    }else{
+        processConfig.value = {
+            "userid": "1",
+            "username": "系统默认",
+            "company":"系统默认",
+            "name": route.query.name,
+        };
+        nodeConfig.value = {
+            "name": "发起人",
+            "type": "start",
+            "nodeId": "sid-startevent",
+            "childNode": {},
+            "conditionNodes": []
+        };
+    }
     flowPermission.value = [];
     directorMaxLevel.value = 4; //最高级别
     workFlowDef.value = processConfig.value;
-    setTableId(data?.id || 0);
+    setTableId(workFlowDefId.value || 0);
 });
 
 const toReturn = () => {
@@ -121,14 +141,17 @@ const saveSet = async () => {
     }
     processConfig.value.flowPermission = flowPermission.value;
     processConfig.value.resource = nodeConfig.value;
-    // eslint-disable-next-line no-console
-    console.log(nodeConfig.value);
+    processConfig.value.id = Number(workFlowDefId.value || 0);
     let res = await setWorkFlowData(processConfig.value);
     if (res.status == 200) {
         ElMessage.success("设置成功")
-        setTimeout(function () {
-            window.location.href = "";
-        }, 200);
+        workFlowDefId.value = res.data;
+        router.replace({
+            path:'/',
+            query:{
+                workFlowDefId: workFlowDefId.value,
+            }
+        })
     }else{
         ElMessage.error(res.message)
     }
@@ -147,6 +170,8 @@ const zoomSize = (type) => {
         nowVal.value += 10;
     }
 };
+
+
 
 </script>
 <style>
