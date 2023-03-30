@@ -24,33 +24,33 @@ export let getDepartmentList = async (parentId = 0) => {
   console.log(data)
 
   departments.value = data;
-  departments.value = {
-    "childDepartments": [
-        {
-            "departmentKey": "RLXZB_V2",
-            "departmentName": "人力行政部",
-            "id": "1",
-            "parentId": "0",
-            "departmentNames": "人力行政部"
-        }, 
-        {
-            "departmentKey": "ZNBN",
-            "departmentName": "法务部",
-            "id": "2",
-            "parentId": "0",
-            "departmentNames": "法务部"
-        }
-    ],
-    "employees": [
-        {
-            "id": "53128111",
-            "employeeName": "雅楠",
-            "isLeave": "0",
-            "open": "false"
-        }
-    ],
-    "titleDepartments": []
-  }
+//   departments.value = {
+//     "childDepartments": [
+//         {
+//             "departmentKey": "RLXZB_V2",
+//             "departmentName": "人力行政部",
+//             "id": "1",
+//             "parentId": "0",
+//             "departmentNames": "人力行政部"
+//         }, 
+//         {
+//             "departmentKey": "ZNBN",
+//             "departmentName": "法务部",
+//             "id": "2",
+//             "parentId": "0",
+//             "departmentNames": "法务部"
+//         }
+//     ],
+//     "employees": [
+//         {
+//             "id": "53128111",
+//             "employeeName": "雅楠",
+//             "isLeave": "0",
+//             "open": "false"
+//         }
+//     ],
+//     "titleDepartments": []
+//   }
   
 
 }
