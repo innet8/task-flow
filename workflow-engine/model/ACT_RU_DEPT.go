@@ -12,8 +12,12 @@ type UserDepartments struct {
 }
 
 // GetAllDept 所有部门列表
-func GetAllDept() ([]*UserDepartments, error) {
+func GetAllDept(parentId int) ([]*UserDepartments, error) {
 	var datas []*UserDepartments
-	err := db.Find(&datas).Error
+	dbModel := db
+	if parentId != -1 {
+		dbModel = dbModel.Where("parent_id=?", parentId)
+	}
+	err := dbModel.Find(&datas).Error
 	return datas, err
 }

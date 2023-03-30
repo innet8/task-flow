@@ -7,8 +7,8 @@ import (
 )
 
 // GetAllDept 所有部门列表
-func GetAllDept() (string, error) {
-	datas, err := model.GetAllDept()
+func GetAllDept(parentId int) (string, error) {
+	datas, err := model.GetAllDept(parentId)
 	if err != nil {
 		return "", err
 	}

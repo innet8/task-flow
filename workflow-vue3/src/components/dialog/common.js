@@ -29,14 +29,14 @@ export let getDepartmentList = async (parentId = 0) => {
         {
             "departmentKey": "RLXZB_V2",
             "departmentName": "人力行政部",
-            "id": "150",
+            "id": "1",
             "parentId": "0",
             "departmentNames": "人力行政部"
         }, 
         {
             "departmentKey": "ZNBN",
             "departmentName": "法务部",
-            "id": "324",
+            "id": "2",
             "parentId": "0",
             "departmentNames": "法务部"
         }
