@@ -9,7 +9,7 @@ import (
 	"workflow/workflow-engine/flow"
 	"workflow/workflow-engine/service"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 )
 
 // SaveProcdefByToken SaveProcdefByToken

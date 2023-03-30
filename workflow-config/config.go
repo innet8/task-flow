@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
+	"workflow/util"
+
 	"github.com/joho/godotenv"
-	"github.com/mumushuiding/util"
 )
 
 // Configuration 数据库配置结构

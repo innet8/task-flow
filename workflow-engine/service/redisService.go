@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/mumushuiding/util"
+	"workflow/util"
 
 	"workflow/workflow-engine/model"
 )

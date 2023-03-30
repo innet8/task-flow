@@ -7,7 +7,7 @@ import (
 
 	"workflow/workflow-engine/flow"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 
 	"workflow/workflow-engine/model"
 )

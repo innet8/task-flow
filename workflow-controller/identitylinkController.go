@@ -7,7 +7,7 @@ import (
 
 	"workflow/workflow-engine/service"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 )
 
 // FindParticipantByProcInstID 根据流程id查询流程参与者

@@ -3,7 +3,7 @@ package service
 import (
 	"workflow/workflow-engine/model"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 )
 
 // FindParticipantHistoryByProcInstID 历史纪录查询

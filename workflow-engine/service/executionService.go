@@ -7,7 +7,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 
 	"workflow/workflow-engine/flow"
 	"workflow/workflow-engine/model"

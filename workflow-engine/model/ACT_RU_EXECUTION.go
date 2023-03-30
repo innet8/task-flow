@@ -3,8 +3,9 @@ package model
 import (
 	"time"
 
+	"workflow/util"
+
 	"github.com/jinzhu/gorm"
-	"github.com/mumushuiding/util"
 )
 
 // Execution 流程实例（执行流）表

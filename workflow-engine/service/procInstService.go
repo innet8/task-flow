@@ -10,7 +10,7 @@ import (
 	"workflow/workflow-engine/flow"
 	"workflow/workflow-engine/model"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 )
 
 // ProcessReceiver 接收页面传递参数

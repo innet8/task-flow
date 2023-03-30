@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"workflow/workflow-engine/service"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 )
 
 // GetAllDept 所有部门列表

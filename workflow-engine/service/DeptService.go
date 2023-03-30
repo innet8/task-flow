@@ -3,7 +3,7 @@ package service
 import (
 	"workflow/workflow-engine/model"
 
-	"github.com/mumushuiding/util"
+	"workflow/util"
 )
 
 // GetAllDept 所有部门列表
