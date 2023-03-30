@@ -61,4 +61,8 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/procHistory/FindProcNotify", intercept(controller.FindProcHistoryNotify)) // 查询抄送我的流程
 	// ----------------------- 关系表 -------------------------
 	Mux.HandleFunc("/api/v1/workflow/identitylinkHistory/findParticipant", intercept(controller.FindParticipantHistoryByProcInstID))
+
+	// ******************************** dootask ***********************************
+	Mux.HandleFunc("/api/v1/workflow/dootask/getAllDept", intercept(controller.GetAllDept)) // 查询所有部门
+
 }

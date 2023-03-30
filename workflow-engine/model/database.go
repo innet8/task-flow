@@ -51,6 +51,10 @@ func Setup() {
 
 	//添加表前缀
 	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
+		// 判断defaultTableName等于Department时返回defaultTableName
+		if defaultTableName == "user_departments" {
+			return "pre_" + defaultTableName
+		}
 		return conf.DbPrefix + defaultTableName
 	}
 
@@ -64,7 +68,9 @@ func Setup() {
 		AutoMigrate(&IdentitylinkHistory{}).
 		AutoMigrate(&ProcInstHistory{}).
 		AutoMigrate(&TaskHistory{}).
-		AutoMigrate(&ProcdefHistory{})
+		AutoMigrate(&ProcdefHistory{}).
+		AutoMigrate(&Test{})
+
 	// 添加索引
 	db.Model(&Procdef{}).AddIndex("idx_id", "id")
 	db.Model(&ProcInst{}).AddIndex("idx_id", "id")
