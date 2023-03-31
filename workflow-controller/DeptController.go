@@ -29,7 +29,7 @@ func GetAllDept(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, result)
 }
 
-// 根据部门单一获取所有用户，包括子部门，树形结构
+// GetDeptUserByDept 根据部门单一获取所有用户，包括子部门，树形结构
 func GetDeptUserByDept(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		util.ResponseErr(writer, "只支持get方法！！")
@@ -55,7 +55,7 @@ func GetDeptUserByDept(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, result)
 }
 
-// 根据部门全部获取所有用户，包括子部门，树形结构
+// GetAllDeptUserByDept 根据部门全部获取所有用户，包括子部门，树形结构
 func GetAllDeptUserByDept(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		util.ResponseErr(writer, "只支持get方法！！")
@@ -72,7 +72,7 @@ func GetAllDeptUserByDept(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, result)
 }
 
-// 根据用户名称获取用户并分页
+// GetUserByName 根据用户名称获取用户并分页
 func GetUserByName(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		util.ResponseErr(writer, "只支持get方法！！")

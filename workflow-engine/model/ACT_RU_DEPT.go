@@ -62,6 +62,13 @@ func GetUsersByDeptNames(deptNames []string) ([]*Users, error) {
 	return datas, err
 }
 
+// GetUsersByDeptIds 根据多个部门id获取用户列表，使用find_in_set函数查询
+func GetUsersByDeptIds(deptIds []int) ([]*Users, error) {
+	var datas []*Users
+	err := db.Where("find_in_set(?,department)", deptIds).Find(&datas).Error
+	return datas, err
+}
+
 // GetUserByName 根据用户名称获取用户并分页
 func GetUserByName(name string, page, pageSize int) ([]*Users, error) {
 	var datas []*Users
