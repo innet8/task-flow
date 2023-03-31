@@ -1,7 +1,7 @@
 <template>
     <el-drawer :append-to-body="true" title="条件设置" v-model="visible" custom-class="condition_copyer" :show-close="false" :size="550" :before-close="saveCondition"> 
         <template #header="{ titleId, titleClass }">
-            <h3 :id="titleId" :class="titleClass">条件设置1</h3>
+            <h3 :id="titleId" :class="titleClass">条件设置</h3>
             <select v-model="conditionConfig.priorityLevel" class="priority_level">
                 <option v-for="item in conditionsConfig.conditionNodes.length" :value="item" :key="item">优先级{{item}}</option>
             </select>

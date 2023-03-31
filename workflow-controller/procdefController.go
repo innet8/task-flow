@@ -79,7 +79,7 @@ func SaveProcdef(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	util.Response(writer, fmt.Sprintf("%d", id), true)
+	util.ResponseData(writer, fmt.Sprintf("%d", id))
 }
 
 // FindAllProcdefPage find by page

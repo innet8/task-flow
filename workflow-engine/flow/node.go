@@ -2,11 +2,9 @@ package flow
 
 import (
 	"container/list"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
@@ -48,6 +46,10 @@ const (
 var NodeTypes = [...]string{START: "start", ROUTE: "route", CONDITION: "condition", APPROVER: "approver", NOTIFIER: "notifier"}
 var actionRuleTypes = [...]string{MANAGER: "target_management", LABEL: "target_label"}
 
+// 级别类型
+var DirectorLevelTypes = [...]string{1: "直接主管", 2: "第二级主管", 3: "第三级主管", 4: "第四级主管"}
+var ExamineEndDirectorLevelTypes = [...]string{1: "最高层级主管", 2: "第二级主管", 3: "第三级主管", 4: "第四级主管"}
+
 type NodeInfoType int
 
 const (
@@ -74,7 +76,7 @@ type Node struct {
 	PriorityLevel           int                  `json:"priorityLevel,omitempty"`           // 优先级
 	DirectorLevel           int                  `json:"directorLevel,omitempty"`           // 主管级别，1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
 	ExamineEndDirectorLevel int                  `json:"examineEndDirectorLevel,omitempty"` // 最终主管级别
-	ExamineMode             int                  `json:"examineMode,omitempty"`             // 多人审批时采用的审批方式 1依次审批
+	ExamineMode             int                  `json:"examineMode,omitempty"`             // 多人审批时采用的审批方式 1依次审批，2会签(须所有审批人同意)
 	NoHanderAction          int                  `json:"noHanderAction,omitempty"`          // 审批人为空时 1自动审批通过/不允许发起, 2转交给审核管理员
 	NodeUserList            []*NodeUser          `json:"nodeUserList,omitempty"`            // 节点用户列表
 	CcSelfSelectFlag        int                  `json:"ccSelfSelectFlag"`                  // 允许发起人自选抄送人
@@ -120,9 +122,17 @@ type NodeCondition struct {
 
 // 节点条件列表
 type NodeConditionList struct {
-	Type     int    `json:"type,omitempty"`
-	ColumnId int    `json:"columnId"`
-	ShowName string `json:"showName,omitempty"` //发起人
+	ColumnId     int    `json:"columnId"`
+	Type         int    `json:"type,omitempty"`
+	ShowType     string `json:"showType,omitempty"` //显示类型
+	ShowName     string `json:"showName,omitempty"` //发起人
+	OptType      string `json:"optType,omitempty"`  //选择类型
+	Zdy1         string `json:"zdy1,omitempty"`
+	Opt1         string `json:"opt1,omitempty"`
+	Zdy2         string `json:"zdy2,omitempty"`
+	Opt2         string `json:"opt2,omitempty"`
+	ColumnDbname string `json:"columnDbname,omitempty"`
+	ColumnType   string `json:"columnType,omitempty"`
 }
 
 // 节点气孔导度
@@ -142,45 +152,57 @@ type NodeUser struct {
 
 // NodeInfo 节点信息
 type NodeInfo struct {
-	NodeID      string `json:"nodeId"`
-	Type        string `json:"type"`
-	Aprover     string `json:"approver"`
-	AproverType string `json:"aproverType"`
-	MemberCount int8   `json:"memberCount"`
-	Level       int8   `json:"level"`
-	ActType     string `json:"actType"`
-}
-
-// GetProcessConfigFromJSONFile test
-func (n *Node) GetProcessConfigFromJSONFile() {
-	file, err := os.Open("D:/Workspaces/go/src/workflow/processConfig2.json")
-	if err != nil {
-		log.Printf("cannot open file processConfig.json:%v", err)
-		panic(err)
-	}
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(n)
-	if err != nil {
-		log.Printf("decode processConfig.json failed:%v", err)
-	}
+	NodeID                  string `json:"nodeId"`
+	Type                    string `json:"type"`
+	Settype                 int    `json:"settype,omitempty"`
+	Aprover                 string `json:"approver"`
+	AproverType             string `json:"aproverType"`
+	MemberCount             int8   `json:"memberCount"`
+	Level                   int8   `json:"level"`
+	ActType                 string `json:"actType"`
+	DirectorLevel           int    `json:"directorLevel,omitempty"`           // 主管级别，1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
+	ExamineEndDirectorLevel int    `json:"examineEndDirectorLevel,omitempty"` // 最终主管级别 1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
 }
 
 func (n *Node) add2ExecutionList(list *list.List) {
+	// var NodeTypes = [...]string{START: "start", ROUTE: "route", CONDITION: "condition", APPROVER: "approver", NOTIFIER: "notifier"}
 	switch n.Type {
-	case NodeTypes[APPROVER], NodeTypes[NOTIFIER]:
+	case NodeTypes[APPROVER], NodeTypes[NOTIFIER]: //审核人，抄送人
 		var aprover string
-		if n.Properties.ActionerRules[0].Type == actionRuleTypes[MANAGER] {
-			aprover = "主管"
-		} else {
-			aprover = n.Properties.ActionerRules[0].LabelNames
+		var memberCount int8
+		memberCount = 1
+		// 审批人设置 1指定成员 2主管 4发起人自选 5发起人自己 7连续多级主管
+		if n.Settype == 1 {
+			aprover = "指定成员"
+			memberCount = int8(len(n.NodeUserList))
+		} else if n.Settype == 2 {
+			aprover = DirectorLevelTypes[n.DirectorLevel]
+		} else if n.Settype == 4 {
+			aprover = "发起人自选"
+		} else if n.Settype == 5 {
+			aprover = "发起人自己"
+		} else if n.Settype == 7 {
+			aprover = ExamineEndDirectorLevelTypes[n.ExamineEndDirectorLevel]
 		}
+
+		// 多人审批时采用的审批方式
+		var actType string
+		if n.ExamineMode == 1 {
+			actType = "any"
+		} else {
+			actType = "or"
+		}
+
 		list.PushBack(NodeInfo{
-			NodeID:      n.NodeID,
-			Type:        n.Properties.ActionerRules[0].Type,
-			Aprover:     aprover,
-			AproverType: n.Type,
-			MemberCount: n.Properties.ActionerRules[0].MemberCount,
-			ActType:     n.Properties.ActionerRules[0].ActType,
+			NodeID:                  n.NodeID,
+			Type:                    n.Type,
+			Settype:                 n.Settype,
+			Aprover:                 aprover,
+			AproverType:             n.Type,
+			MemberCount:             memberCount,
+			ActType:                 actType,
+			DirectorLevel:           n.DirectorLevel,
+			ExamineEndDirectorLevel: n.ExamineEndDirectorLevel,
 		})
 		break
 	default:
@@ -257,11 +279,16 @@ func ParseProcessConfig(node *Node, variable *map[string]string) (*list.List, er
 	err := parseProcessConfig(node, variable, list)
 	return list, err
 }
+
 func parseProcessConfig(node *Node, variable *map[string]string, list *list.List) (err error) {
 	// fmt.Printf("nodeId=%s\n", node.NodeID)
 	node.add2ExecutionList(list)
+
 	// 存在条件节点
 	if node.ConditionNodes != nil {
+
+		// data, _ := util.ToJSONStr(node.ConditionNodes)
+
 		// 如果条件节点只有一个或者条件只有一个，直接返回第一个
 		if variable == nil || len(node.ConditionNodes) == 1 {
 			err = parseProcessConfig(node.ConditionNodes[0].ChildNode, variable, list)
@@ -269,6 +296,8 @@ func parseProcessConfig(node *Node, variable *map[string]string, list *list.List
 				return err
 			}
 		} else {
+			// fmt.Printf("%s", data)
+
 			// 根据条件变量选择节点索引
 			condNode, err := GetConditionNode(node.ConditionNodes, variable)
 			if err != nil {
@@ -279,6 +308,7 @@ func parseProcessConfig(node *Node, variable *map[string]string, list *list.List
 				return errors.New("节点【" + node.NodeID + "】找不到符合条件的子节点,检查变量【var】值是否匹配," + str)
 				// panic(err)
 			}
+
 			err = parseProcessConfig(condNode, variable, list)
 			if err != nil {
 				return err
@@ -298,31 +328,34 @@ func parseProcessConfig(node *Node, variable *map[string]string, list *list.List
 
 // GetConditionNode 获取条件节点
 func GetConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err error) {
-	map2 := *maps
+	// map2 := *maps
 	for _, node := range nodes {
 		var flag int
-		for _, v := range node.Properties.Conditions[0] {
-			paramValue := map2[v.ParamKey]
-			if len(paramValue) == 0 {
-				return nil, errors.New("流程启动变量【var】的key【" + v.ParamKey + "】的值不能为空")
-			}
-			yes, err := checkConditions(v, paramValue)
-			if err != nil {
-				return nil, err
-			}
-			if yes {
-				flag++
-			}
+		for _, v := range node.ConditionList {
+			flag++
+			fmt.Printf("%x", v)
+			// paramValue := map2[v.ParamKey]
+			// if len(paramValue) == 0 {
+			// 	return nil, errors.New("流程启动变量【var】的key【" + v.ParamKey + "】的值不能为空")
+			// }
+			// yes, err := checkConditions(v, paramValue)
+			// if err != nil {
+			// 	return nil, err
+			// }
+			// if yes {
+			// 	flag++
+			// }
 		}
 		// fmt.Printf("flag=%d\n", flag)
 		// 满足所有条件
-		if flag == len(node.Properties.Conditions[0]) {
+		if flag == len(node.ConditionList) {
 			result = node
 		}
 	}
 	return result, nil
 }
 
+// 获取条件节点
 func getConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err error) {
 	map2 := *maps
 	// 获取所有conditionNodes
@@ -416,6 +449,7 @@ func getConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err
 	// return result, err
 }
 
+// 检查条件
 func checkConditions(cond *NodeCondition, value string) (bool, error) {
 	// 判断类型
 	switch cond.Type {

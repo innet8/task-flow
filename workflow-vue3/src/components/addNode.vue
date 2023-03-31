@@ -66,13 +66,12 @@ const addType = (type)=> {
                 "childNode": props.childNodeP,
                 "nodeUserList": [],
                 "properties": {
-                    "activateType": "ALL",
-                    "agreeAll": true,
                     "actionerRules": [
                         {
-                            "type": "target_label",
-                            "labelNames": "人事",
-                            "labels": 427529104,
+                            "type": "target_management",
+                            "labelNames": "主管",
+                            // "labels": 427529104,
+                            "level":0,
                             "isEmpty": false,
                             "memberCount": 1,
                             "actType": "and"
@@ -90,18 +89,7 @@ const addType = (type)=> {
                 "childNode": props.childNodeP,
                 "nodeUserList": [],
                 "properties": {
-                    "activateType": "ALL",
-                    "agreeAll": true,
-                    "actionerRules": [
-                        {
-                            "type": "target_label",
-                            "labelNames": "人事",
-                            "labels": 427529104,
-                            "isEmpty": false,
-                            "memberCount": 1,
-                            "actType": "and"
-                        }
-                    ]
+                    "actionerRules": []
                 }
             }
         }

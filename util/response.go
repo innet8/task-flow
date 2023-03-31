@@ -9,7 +9,11 @@ import (
 
 // Response 返回信息给前台
 func Response(writer http.ResponseWriter, data string, ok bool) {
-	fmt.Fprintf(writer, "{\"data\":%s,\"message\":\"ok\",\"ok\":%t,\"status\":200}", data, ok)
+	status := 200
+	if ok == false {
+		status = 500
+	}
+	fmt.Fprintf(writer, "{\"message\":\"%s\",\"ok\":%t,\"status\":%d}", data, ok, status)
 }
 
 // ResponseData 返回信息给前台

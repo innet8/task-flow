@@ -62,7 +62,7 @@ const route=useRoute()
 let { setTableId, setIsTried } = mapMutations()
 let tipList = ref([]);
 let tipVisible = ref(false);
-let nowVal = ref(100);
+let nowVal = ref(90);
 let processConfig = ref({});
 let nodeConfig = ref({});
 let workFlowDef = ref({});
@@ -183,7 +183,7 @@ const zoomSize = (type) => {
 </script>
 <style>
 @import "../css/workflow.css";
-.error-modal-list {
+/* .error-modal-list {
     width: 455px;
-}
+} */
 </style>
