@@ -105,11 +105,11 @@ const toReturn = () => {
 
 const reErr = ({ childNode }) => {
     if (childNode) {
-        let { type, error, nodeName, conditionNodes } = childNode;
-        if (type == 'approver' || type == 'notifier') {
+        let { type, error, name, conditionNodes } = childNode;
+        if ( type == 'start' || type == 'approver' || type == 'notifier') {
             if (error) {
                 tipList.value.push({
-                    name: nodeName,
+                    name: name,
                     type: ["", "审核人", "抄送人"][type],
                 });
             }
@@ -120,7 +120,7 @@ const reErr = ({ childNode }) => {
             reErr(childNode);
             for (var i = 0; i < conditionNodes.length; i++) {
                 if (conditionNodes[i].error) {
-                    tipList.value.push({ name: conditionNodes[i].nodeName, type: "条件" });
+                    tipList.value.push({ name: conditionNodes[i].name, type: "条件" });
                 }
                 reErr(conditionNodes[i]);
             }
@@ -132,17 +132,14 @@ const reErr = ({ childNode }) => {
 
 const saveSet = async () => {
     setIsTried(true);
+    // 
     tipList.value = [];
-    reErr(nodeConfig);
-
-    console.log(tipList.value)
-
+    reErr(nodeConfig.value);
     if (tipList.value.length != 0) {
         tipVisible.value = true;
         return;
     }
-
-
+    // 
     processConfig.value.flowPermission = flowPermission.value;
     processConfig.value.resource = nodeConfig.value;
     processConfig.value.id = Number(workFlowDefId.value || 0);

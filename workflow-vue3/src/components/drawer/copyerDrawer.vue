@@ -15,9 +15,9 @@
                     </span>
                     <a v-if="copyerConfig.nodeUserList&&copyerConfig.nodeUserList.length!=0" @click="copyerConfig.nodeUserList=[]">清除</a>
                 </p>
-                <el-checkbox-group v-model="ccSelfSelectFlag" class="clear">
+                <!-- <el-checkbox-group v-model="ccSelfSelectFlag" class="clear">
                     <el-checkbox :label="1">允许发起人自选抄送人</el-checkbox>
-                </el-checkbox-group>
+                </el-checkbox-group> -->
             </div>
             <div class="demo-drawer__footer clear">
                 <el-button type="primary" @click="saveCopyer">确 定</el-button>
