@@ -54,3 +54,24 @@ func GetUsersByDept(deptName string) ([]*Users, error) {
 	err := db.Where("department=?", deptName).Find(&datas).Error
 	return datas, err
 }
+
+// GetUsersByDeptNames 根据多个部门名称获取用户列表
+func GetUsersByDeptNames(deptNames []string) ([]*Users, error) {
+	var datas []*Users
+	err := db.Where("department in (?)", deptNames).Find(&datas).Error
+	return datas, err
+}
+
+// GetUserByName 根据用户名称获取用户并分页
+func GetUserByName(name string, page, pageSize int) ([]*Users, error) {
+	var datas []*Users
+	err := db.Where("nickname like ?", "%"+name+"%").Limit(pageSize).Offset((page - 1) * pageSize).Find(&datas).Error
+	return datas, err
+}
+
+// GetUserByNameCount 根据用户名称获取用户总数
+func GetUserByNameCount(name string) (int, error) {
+	var count int
+	err := db.Model(&Users{}).Where("nickname like ?", "%"+name+"%").Count(&count).Error
+	return count, err
+}
