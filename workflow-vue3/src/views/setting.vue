@@ -100,13 +100,13 @@ onMounted(async () => {
 });
 
 const toReturn = () => {
-    //window.location.href = ""
+    // window.location.href = ""
 };
 
 const reErr = ({ childNode }) => {
     if (childNode) {
         let { type, error, nodeName, conditionNodes } = childNode;
-        if (type == 1 || type == 2) {
+        if (type == 'approver' || type == 'notifier') {
             if (error) {
                 tipList.value.push({
                     name: nodeName,
@@ -114,9 +114,9 @@ const reErr = ({ childNode }) => {
                 });
             }
             reErr(childNode);
-        } else if (type == 3) {
+        } else if (type == 'condition') {
             reErr(childNode);
-        } else if (type == 4) {
+        } else if (type == 'route') {
             reErr(childNode);
             for (var i = 0; i < conditionNodes.length; i++) {
                 if (conditionNodes[i].error) {
@@ -134,10 +134,15 @@ const saveSet = async () => {
     setIsTried(true);
     tipList.value = [];
     reErr(nodeConfig);
+
+    console.log(tipList.value)
+
     if (tipList.value.length != 0) {
         tipVisible.value = true;
         return;
     }
+
+
     processConfig.value.flowPermission = flowPermission.value;
     processConfig.value.resource = nodeConfig.value;
     processConfig.value.id = Number(workFlowDefId.value || 0);

@@ -109,8 +109,8 @@ All.prototype = {
         return arr.join("或")
     },  
     conditionStr(nodeConfig, index) {
-         var { conditionList, nodeUserList } = nodeConfig.conditionNodes[index];
-        if (conditionList.length == 0) {
+        var { conditionList, nodeUserList } = nodeConfig.conditionNodes[index];
+        if (!conditionList || conditionList.length == 0) {
             return (index == nodeConfig.conditionNodes.length - 1) && nodeConfig.conditionNodes[0].conditionList.length != 0 ? '其他条件进入此流程' : '请设置条件'
         }else {
             let str = ""

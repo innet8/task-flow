@@ -101,7 +101,6 @@ func (p *Procdef) SaveProcdef() (id int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	// fmt.Println(resource)
 	var procdef = model.Procdef{
 		Name:     p.Name,
 		Userid:   p.Userid,

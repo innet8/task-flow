@@ -61,19 +61,23 @@ var NodeInfoTypes = [...]string{STARTER: "starter"}
 // 流程中的一个节点
 type Node struct {
 	Name                    string               `json:"name,omitempty"`                    // 节点名称
-	Type                    string               `json:"type,omitempty"`                    // 节点类型
+	Type                    string               `json:"type,omitempty"`                    // 节点类型，0 发起人 1审批 2抄送 3条件 4路由
 	NodeID                  string               `json:"nodeId,omitempty"`                  // 节点id
 	PrevID                  string               `json:"prevId,omitempty"`                  // 父级id
 	ChildNode               *Node                `json:"childNode,omitempty"`               // 子节点
 	ConditionNodes          []*Node              `json:"conditionNodes,omitempty"`          // 条件节点
 	ConditionList           []*NodeConditionList `json:"conditionList,omitempty"`           // 条件列表
 	Properties              *NodeProperties      `json:"properties,omitempty"`              // 属性
-	Settype                 int                  `json:"settype,omitempty"`                 // 审批设置类型 1指定成员,2主管，7连续多级主管
+	Settype                 int                  `json:"settype,omitempty"`                 // 审批人设置 1指定成员 2主管 4发起人自选 5发起人自己 7连续多级主管
+	SelectMode              int                  `json:"selectMode,omitempty"`              // 审批人数 1选一个人 2选多个人
+	SelectRange             int                  `json:"selectRange,omitempty"`             // 选择范围 1.全公司 2指定成员 2指定角色
+	PriorityLevel           int                  `json:"priorityLevel,omitempty"`           // 优先级
 	DirectorLevel           int                  `json:"directorLevel,omitempty"`           // 主管级别，1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
 	ExamineEndDirectorLevel int                  `json:"examineEndDirectorLevel,omitempty"` // 最终主管级别
 	ExamineMode             int                  `json:"examineMode,omitempty"`             // 多人审批时采用的审批方式 1依次审批
 	NoHanderAction          int                  `json:"noHanderAction,omitempty"`          // 审批人为空时 1自动审批通过/不允许发起, 2转交给审核管理员
 	NodeUserList            []*NodeUser          `json:"nodeUserList,omitempty"`            // 节点用户列表
+	CcSelfSelectFlag        int                  `json:"ccSelfSelectFlag"`                  // 允许发起人自选抄送人
 }
 
 // 活动规则
@@ -117,7 +121,7 @@ type NodeCondition struct {
 // 节点条件列表
 type NodeConditionList struct {
 	Type     int    `json:"type,omitempty"`
-	ColumnId int    `json:"columnId,omitempty"`
+	ColumnId int    `json:"columnId"`
 	ShowName string `json:"showName,omitempty"` //发起人
 }
 

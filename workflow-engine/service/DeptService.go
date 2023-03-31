@@ -58,8 +58,6 @@ func GetUsersByDeptAllTree(parentId int) (string, error) {
 		return "", err
 	}
 
-	// 根据部门id查询出用户表department部门关联字段格式为：2,1,3所有子部门下的用户
-
 	// 获取父部门列表中的名称放入数组deptIds,用于查询父部门下的用户
 	var deptIds []int
 	var deptNames []string
@@ -67,11 +65,13 @@ func GetUsersByDeptAllTree(parentId int) (string, error) {
 		deptIds = append(deptIds, v.Id)
 		deptNames = append(deptNames, v.Name)
 	}
+
 	// 部门父级下的用户列表
-	users, err := model.GetUsersByDeptIds(deptIds)
+	users, err := model.GetUsersByDeptId(parentId)
 	if err != nil {
 		return "", err
 	}
+
 	//构造树形结构 递归处理父部门childDepartments：父部门 employees:部门用户
 	dept := make(map[string]interface{})
 	dept["childDepartments"] = childDept

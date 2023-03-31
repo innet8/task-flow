@@ -17,6 +17,7 @@ type Users struct {
 	Identity   string `json:"identity"`
 	Department string `json:"department"`
 	Nickname   string `json:"nickname"`
+	Email      string `json:"email"`
 	Profession string `json:"profession"`
 	Userimg    string `json:"userimg"`
 	CreatedAt  string `json:"created_at"`
@@ -62,10 +63,14 @@ func GetUsersByDeptNames(deptNames []string) ([]*Users, error) {
 	return datas, err
 }
 
-// GetUsersByDeptIds 根据多个部门id获取用户列表，使用find_in_set函数查询
-func GetUsersByDeptIds(deptIds []int) ([]*Users, error) {
+// GetUsersByDeptIds 根据部门id获取用户列表，使用find_in_set函数查询
+func GetUsersByDeptId(deptId int) ([]*Users, error) {
 	var datas []*Users
-	err := db.Where("find_in_set(?,department)", deptIds).Find(&datas).Error
+	modelDb := db
+	// if deptId > 0 {
+	modelDb = modelDb.Where("find_in_set(?,department)", deptId)
+	// }
+	err := modelDb.Find(&datas).Error
 	return datas, err
 }
 

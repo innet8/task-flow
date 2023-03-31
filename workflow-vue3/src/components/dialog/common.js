@@ -9,71 +9,61 @@ import $func from '@/plugins/preload.js'
 import { ref } from 'vue'
 export let searchVal = ref('')
 export let departments = ref({
-  titleDepartments: [],
-  childDepartments: [],
-  employees: [],
+    titleDepartments: [],
+    childDepartments: [],
+    employees: [],
 })
+
 export let roles = ref({})
 export let getRoleList = async () => {
-  let { data: { list } } = await getRoles()
-  roles.value = list;
+    let { data: { list } } = await getRoles()
+    roles.value = list;
 }
+
 export let getDepartmentList = async (parentId = 0) => {
-  let { data } = await getDepartments({ parentId })
-
-  console.log(data)
-
-  departments.value = data;
-//   departments.value = {
-//     "childDepartments": [
-//         {
-//             "departmentKey": "RLXZB_V2",
-//             "departmentName": "人力行政部",
-//             "id": "1",
-//             "parentId": "0",
-//             "departmentNames": "人力行政部"
-//         }, 
-//         {
-//             "departmentKey": "ZNBN",
-//             "departmentName": "法务部",
-//             "id": "2",
-//             "parentId": "0",
-//             "departmentNames": "法务部"
-//         }
-//     ],
-//     "employees": [
-//         {
-//             "id": "53128111",
-//             "employeeName": "雅楠",
-//             "isLeave": "0",
-//             "open": "false"
-//         }
-//     ],
-//     "titleDepartments": []
-//   }
-  
-
+    let { data } = await getDepartments({ parentId })
+    data.childDepartments = data.childDepartments.map(h => {
+        h.parentId = h.parent_id;
+        h.departmentName = h.name;
+        h.departmentNames = h.name;
+        h.departmentKey = h.name;
+        return h;
+    });
+    data.employees = data.employees.map(h => {
+        h.id = h.userid;
+        h.isLeave = 0;
+        h.open = false;
+        h.employeeName = h.nickname || h.email;
+        return h;
+    });
+    departments.value = data;
 }
-
 
 export let getDebounceData = (event, type = 1) => {
-  $func.debounce(async () => {
-    if (event.target.value) {
-      let data = {
-        searchName: event.target.value,
-        pageNum: 1,
-        pageSize: 30
-      }
-      if (type == 1) {
-        departments.value.childDepartments = [];
-        let res = await getEmployees(data)
-        departments.value.employees = res.data.list
-      } else {
-        let res = await getRoles(data)
-        roles.value = res.data.list
-      }
-    } else {
-      type == 1 ? await getDepartmentList() : await getRoleList();
-    }
-  })()
+    $func.debounce(async () => {
+        if (event.target.value) {
+            let data = {
+                searchName: event.target.value,
+                pageNum: 1,
+                pageSize: 50
+            }
+            if (type == 1) {
+                departments.value.childDepartments = [];
+                let res = await getEmployees(data)
+                departments.value.employees = res.data.list.map(h =>{
+                    h.id = h.userid;
+                    h.employeeName = h.nickname;
+                    // "departmentName": "招商事业部",
+                    // "employeeDepartmentId": "121",
+                    // "departmentNames": "招商事业部"
+                    return h;
+                });
+            } else {
+                let res = await getRoles(data)
+                roles.value = res.data.list
+            }
+        } else {
+            type == 1 ? await getDepartmentList() : await getRoleList();
+        }
+    })()
 }
