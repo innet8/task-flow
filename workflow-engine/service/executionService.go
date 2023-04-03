@@ -55,8 +55,8 @@ func GetExecByProcInst(procInst int) (*model.Execution, error) {
 
 // GenerateExec GenerateExec
 // 根据流程定义node生成执行流
-func GenerateExec(e *model.Execution, node *flow.Node, userID string, variable *map[string]string, tx *gorm.DB) (int, error) {
-	list, err := flow.ParseProcessConfig(node, userID, variable)
+func GenerateExec(e *model.Execution, node *flow.Node, userID string, departmentId int, variable *map[string]string, tx *gorm.DB) (int, error) {
+	list, err := flow.ParseProcessConfig(node, userID, departmentId, variable)
 	if err != nil {
 		return 0, err
 	}

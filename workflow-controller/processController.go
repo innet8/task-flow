@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"workflow/workflow-engine/model"
 
@@ -61,26 +62,48 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
+
 	if len(proc.ProcName) == 0 {
 		util.Response(writer, "流程定义名procName不能为空", false)
-		return
-	}
-	if len(proc.Company) == 0 {
-		util.Response(writer, "用户所在的公司company不能为空", false)
 		return
 	}
 	if len(proc.UserID) == 0 {
 		util.Response(writer, "启动流程的用户userId不能为空", false)
 		return
 	}
-	if len(proc.Username) == 0 {
-		util.Response(writer, "启动流程的用户username不能为空", false)
+
+	// 用户信息
+	userInfo, errs := model.GetUserInfoById(proc.UserID)
+	if errs != nil {
+		util.Response(writer, "用户不存在", false)
 		return
 	}
-	if len(proc.Department) == 0 {
-		util.Response(writer, "用户所在部门department不能为空", false)
+	if userInfo.Nickname != "" {
+		proc.Username = userInfo.Nickname
+	} else {
+		proc.Username = userInfo.Email
+	}
+
+	// 部门
+	if proc.DepartmentId == 0 {
+		util.Response(writer, "用户所在部门departmentId不能为空", false)
 		return
 	}
+
+	if !strings.Contains(userInfo.Department, ","+strconv.Itoa(proc.DepartmentId)+",") {
+		util.Response(writer, "部门不存在", false)
+		return
+	}
+	deptInfo, errs := model.GetDeptByID(proc.DepartmentId)
+	if errs != nil {
+		util.Response(writer, "部门不存在", false)
+		return
+	}
+	proc.Department = deptInfo.Name
+
+	// 公司
+	proc.Company = "系统默认"
+
 	id, err := proc.StartProcessInstanceByID(proc.Var)
 	if err != nil {
 		util.ResponseErr(writer, err)

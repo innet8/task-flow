@@ -162,14 +162,21 @@ func CompleteTask(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, "字段userID不能为空！")
 		return
 	}
-	if len(taskRe.UserName) == 0 {
-		util.ResponseErr(writer, "字段username不能为空！")
+	//
+	userInfo, errs := model.GetUserInfoById(taskRe.UserID)
+	if errs != nil {
+		util.Response(writer, "用户不存在", false)
 		return
 	}
-	if len(taskRe.Company) == 0 {
-		util.ResponseErr(writer, "字段company不能为空！")
-		return
+	if userInfo.Nickname != "" {
+		taskRe.UserName = userInfo.Nickname
+	} else {
+		taskRe.UserName = userInfo.Email
 	}
+	//
+	taskRe.Company = "系统默认"
+	taskRe.Candidate = "系统默认"
+
 	err = service.Complete(taskRe.TaskID, taskRe.UserID, taskRe.UserName, taskRe.Company, taskRe.Comment, taskRe.Candidate, pass)
 	if err != nil {
 		util.ResponseErr(writer, err)

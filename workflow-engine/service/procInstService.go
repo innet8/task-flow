@@ -16,14 +16,15 @@ import (
 
 // ProcessReceiver 接收页面传递参数
 type ProcessReceiver struct {
-	UserID     string             `json:"userId"`
-	ProcInstID string             `json:"procInstID"`
-	Username   string             `json:"username"`
-	Company    string             `json:"company"`
-	ProcName   string             `json:"procName"`
-	Title      string             `json:"title"`
-	Department string             `json:"department"`
-	Var        *map[string]string `json:"var"`
+	UserID       string             `json:"userId"`
+	ProcInstID   string             `json:"procInstID"`
+	Username     string             `json:"username"`
+	Company      string             `json:"company"`
+	ProcName     string             `json:"procName"`
+	Title        string             `json:"title"`
+	DepartmentId int                `json:"departmentId"`
+	Department   string             `json:"department"`
+	Var          *map[string]string `json:"var"`
 }
 
 // ProcessPageReceiver 分页参数
@@ -145,6 +146,7 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *map[string]string) 
 		ProcDefName:   procdefName,
 		Title:         p.Title,
 		Department:    p.Department,
+		DepartmentId:  p.DepartmentId,
 		StartTime:     util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS),
 		StartUserID:   p.UserID,
 		StartUserName: p.Username,
@@ -172,7 +174,7 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *map[string]string) 
 		AgreeNum:      1,
 	}
 	// 生成执行流，一串运行节点
-	_, err = GenerateExec(exec, node, p.UserID, variable, tx) //事务
+	_, err = GenerateExec(exec, node, p.UserID, p.DepartmentId, variable, tx) //事务
 	if err != nil {
 		tx.Rollback()
 		return 0, err

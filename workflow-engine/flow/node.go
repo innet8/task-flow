@@ -167,25 +167,23 @@ type NodeInfo struct {
 	NodeUserList            []*NodeUser `json:"nodeUserList,omitempty"`            // 节点用户列表
 }
 
-func (n *Node) add2ExecutionList(list *list.List) {
+func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId int) {
 	// var NodeTypes = [...]string{START: "start", ROUTE: "route", CONDITION: "condition", APPROVER: "approver", NOTIFIER: "notifier"}
 	switch n.Type {
 	case NodeTypes[APPROVER], NodeTypes[NOTIFIER]: //审核人，抄送人
 		var aprover string
 		var memberCount int8
-		memberCount = 1
+
 		// 审批人设置 1指定成员 2主管 4发起人自选 5发起人自己 7连续多级主管
 		if n.Settype == 1 {
 			aprover = "指定成员"
 			memberCount = int8(len(n.NodeUserList))
 		} else if n.Settype == 2 {
 			aprover = DirectorLevelTypes[n.DirectorLevel]
-		} else if n.Settype == 4 {
-			aprover = "发起人自选"
-		} else if n.Settype == 5 {
-			aprover = "发起人自己"
+			memberCount = 1
 		} else if n.Settype == 7 {
 			aprover = ExamineEndDirectorLevelTypes[n.ExamineEndDirectorLevel]
+			memberCount = 1
 		}
 
 		// 多人审批时采用的审批方式
@@ -195,19 +193,43 @@ func (n *Node) add2ExecutionList(list *list.List) {
 		} else {
 			actType = "or"
 		}
+		// departmentId
 
-		list.PushBack(NodeInfo{
-			NodeID:                  n.NodeID,
-			Type:                    n.Type,
-			Settype:                 n.Settype,
-			Aprover:                 aprover,
-			AproverType:             n.Type,
-			MemberCount:             memberCount,
-			ActType:                 actType,
-			DirectorLevel:           n.DirectorLevel,
-			ExamineEndDirectorLevel: n.ExamineEndDirectorLevel,
-			NodeUserList:            n.NodeUserList,
-		})
+		if n.Settype == 7 {
+			for i := 0; i < n.ExamineEndDirectorLevel; i++ {
+
+				dept, _ := model.GetDeptLevelByID(departmentId, i+1)
+				fmt.Println(dept)
+
+				list.PushBack(NodeInfo{
+					NodeID:      n.NodeID,
+					Type:        n.Type,
+					Settype:     n.Settype,
+					Aprover:     aprover,
+					AproverType: n.Type,
+					Level:       int8(i + 1),
+					MemberCount: memberCount,
+					ActType:     actType,
+					// DirectorLevel:           n.DirectorLevel,
+					// ExamineEndDirectorLevel: n.ExamineEndDirectorLevel,
+					NodeUserList: n.NodeUserList,
+				})
+			}
+		}
+
+		// list.PushBack(NodeInfo{
+		// 	NodeID:      n.NodeID,
+		// 	Type:        n.Type,
+		// 	Settype:     n.Settype,
+		// 	Aprover:     aprover,
+		// 	AproverType: n.Type,
+		// 	MemberCount: memberCount,
+		// 	ActType:     actType,
+		// 	// DirectorLevel:           n.DirectorLevel,
+		// 	// ExamineEndDirectorLevel: n.ExamineEndDirectorLevel,
+		// 	NodeUserList: n.NodeUserList,
+		// })
+
 		break
 	default:
 	}
@@ -277,16 +299,16 @@ func CheckConditionNode(nodes []*Node) error {
 }
 
 // ParseProcessConfig 解析流程定义json数据
-func ParseProcessConfig(node *Node, userID string, variable *map[string]string) (*list.List, error) {
+func ParseProcessConfig(node *Node, userID string, departmentId int, variable *map[string]string) (*list.List, error) {
 	// defer fmt.Println("----------解析结束--------")
 	list := list.New()
-	err := parseProcessConfig(node, userID, variable, list)
+	err := parseProcessConfig(node, userID, departmentId, variable, list)
 	return list, err
 }
 
-func parseProcessConfig(node *Node, userID string, variable *map[string]string, list *list.List) (err error) {
+func parseProcessConfig(node *Node, userID string, departmentId int, variable *map[string]string, list *list.List) (err error) {
 	// fmt.Printf("nodeId=%s\n", node.NodeID)
-	node.add2ExecutionList(list)
+	node.add2ExecutionList(list, userID, departmentId)
 
 	// 存在条件节点
 	if node.ConditionNodes != nil {
@@ -294,7 +316,7 @@ func parseProcessConfig(node *Node, userID string, variable *map[string]string, 
 
 		// 如果条件节点只有一个或者条件只有一个，直接返回第一个
 		if variable == nil || len(node.ConditionNodes) == 1 {
-			err = parseProcessConfig(node.ConditionNodes[0].ChildNode, userID, variable, list)
+			err = parseProcessConfig(node.ConditionNodes[0].ChildNode, userID, departmentId, variable, list)
 			if err != nil {
 				return err
 			}
@@ -310,7 +332,7 @@ func parseProcessConfig(node *Node, userID string, variable *map[string]string, 
 				// panic(err)
 			}
 
-			err = parseProcessConfig(condNode, userID, variable, list)
+			err = parseProcessConfig(condNode, userID, departmentId, variable, list)
 			if err != nil {
 				return err
 			}
@@ -319,7 +341,7 @@ func parseProcessConfig(node *Node, userID string, variable *map[string]string, 
 	}
 	// 存在子节点
 	if node.ChildNode != nil {
-		err = parseProcessConfig(node.ChildNode, userID, variable, list)
+		err = parseProcessConfig(node.ChildNode, userID, departmentId, variable, list)
 		if err != nil {
 			return err
 		}
@@ -334,9 +356,6 @@ func GetConditionNode(nodes []*Node, userID string, maps *map[string]string) (re
 	if errs != nil {
 		return nil, errs
 	}
-	if len(userInfo) == 0 {
-		return nil, errors.New("用户不存在")
-	}
 	for _, node := range nodes {
 		var flag int
 		for _, v := range node.ConditionList {
@@ -349,7 +368,7 @@ func GetConditionNode(nodes []*Node, userID string, maps *map[string]string) (re
 						break
 					}
 					// 部门
-					if vv.Type == 3 && strings.Contains(userInfo[0].Department, ","+vv.TargetId+",") {
+					if vv.Type == 3 && strings.Contains(userInfo.Department, ","+vv.TargetId+",") {
 						flag++
 						break
 					}

@@ -14,6 +14,7 @@ type ProcInst struct {
 	ProcDefID     int    `gorm:"not null;default:0;comment:'流程定义ID'" json:"procDefId"`
 	ProcDefName   string `gorm:"comment:'流程定义名'" json:"procDefName"`
 	Title         string `gorm:"comment:'标题'" json:"title"`
+	DepartmentId  int    `gorm:"comment:'用户部门ID'" json:"departmentId"`
 	Department    string `gorm:"comment:'用户部门'" json:"department"`
 	Company       string `gorm:"comment:'用户公司'" json:"company"`
 	NodeID        string `gorm:"comment:'当前节点'" json:"nodeID"`

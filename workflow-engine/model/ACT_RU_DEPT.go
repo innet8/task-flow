@@ -1,5 +1,10 @@
 package model
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // 部门结构体 user_departments 包括【id, name, dialog_id, parent_id, owner_userid, created_at, updated_at】
 type UserDepartments struct {
 	Id          int    `json:"id"`
@@ -49,6 +54,33 @@ func GetDeptByID(deptID int) (*UserDepartments, error) {
 	return &data, err
 }
 
+// GetDeptByID 根据部门ID获取指定层级的部门信息
+func buildTreeList(nodes []*UserDepartments, parentID int) []*UserDepartments {
+	var result []*UserDepartments
+	for _, node := range nodes {
+		if node.ParentId == parentID {
+			// node.Children = children
+			result = append(result, node)
+			childrens := buildTreeList(nodes, node.Id)
+			for _, children := range childrens {
+				result = append(result, children)
+			}
+		}
+	}
+	return result
+}
+func GetDeptLevelByID(deptID int, level int) ([]*UserDepartments, error) {
+	var datas []*UserDepartments
+	err := db.Find(&datas).Error
+	datas = buildTreeList(datas, deptID)
+
+	str, _ := json.Marshal(datas)
+	fmt.Printf("ddddddddddddddd-%d\n", deptID)
+	fmt.Printf("ddddddddddddddd-%s\n", string(str))
+
+	return datas, err
+}
+
 // GetUsersByDept 根据部门名称获取用户列表
 func GetUsersByDept(deptName string) ([]*Users, error) {
 	var datas []*Users
@@ -88,9 +120,16 @@ func GetUserByNameCount(name string) (int, error) {
 	return count, err
 }
 
-// GetUserByNameCount 根据用户id获取用户部门
-func GetUserInfoById(id string) ([]*Users, error) {
+// GetUserDeptById 根据用户id获取用户部门
+func GetUserDeptById(id string) ([]*Users, error) {
 	var datas []*Users
 	err := db.Model(&Users{}).Where("userid=?", id).Find(&datas).Error
 	return datas, err
+}
+
+// GetUserInfoById 根据用户id获取用户信息
+func GetUserInfoById(id string) (*Users, error) {
+	var datas Users
+	err := db.Model(&Users{}).Where("userid=?", id).Find(&datas).Error
+	return &datas, err
 }
