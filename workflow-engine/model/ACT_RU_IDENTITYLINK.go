@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -53,7 +55,7 @@ func DelCandidateByProcInstID(procInstID int, tx *gorm.DB) error {
 // ExistsNotifierByProcInstIDAndGroup 抄送人是否已经存在
 func ExistsNotifierByProcInstIDAndGroup(procInstID int, group string) (bool, error) {
 	var count int
-	err := db.Model(&Identitylink{}).Where("identitylink.proc_inst_id=? and identitylink.group=? and identitylink.type=?", procInstID, group, IdentityTypes[NOTIFIER]).Count(&count).Error
+	err := db.Model(&Identitylink{}).Where(fmt.Sprintf("%sidentitylink.proc_inst_id=? and %sidentitylink.group=? and %sidentitylink.type=?", conf.DbPrefix, conf.DbPrefix, conf.DbPrefix), procInstID, group, IdentityTypes[NOTIFIER]).Count(&count).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, nil

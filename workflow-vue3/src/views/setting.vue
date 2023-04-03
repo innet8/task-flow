@@ -111,9 +111,10 @@ const toReturn = () => {
 
 const reErr = ({ childNode }) => {
     if (childNode) {
-        let { type, error, name, conditionNodes } = childNode;
+        let { type, error, name, conditionNodes, ccSelfSelectFlag, nodeUserList } = childNode;
         if ( type == 'start' || type == 'approver' || type == 'notifier') {
-            if (error) {
+            if (error || (type == 'notifier' && ccSelfSelectFlag == 0 && nodeUserList?.length == 0) ) {
+                childNode.error = 1;
                 tipList.value.push({
                     name: name,
                     type: ["", "审核人", "抄送人"][type],

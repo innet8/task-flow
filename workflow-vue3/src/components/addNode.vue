@@ -65,19 +65,6 @@ const addType = (type)=> {
                 "examineEndDirectorLevel": 0,
                 "childNode": props.childNodeP,
                 "nodeUserList": [],
-                "properties": {
-                    "actionerRules": [
-                        {
-                            "type": "target_management",
-                            "labelNames": "主管",
-                            // "labels": 427529104,
-                            "level":0,
-                            "isEmpty": false,
-                            "memberCount": 1,
-                            "actType": "and"
-                        }
-                    ]
-                }
             }
         } else if (type == 'notifier') {
             data = {
@@ -85,12 +72,10 @@ const addType = (type)=> {
                 "prevId": props.nodeConfig.nodeId,
                 "nodeId": '' + new Date().getTime(),
                 "type": type,
-                "ccSelfSelectFlag": 1,
+                "ccSelfSelectFlag": 0,      // 是否允许自选
+                "error": true,
                 "childNode": props.childNodeP,
                 "nodeUserList": [],
-                "properties": {
-                    "actionerRules": []
-                }
             }
         }
         emits("update:childNodeP", data)
@@ -110,9 +95,6 @@ const addType = (type)=> {
                 "type": type,
                 "priorityLevel": 1,
                 "conditionList": [],
-                "properties": {
-                   "conditions": []
-                },
                 "nodeUserList": [],
                 "childNode": props.childNodeP,
             }, {
@@ -122,9 +104,6 @@ const addType = (type)=> {
                 "type": type,
                 "priorityLevel": 2,
                 "conditionList": [],
-                "properties": {
-                   "conditions": []
-                },
                 "nodeUserList": [],
                 "childNode": null
             }]

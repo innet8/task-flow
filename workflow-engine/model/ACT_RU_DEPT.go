@@ -87,3 +87,10 @@ func GetUserByNameCount(name string) (int, error) {
 	err := db.Model(&Users{}).Where("nickname like ?", "%"+name+"%").Count(&count).Error
 	return count, err
 }
+
+// GetUserByNameCount 根据用户id获取用户部门
+func GetUserInfoById(id string) ([]*Users, error) {
+	var datas []*Users
+	err := db.Model(&Users{}).Where("userid=?", id).Find(&datas).Error
+	return datas, err
+}

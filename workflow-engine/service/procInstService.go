@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"sync"
 	"time"
@@ -134,6 +135,11 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *map[string]string) 
 	step := 0 // 0 为开始节点
 	tx := model.GetTx()
 	// 新建流程实例
+	jsonStr, err := json.Marshal(variable)
+	if err != nil {
+		return 0, err
+	}
+	//
 	var procInst = model.ProcInst{
 		ProcDefID:     prodefID,
 		ProcDefName:   procdefName,
@@ -143,7 +149,9 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *map[string]string) 
 		StartUserID:   p.UserID,
 		StartUserName: p.Username,
 		Company:       p.Company,
-	} //开启事务
+		Var:           string(jsonStr),
+	}
+	//开启事务
 	// times = time.Now()
 	procInstID, err := CreateProcInstTx(&procInst, tx) // 事务
 	// fmt.Printf("启动流程实例耗时：%v", time.Since(times))

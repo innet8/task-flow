@@ -60,9 +60,9 @@
                 <el-dialog title="选择条件" v-model="conditionVisible" :width="480" append-to-body class="condition_list">
                     <p>请选择用来区分审批流程的条件字段</p>
                     <p class="check_box">
-                        <a :class="$func.toggleClass(conditionList,{columnId:0},'columnId')&&'active'" @click="$func.toChecked(conditionList,{columnId:0},'columnId')">发起人</a>
-                        <a v-for="(item,index) in conditions" :key="index" :class="$func.toggleClass(conditionList,item,'columnId')&&'active'" 
-                        @click="$func.toChecked(conditionList,item,'columnId')">{{item.showName}}</a>
+                        <a :class="$func.toggleClass(conditionList || [],{columnId:0},'columnId')&&'active'" @click="$func.toChecked(conditionList || [],{columnId:0},'columnId')">发起人</a>
+                        <a v-for="(item,index) in conditions" :key="index" :class="$func.toggleClass(conditionList || [],item,'columnId')&&'active'" 
+                        @click="$func.toChecked(conditionList  || [],item,'columnId')">{{item.showName}}</a>
                     </p>
                     <template #footer>
                         <el-button @click="conditionVisible = false">取 消</el-button>
@@ -101,6 +101,7 @@ let checkedList = ref([])
 let conditionRoleVisible = ref(false)
 
 let { tableId, conditionsConfig1, conditionDrawer } = mapState()
+
 let visible = computed({
     get() {
         return conditionDrawer.value
@@ -112,9 +113,11 @@ let visible = computed({
 watch(conditionsConfig1, (val) => {
     conditionsConfig.value = val.value;
     PriorityLevel.value = val.priorityLevel
-    conditionConfig.value = val.priorityLevel
-        ? conditionsConfig.value.conditionNodes[val.priorityLevel - 1]
-        : { nodeUserList: [], conditionList: [] }
+    conditionsConfig.value.conditionNode = conditionsConfig.value.conditionNode || []
+    // 
+    var condition = val.priorityLevel ? conditionsConfig.value.conditionNodes[val.priorityLevel - 1] : { nodeUserList: [], conditionList: [] };
+    condition.nodeUserList = condition.nodeUserList || [];
+    conditionConfig.value = condition;
 })
 let { setCondition, setConditionsConfig } = mapMutations()
 
@@ -195,6 +198,7 @@ const addCondition = async () => {
 const sureCondition = () => {
     //1.弹窗有，外面无+
     //2.弹窗有，外面有不变
+    conditionConfig.value.conditionList = conditionConfig.value.conditionList || [];
     for (var i = 0; i < conditionList.value.length; i++) {
         var { columnId, showName, columnName, showType, columnType, fixedDownBoxValue } = conditionList.value[i];
         if ($func.toggleClass(conditionConfig.value.conditionList, conditionList.value[i], "columnId")) {
@@ -250,7 +254,7 @@ const saveCondition = () => {
     var a = conditionsConfig.value.conditionNodes.splice(PriorityLevel.value - 1, 1)//截取旧下标
     conditionsConfig.value.conditionNodes.splice(conditionConfig.value.priorityLevel - 1, 0, a[0])//填充新下标
     conditionsConfig.value.conditionNodes.map((item, index) => {
-        item.priorityLevel = index + 1
+        // item.priorityLevel = index + 1
     });
     for (var i = 0; i < conditionsConfig.value.conditionNodes.length; i++) {
         conditionsConfig.value.conditionNodes[i].error = $func.conditionStr(conditionsConfig.value, i) == "请设置条件" && i != conditionsConfig.value.conditionNodes.length - 1

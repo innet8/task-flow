@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"workflow/util"
+	"workflow/workflow-engine/model"
 )
 
 // ActionConditionType 条件类型
@@ -152,16 +154,17 @@ type NodeUser struct {
 
 // NodeInfo 节点信息
 type NodeInfo struct {
-	NodeID                  string `json:"nodeId"`
-	Type                    string `json:"type"`
-	Settype                 int    `json:"settype,omitempty"`
-	Aprover                 string `json:"approver"`
-	AproverType             string `json:"aproverType"`
-	MemberCount             int8   `json:"memberCount"`
-	Level                   int8   `json:"level"`
-	ActType                 string `json:"actType"`
-	DirectorLevel           int    `json:"directorLevel,omitempty"`           // 主管级别，1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
-	ExamineEndDirectorLevel int    `json:"examineEndDirectorLevel,omitempty"` // 最终主管级别 1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
+	NodeID                  string      `json:"nodeId"`
+	Type                    string      `json:"type"`
+	Settype                 int         `json:"settype,omitempty"`
+	Aprover                 string      `json:"approver"`
+	AproverType             string      `json:"aproverType"`
+	MemberCount             int8        `json:"memberCount"`
+	Level                   int8        `json:"level"`
+	ActType                 string      `json:"actType"`
+	DirectorLevel           int         `json:"directorLevel,omitempty"`           // 主管级别，1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
+	ExamineEndDirectorLevel int         `json:"examineEndDirectorLevel,omitempty"` // 最终主管级别 1直接主管， 2第二级主管，3第三级主管，4第四级主管，Settype=3才有效
+	NodeUserList            []*NodeUser `json:"nodeUserList,omitempty"`            // 节点用户列表
 }
 
 func (n *Node) add2ExecutionList(list *list.List) {
@@ -203,6 +206,7 @@ func (n *Node) add2ExecutionList(list *list.List) {
 			ActType:                 actType,
 			DirectorLevel:           n.DirectorLevel,
 			ExamineEndDirectorLevel: n.ExamineEndDirectorLevel,
+			NodeUserList:            n.NodeUserList,
 		})
 		break
 	default:
@@ -231,11 +235,11 @@ func IfProcessConifgIsValid(node *Node) error {
 		return errors.New("节点【" + node.NodeID + "】的类型为【" + node.Type + "】，为无效类型,有效类型为" + str)
 	}
 	// 当前节点是否设置有审批人
-	if node.Type == NodeTypes[APPROVER] || node.Type == NodeTypes[NOTIFIER] {
-		if node.Properties == nil || node.Properties.ActionerRules == nil {
-			return errors.New("节点【" + node.NodeID + "】的Properties属性不能为空，如：`\"properties\": {\"actionerRules\": [{\"type\": \"target_label\",\"labelNames\": \"人事\",\"memberCount\": 1,\"actType\": \"and\"}],}`")
-		}
-	}
+	// if node.Type == NodeTypes[APPROVER] || node.Type == NodeTypes[NOTIFIER] {
+	// 	if node.Properties == nil || node.Properties.ActionerRules == nil {
+	// 		return errors.New("节点【" + node.NodeID + "】的Properties属性不能为空，如：`\"properties\": {\"actionerRules\": [{\"type\": \"target_label\",\"labelNames\": \"人事\",\"memberCount\": 1,\"actType\": \"and\"}],}`")
+	// 	}
+	// }
 	// 条件节点是否存在
 	if node.ConditionNodes != nil { // 存在条件节点
 		if len(node.ConditionNodes) == 1 {
@@ -273,33 +277,30 @@ func CheckConditionNode(nodes []*Node) error {
 }
 
 // ParseProcessConfig 解析流程定义json数据
-func ParseProcessConfig(node *Node, variable *map[string]string) (*list.List, error) {
+func ParseProcessConfig(node *Node, userID string, variable *map[string]string) (*list.List, error) {
 	// defer fmt.Println("----------解析结束--------")
 	list := list.New()
-	err := parseProcessConfig(node, variable, list)
+	err := parseProcessConfig(node, userID, variable, list)
 	return list, err
 }
 
-func parseProcessConfig(node *Node, variable *map[string]string, list *list.List) (err error) {
+func parseProcessConfig(node *Node, userID string, variable *map[string]string, list *list.List) (err error) {
 	// fmt.Printf("nodeId=%s\n", node.NodeID)
 	node.add2ExecutionList(list)
 
 	// 存在条件节点
 	if node.ConditionNodes != nil {
-
 		// data, _ := util.ToJSONStr(node.ConditionNodes)
 
 		// 如果条件节点只有一个或者条件只有一个，直接返回第一个
 		if variable == nil || len(node.ConditionNodes) == 1 {
-			err = parseProcessConfig(node.ConditionNodes[0].ChildNode, variable, list)
+			err = parseProcessConfig(node.ConditionNodes[0].ChildNode, userID, variable, list)
 			if err != nil {
 				return err
 			}
 		} else {
-			// fmt.Printf("%s", data)
-
 			// 根据条件变量选择节点索引
-			condNode, err := GetConditionNode(node.ConditionNodes, variable)
+			condNode, err := GetConditionNode(node.ConditionNodes, userID, variable)
 			if err != nil {
 				return err
 			}
@@ -309,7 +310,7 @@ func parseProcessConfig(node *Node, variable *map[string]string, list *list.List
 				// panic(err)
 			}
 
-			err = parseProcessConfig(condNode, variable, list)
+			err = parseProcessConfig(condNode, userID, variable, list)
 			if err != nil {
 				return err
 			}
@@ -318,7 +319,7 @@ func parseProcessConfig(node *Node, variable *map[string]string, list *list.List
 	}
 	// 存在子节点
 	if node.ChildNode != nil {
-		err = parseProcessConfig(node.ChildNode, variable, list)
+		err = parseProcessConfig(node.ChildNode, userID, variable, list)
 		if err != nil {
 			return err
 		}
@@ -327,13 +328,34 @@ func parseProcessConfig(node *Node, variable *map[string]string, list *list.List
 }
 
 // GetConditionNode 获取条件节点
-func GetConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err error) {
+func GetConditionNode(nodes []*Node, userID string, maps *map[string]string) (result *Node, err error) {
 	// map2 := *maps
+	userInfo, errs := model.GetUserInfoById(userID)
+	if errs != nil {
+		return nil, errs
+	}
+	if len(userInfo) == 0 {
+		return nil, errors.New("用户不存在")
+	}
 	for _, node := range nodes {
 		var flag int
 		for _, v := range node.ConditionList {
-			flag++
-			fmt.Printf("%x", v)
+			// 发起人
+			if v.ColumnId == 0 {
+				for _, vv := range node.NodeUserList {
+					// 用户
+					if vv.Type == 1 && vv.TargetId == userID {
+						flag++
+						break
+					}
+					// 部门
+					if vv.Type == 3 && strings.Contains(userInfo[0].Department, ","+vv.TargetId+",") {
+						flag++
+						break
+					}
+				}
+
+			}
 			// paramValue := map2[v.ParamKey]
 			// if len(paramValue) == 0 {
 			// 	return nil, errors.New("流程启动变量【var】的key【" + v.ParamKey + "】的值不能为空")
@@ -346,10 +368,10 @@ func GetConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err
 			// 	flag++
 			// }
 		}
-		// fmt.Printf("flag=%d\n", flag)
 		// 满足所有条件
-		if flag == len(node.ConditionList) {
+		if flag >= len(node.ConditionList) {
 			result = node
+			break
 		}
 	}
 	return result, nil

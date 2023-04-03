@@ -139,7 +139,7 @@ const saveDialog = () => {
         ...checkedDepartmentList.value
     ].map(item => ({
         type: item.employeeName ? 1 : (item.roleName ? 2 : 3),
-        targetId: item.id || item.roleId,
+        targetId: (item.id || item.roleId) + "",
         name: item.employeeName || item.roleName || item.departmentName
     }))
     emits('change', checkedList)
