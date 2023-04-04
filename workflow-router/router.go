@@ -35,6 +35,7 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/procdef/saveByToken", intercept(controller.SaveProcdefByToken))
 	Mux.HandleFunc("/api/v1/workflow/procdef/findAll", intercept(controller.FindAllProcdefPage))
 	Mux.HandleFunc("/api/v1/workflow/procdef/findById", intercept(controller.FindByIdProcdef))
+	Mux.HandleFunc("/api/v1/workflow/procdef/findByName", intercept(controller.FindByNameProcdef)) // 根据名称查询流程实例
 	Mux.HandleFunc("/api/v1/workflow/procdef/delById", intercept(controller.DelProcdefByID))
 	// -----------------------流程实例-----------------------
 	Mux.HandleFunc("/api/v1/workflow/process/start", intercept(controller.StartProcessInstance))               // 启动流程

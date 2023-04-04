@@ -146,6 +146,53 @@ func FindByIdProcdef(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, fmt.Sprintf("%s", datas))
 }
 
+// 根据 name 查询流程详情
+func FindByNameProcdef(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != "GET" {
+		util.ResponseErr(writer, "只支持get方法！！")
+		return
+	}
+	request.ParseForm()
+	if len(request.Form["name"]) == 0 {
+		util.ResponseErr(writer, "字段 name 不能为空")
+		return
+	}
+	if len(request.Form["company"]) == 0 {
+		util.ResponseErr(writer, "字段 company 不能为空")
+		return
+	}
+	prodef, err := service.GetProcdefLatestByNameAndCompany(request.Form["name"][0], request.Form["company"][0])
+	if err != nil {
+		util.ResponseErr(writer, fmt.Sprintf("%s", err))
+		return
+	}
+	//
+	if prodef == nil {
+		util.ResponseData(writer, "{}")
+		return
+	}
+	//
+	flowNode := &flow.Node{}
+	err = util.Str2Struct(prodef.Resource, flowNode)
+	if err != nil {
+		util.ResponseErr(writer, "流程不存在")
+		return
+	}
+	datas, err := json.Marshal(&service.Procdefs{
+		Id:       prodef.ID,
+		Name:     prodef.Name,
+		Userid:   prodef.Userid,
+		Username: prodef.Username,
+		Company:  prodef.Company,
+		Resource: flowNode,
+	})
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+	util.ResponseData(writer, fmt.Sprintf("%s", datas))
+}
+
 // DelProcdefByID del by id
 // 根据 id 删除
 func DelProcdefByID(writer http.ResponseWriter, request *http.Request) {

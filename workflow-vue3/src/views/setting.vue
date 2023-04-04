@@ -71,24 +71,24 @@ let directorMaxLevel = ref(0);
 let workFlowDefId = ref(0);
 
 onMounted(async () => {
-    workFlowDefId.value =  route.query.workFlowDefId;
-    if(workFlowDefId.value < 1 && !route.query.name){
+    let company = "系统默认";
+    if(!route.query.name){
         ElMessage.error("流程名称不能为空")
         return;
     }
-    if(workFlowDefId.value > 0){
-        let {data,status,message} = await getWorkFlowData({ id: workFlowDefId.value })
-        if (status != 200) {
-            ElMessage.error(message)
-            return;
-        }
+    let {data,status,message} = await getWorkFlowData({ company:company, name:route.query.name })
+    if (status != 200) {
+        ElMessage.error(message)
+        return;
+    }
+    if(data?.resource){
         processConfig.value = data;
         nodeConfig.value = data?.resource;
     }else{
         processConfig.value = {
             "userid": "1",
-            "username": "系统默认",
-            "company":"系统默认",
+            "username": company,
+            "company":company,
             "name": route.query.name,
         };
         nodeConfig.value = {
@@ -179,7 +179,15 @@ const zoomSize = (type) => {
     }
 };
 
-
+// 监听
+window.addEventListener('message', (e) => {
+    if (typeof e.data === 'string') {
+        let propsBody = JSON.parse(e.data);
+        if( propsBody.method == "save"){
+            saveSet()
+        }
+    }
+})
 
 </script>
 <style>

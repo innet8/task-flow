@@ -49,7 +49,7 @@ export function getConditions(data) {
  */
 export function getWorkFlowData(data) {
     // return http.get(`${baseUrl}data.json`, { params: data })
-    return http.get(`/workflow/procdef/findById`, { params: data })
+    return http.get(`/workflow/procdef/findByName`, { params: data })
 }
 
 /**
