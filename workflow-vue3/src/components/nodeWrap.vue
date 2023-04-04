@@ -19,12 +19,13 @@
             <i class="anticon anticon-close close" @click="delNode"></i>
           </template>
         </div>
-        <div class="content" @click="setPerson">
+        <div class="content" >
+            <!-- @click="setPerson" -->
           <div class="text">
               <span class="placeholder" v-if="!showText">请选择{{defaultText}}</span>
               {{showText}}
           </div>
-          <i class="anticon anticon-right arrow"></i>
+          <!-- <i class="anticon anticon-right arrow"></i> -->
         </div>
         <div class="error_tip" v-if="isTried && nodeConfig.error">
           <i class="anticon anticon-exclamation-circle"></i>
@@ -180,6 +181,8 @@ const delNode = () => {
 const addTerm = () => {
     let len = props.nodeConfig.conditionNodes.length + 1;
     props.nodeConfig.conditionNodes.push({
+        prevId: props.nodeConfig.nodeId,
+        nodeId: '' + new Date().getTime(),
         name: "条件" + len,
         type: 'route',
         priorityLevel: len,

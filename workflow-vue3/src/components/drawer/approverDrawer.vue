@@ -70,9 +70,9 @@
                 <div class="approver_some" v-if="approverConfig.settype==2||approverConfig.settype==7">
                     <p>审批人为空时</p>
                     <el-radio-group v-model="approverConfig.noHanderAction" class="clear">
-                        <el-radio :label="1">自动审批通过/不允许发起</el-radio>
+                        <el-radio :label="1">自动审批通过</el-radio>
                         <br/>
-                        <el-radio :label="2">转交给审核管理员</el-radio>
+                        <!-- <el-radio :label="2">转交给审核管理员</el-radio> -->
                     </el-radio-group>
                 </div>
             </div>
@@ -129,7 +129,7 @@ let changeRange = ()=> {
 const changeType = (val)=> {
     approverConfig.value.nodeUserList = [];
     approverConfig.value.examineMode = 1;
-    approverConfig.value.noHanderAction = 2;
+    approverConfig.value.noHanderAction = 1;
     if (val == 2) {
         approverConfig.value.directorLevel = 1;
     } else if (val == 4) {

@@ -158,6 +158,7 @@ type NodeInfo struct {
 	Type                    string      `json:"type"`
 	Settype                 int         `json:"settype,omitempty"`
 	Aprover                 string      `json:"approver"`
+	AproverId               int         `json:"aproverId"`
 	AproverType             string      `json:"aproverType"`
 	MemberCount             int8        `json:"memberCount"`
 	Level                   int8        `json:"level"`
@@ -168,67 +169,89 @@ type NodeInfo struct {
 }
 
 func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId int) {
-	// var NodeTypes = [...]string{START: "start", ROUTE: "route", CONDITION: "condition", APPROVER: "approver", NOTIFIER: "notifier"}
 	switch n.Type {
 	case NodeTypes[APPROVER], NodeTypes[NOTIFIER]: //审核人，抄送人
-		var aprover string
-		var memberCount int8
-
-		// 审批人设置 1指定成员 2主管 4发起人自选 5发起人自己 7连续多级主管
-		if n.Settype == 1 {
-			aprover = "指定成员"
-			memberCount = int8(len(n.NodeUserList))
-		} else if n.Settype == 2 {
-			aprover = DirectorLevelTypes[n.DirectorLevel]
-			memberCount = 1
-		} else if n.Settype == 7 {
-			aprover = ExamineEndDirectorLevelTypes[n.ExamineEndDirectorLevel]
-			memberCount = 1
-		}
-
 		// 多人审批时采用的审批方式
 		var actType string
 		if n.ExamineMode == 1 {
-			actType = "any"
+			actType = "and"
 		} else {
 			actType = "or"
 		}
-		// departmentId
 
-		if n.Settype == 7 {
-			for i := 0; i < n.ExamineEndDirectorLevel; i++ {
-
-				dept, _ := model.GetDeptLevelByID(departmentId, i+1)
-				fmt.Println(dept)
-
+		// 审批人设置
+		if n.Settype == 1 {
+			var strArr []string
+			for _, user := range n.NodeUserList {
+				strArr = append(strArr, user.Name)
+			}
+			aprover := strings.Join(strArr, ",")
+			list.PushBack(NodeInfo{
+				NodeID:       n.NodeID,
+				Type:         n.Type,
+				Settype:      n.Settype,
+				Aprover:      aprover,
+				AproverType:  n.Type,
+				Level:        int8(n.DirectorLevel),
+				MemberCount:  1,
+				ActType:      actType,
+				NodeUserList: n.NodeUserList,
+			})
+		} else if n.Settype == 2 {
+			// 主管
+			dept, _ := model.GetDeptLevelByID(departmentId, n.DirectorLevel)
+			if dept != nil {
+				ownerUserid, _ := strconv.Atoi(dept.OwnerUserid)
+				userInfo, _ := model.GetUserInfoById(dept.OwnerUserid)
 				list.PushBack(NodeInfo{
-					NodeID:      n.NodeID,
-					Type:        n.Type,
-					Settype:     n.Settype,
-					Aprover:     aprover,
-					AproverType: n.Type,
-					Level:       int8(i + 1),
-					MemberCount: memberCount,
-					ActType:     actType,
-					// DirectorLevel:           n.DirectorLevel,
-					// ExamineEndDirectorLevel: n.ExamineEndDirectorLevel,
+					NodeID:       n.NodeID,
+					Type:         n.Type,
+					Settype:      n.Settype,
+					Aprover:      userInfo.Nickname,
+					AproverId:    ownerUserid,
+					AproverType:  n.Type,
+					Level:        int8(n.DirectorLevel),
+					MemberCount:  1,
+					ActType:      actType,
 					NodeUserList: n.NodeUserList,
 				})
 			}
+		} else if n.Settype == 7 {
+			//  连续多级主管
+			if n.ExamineEndDirectorLevel == 1 {
+				n.ExamineEndDirectorLevel = 10
+			}
+			for i := 0; i < n.ExamineEndDirectorLevel; i++ {
+				dept, _ := model.GetDeptLevelByID(departmentId, i+1)
+				if dept != nil {
+					ownerUserid, _ := strconv.Atoi(dept.OwnerUserid)
+					userInfo, _ := model.GetUserInfoById(dept.OwnerUserid)
+					list.PushBack(NodeInfo{
+						NodeID:       n.NodeID + strconv.Itoa(i),
+						Type:         n.Type,
+						Settype:      n.Settype,
+						Aprover:      userInfo.Nickname,
+						AproverId:    ownerUserid,
+						AproverType:  n.Type,
+						Level:        int8(i + 1),
+						MemberCount:  1,
+						ActType:      actType,
+						NodeUserList: n.NodeUserList,
+					})
+				}
+			}
+		} else {
+			list.PushBack(NodeInfo{
+				NodeID:       n.NodeID,
+				Type:         n.Type,
+				Aprover:      "",
+				AproverType:  n.Type,
+				Level:        1,
+				MemberCount:  int8(len(n.NodeUserList)),
+				ActType:      actType,
+				NodeUserList: n.NodeUserList,
+			})
 		}
-
-		// list.PushBack(NodeInfo{
-		// 	NodeID:      n.NodeID,
-		// 	Type:        n.Type,
-		// 	Settype:     n.Settype,
-		// 	Aprover:     aprover,
-		// 	AproverType: n.Type,
-		// 	MemberCount: memberCount,
-		// 	ActType:     actType,
-		// 	// DirectorLevel:           n.DirectorLevel,
-		// 	// ExamineEndDirectorLevel: n.ExamineEndDirectorLevel,
-		// 	NodeUserList: n.NodeUserList,
-		// })
 
 		break
 	default:
@@ -284,9 +307,9 @@ func IfProcessConifgIsValid(node *Node) error {
 // CheckConditionNode 检查条件节点
 func CheckConditionNode(nodes []*Node) error {
 	for _, node := range nodes {
-		if node.Properties == nil {
-			return errors.New("节点【" + node.NodeID + "】的Properties对象为空值！！")
-		}
+		// if node.Properties == nil {
+		// return errors.New("节点【" + node.NodeID + "】的Properties对象为空值！！")
+		// }
 		// if len(node.Properties.Conditions) == 0 {
 		// 	return errors.New("节点【" + node.NodeID + "】的Conditions对象为空值！！")
 		// }
@@ -322,22 +345,21 @@ func parseProcessConfig(node *Node, userID string, departmentId int, variable *m
 			}
 		} else {
 			// 根据条件变量选择节点索引
-			condNode, err := GetConditionNode(node.ConditionNodes, userID, variable)
+			condNode, err := GetConditionNode(node.ConditionNodes, userID, departmentId, variable)
 			if err != nil {
 				return err
 			}
 			if condNode == nil {
-				str, _ := util.ToJSONStr(variable)
-				return errors.New("节点【" + node.NodeID + "】找不到符合条件的子节点,检查变量【var】值是否匹配," + str)
-				// panic(err)
+				return errors.New("找不到符合条件的子节点")
+				// str, _ := util.ToJSONStr(variable)
+				// return errors.New("节点【" + node.NodeID + "】找不到符合条件的子节点,检查变量【var】值是否匹配," + str)
 			}
-
 			err = parseProcessConfig(condNode, userID, departmentId, variable, list)
 			if err != nil {
 				return err
 			}
-
 		}
+
 	}
 	// 存在子节点
 	if node.ChildNode != nil {
@@ -350,30 +372,43 @@ func parseProcessConfig(node *Node, userID string, departmentId int, variable *m
 }
 
 // GetConditionNode 获取条件节点
-func GetConditionNode(nodes []*Node, userID string, maps *map[string]string) (result *Node, err error) {
+func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *map[string]string) (result *Node, err error) {
 	// map2 := *maps
-	userInfo, errs := model.GetUserInfoById(userID)
+	// 用户信息
+	// userInfo, errs := model.GetUserInfoById(userID)
+	// if errs != nil {
+	// 	return nil, errs
+	// }
+	// 部门列表
+	deptList, errs := model.GetDeptTreeList(departmentId)
 	if errs != nil {
 		return nil, errs
 	}
+	// str, _ := json.Marshal(deptList)
+	// fmt.Printf("dddddddddddddd-%s\n", string(str))
+
 	for _, node := range nodes {
 		var flag int
 		for _, v := range node.ConditionList {
 			// 发起人
 			if v.ColumnId == 0 {
 				for _, vv := range node.NodeUserList {
-					// 用户
+					targetId, _ := strconv.Atoi(vv.TargetId)
+					// 属于用户条件
 					if vv.Type == 1 && vv.TargetId == userID {
 						flag++
 						break
 					}
-					// 部门
-					if vv.Type == 3 && strings.Contains(userInfo.Department, ","+vv.TargetId+",") {
-						flag++
-						break
+					// 属于部门条件
+					if vv.Type == 3 {
+						for _, dept := range deptList {
+							if targetId == dept.Id {
+								flag++
+								break
+							}
+						}
 					}
 				}
-
 			}
 			// paramValue := map2[v.ParamKey]
 			// if len(paramValue) == 0 {

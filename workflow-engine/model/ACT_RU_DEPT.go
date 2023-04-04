@@ -1,10 +1,5 @@
 package model
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 // 部门结构体 user_departments 包括【id, name, dialog_id, parent_id, owner_userid, created_at, updated_at】
 type UserDepartments struct {
 	Id          int    `json:"id"`
@@ -55,30 +50,37 @@ func GetDeptByID(deptID int) (*UserDepartments, error) {
 }
 
 // GetDeptByID 根据部门ID获取指定层级的部门信息
-func buildTreeList(nodes []*UserDepartments, parentID int) []*UserDepartments {
+func GetDeptLevelByID(deptID int, level int) (*UserDepartments, error) {
+	var datas []*UserDepartments
+	err := db.Find(&datas).Error
+	datas = getDeptTreeList(datas, deptID)
+	for i, data := range datas {
+		if level == i+1 {
+			return data, nil
+		}
+	}
+	return nil, err
+}
+
+// GetDeptByID 根据部门ID获取树列表
+func GetDeptTreeList(deptID int) ([]*UserDepartments, error) {
+	var datas []*UserDepartments
+	err := db.Find(&datas).Error
+	datas = getDeptTreeList(datas, deptID)
+	return datas, err
+}
+func getDeptTreeList(nodes []*UserDepartments, ParentId int) []*UserDepartments {
 	var result []*UserDepartments
 	for _, node := range nodes {
-		if node.ParentId == parentID {
-			// node.Children = children
+		if node.Id == ParentId {
 			result = append(result, node)
-			childrens := buildTreeList(nodes, node.Id)
+			childrens := getDeptTreeList(nodes, node.ParentId)
 			for _, children := range childrens {
 				result = append(result, children)
 			}
 		}
 	}
 	return result
-}
-func GetDeptLevelByID(deptID int, level int) ([]*UserDepartments, error) {
-	var datas []*UserDepartments
-	err := db.Find(&datas).Error
-	datas = buildTreeList(datas, deptID)
-
-	str, _ := json.Marshal(datas)
-	fmt.Printf("ddddddddddddddd-%d\n", deptID)
-	fmt.Printf("ddddddddddddddd-%s\n", string(str))
-
-	return datas, err
 }
 
 // GetUsersByDept 根据部门名称获取用户列表
@@ -98,10 +100,12 @@ func GetUsersByDeptNames(deptNames []string) ([]*Users, error) {
 // GetUsersByDeptIds 根据部门id获取用户列表，使用find_in_set函数查询
 func GetUsersByDeptId(deptId int) ([]*Users, error) {
 	var datas []*Users
-	modelDb := db
-	// if deptId > 0 {
-	modelDb = modelDb.Where("find_in_set(?,department)", deptId)
-	// }
+	modelDb := db.Where("bot=?", 0)
+	if deptId > 0 {
+		modelDb = modelDb.Where("find_in_set(?,department)", deptId)
+	} else {
+		modelDb = modelDb.Where("(department=? or department=?)", "", ",,")
+	}
 	err := modelDb.Find(&datas).Error
 	return datas, err
 }

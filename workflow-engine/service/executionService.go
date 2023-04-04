@@ -60,14 +60,18 @@ func GenerateExec(e *model.Execution, node *flow.Node, userID string, department
 	if err != nil {
 		return 0, err
 	}
+	//
 	list.PushBack(flow.NodeInfo{
 		NodeID: "结束",
 	})
+	//
+	userInfo, _ := model.GetUserInfoById(userID)
 	list.PushFront(flow.NodeInfo{
 		NodeID:  "开始",
 		Type:    flow.NodeInfoTypes[flow.STARTER],
-		Aprover: userID,
+		Aprover: userInfo.Nickname,
 	})
+	//
 	arr := util.List2Array(list)
 	str, err := util.ToJSONStr(arr)
 	if err != nil {
