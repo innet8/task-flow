@@ -2,7 +2,6 @@ package parameter
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -18,7 +17,9 @@ var Types = []string{"年假", "事假", "病假", "调休假", "婚假", "产�
 
 // 验证类型
 func CheckVars(vars *Vars) (bool, error) {
-	fmt.Printf("%s\n", vars.Type)
+	if vars == nil {
+		return false, errors.New("var 不存在")
+	}
 	if len(vars.Type) == 0 {
 		return false, errors.New("var.type 不存在")
 	}
