@@ -2,7 +2,7 @@
     "Port": "8700",
     "ReadTimeout": "5",
     "WriteTimeout": "5",
-    "DbLogMode": "true",
+    "DbLogMode": "false",
     "DbType": "mysql",
     "DbName": "idc",
     "DbHost": "localhost",

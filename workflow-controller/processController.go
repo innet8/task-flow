@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"workflow/workflow-engine/model"
+	"workflow/workflow-engine/parameter"
 
 	"workflow/util"
 
@@ -84,12 +85,14 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 		proc.Username = userInfo.Email
 	}
 
+	// 公司
+	proc.Company = "系统默认"
+
 	// 部门
 	if proc.DepartmentId == 0 {
 		util.Response(writer, "用户所在部门departmentId不能为空", false)
 		return
 	}
-
 	if !strings.Contains(userInfo.Department, ","+strconv.Itoa(proc.DepartmentId)+",") {
 		util.Response(writer, "部门不存在", false)
 		return
@@ -101,8 +104,12 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 	}
 	proc.Department = deptInfo.Name
 
-	// 公司
-	proc.Company = "系统默认"
+	// 检测var
+	falses, err := parameter.CheckVars(proc.Var)
+	if falses == false {
+		util.Response(writer, fmt.Sprintf("%s", err), false)
+		return
+	}
 
 	id, err := proc.StartProcessInstanceByID(proc.Var)
 	if err != nil {

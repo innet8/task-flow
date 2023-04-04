@@ -10,21 +10,23 @@ import (
 
 	"workflow/workflow-engine/flow"
 	"workflow/workflow-engine/model"
+	"workflow/workflow-engine/parameter"
 
 	"workflow/util"
 )
 
 // ProcessReceiver 接收页面传递参数
 type ProcessReceiver struct {
-	UserID       string             `json:"userId"`
-	ProcInstID   string             `json:"procInstID"`
-	Username     string             `json:"username"`
-	Company      string             `json:"company"`
-	ProcName     string             `json:"procName"`
-	Title        string             `json:"title"`
-	DepartmentId int                `json:"departmentId"`
-	Department   string             `json:"department"`
-	Var          *map[string]string `json:"var"`
+	UserID       string          `json:"userId"`
+	ProcInstID   string          `json:"procInstID"`
+	Username     string          `json:"username"`
+	Company      string          `json:"company"`
+	ProcName     string          `json:"procName"`
+	Title        string          `json:"title"`
+	DepartmentId int             `json:"departmentId"`
+	Department   string          `json:"department"`
+	Var          *parameter.Vars `json:"var"`
+	// Var          *map[string]string `json:"var"`
 }
 
 // ProcessPageReceiver 分页参数
@@ -123,7 +125,7 @@ func StartProcessInstanceByToken(token string, p *ProcessReceiver) (int, error) 
 }
 
 // StartProcessInstanceByID 启动流程
-func (p *ProcessReceiver) StartProcessInstanceByID(variable *map[string]string) (int, error) {
+func (p *ProcessReceiver) StartProcessInstanceByID(variable *parameter.Vars) (int, error) {
 	// times := time.Now()
 	// runtime.GOMAXPROCS(2)
 	// 获取流程定义

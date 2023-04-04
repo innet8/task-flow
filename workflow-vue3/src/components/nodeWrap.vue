@@ -20,12 +20,11 @@
           </template>
         </div>
         <div class="content" >
-            <!-- @click="setPerson" -->
-          <div class="text">
+          <div class="text" @click="setPerson">
               <span class="placeholder" v-if="!showText">请选择{{defaultText}}</span>
               {{showText}}
           </div>
-          <!-- <i class="anticon anticon-right arrow"></i> -->
+          <i v-if="props.nodeConfig.type != 'start'" class="anticon anticon-right arrow"></i>
         </div>
         <div class="error_tip" v-if="isTried && nodeConfig.error">
           <i class="anticon anticon-exclamation-circle"></i>
@@ -222,12 +221,12 @@ const reData = (data, addData) => {
 const setPerson = (priorityLevel) => {
     var { type } = props.nodeConfig;
     if (type == "start") {
-        setPromoter(true);
-        setFlowPermission({
-            value: props.flowPermission,
-            flag: false,
-            id: _uid,
-        });
+        // setPromoter(true);
+        // setFlowPermission({
+        //     value: props.flowPermission,
+        //     flag: false,
+        //     id: _uid,
+        // });
     } else if (type == "approver") {
         setApprover(true);
         setApproverConfig({
