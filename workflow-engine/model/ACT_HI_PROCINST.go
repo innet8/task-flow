@@ -27,6 +27,8 @@ type ProcInst struct {
 	StartUserName string `gorm:"comment:'开始用户名'" json:"startUserName"`
 	IsFinished    bool   `gorm:"default:false;comment:'是否完成'" json:"isFinished"`
 	Var           string `gorm:"size:4000;comment:'执行流程的附加参数'" json:"var"`
+	// Comment       string `gorm:"comment:'评论'" json:"comment,omitempty"`
+	// Pass          bool   `gorm:"default:true;comment:'是否通过'" json:"pass"`
 }
 
 // GroupsNotNull 候选组

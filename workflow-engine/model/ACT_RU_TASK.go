@@ -12,9 +12,9 @@ type Task struct {
 	NodeID        string `gorm:"comment:'当前执行流所在的节点ID'" json:"nodeId"`
 	Step          int    `gorm:"comment:'一步'" json:"step"`
 	ProcInstID    int    `gorm:"comment:'流程实例id'" json:"procInstID"`
-	Assignee      string `gorm:"comment:'受让人'" json:"assignee"`
+	Assignee      string `gorm:"comment:'处理人'" json:"assignee"`
 	CreateTime    string `gorm:"autoCreateTime;not null;comment:'创建时间'" json:"createTime"`
-	ClaimTime     string `gorm:"not null;comment:'要求的时间'" json:"claimTime"`
+	ClaimTime     string `gorm:"not null;comment:'处理时间'" json:"claimTime"`
 	MemberCount   int8   `gorm:"default:1;comment:'还未审批的用户数，等于0代表会签已经全部审批结束，默认值为1'" json:"memberCount"`
 	UnCompleteNum int8   `gorm:"default:1;comment:'完整的数字'" json:"unCompleteNum"`
 	AgreeNum      int8   `gorm:"comment:'审批通过数'" json:"agreeNum"`

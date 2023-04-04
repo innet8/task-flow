@@ -168,17 +168,14 @@ func CompleteTaskTx(taskID int, userID, username, company, comment, candidate st
 	// 查看任务的未审批人数是否为0，不为0就不流转
 	if task.UnCompleteNum > 0 && pass == true { // 默认是全部通过
 		// 添加参与人
-		err := AddParticipantTx(userID, username, company, comment, task.ID, task.ProcInstID, task.Step, tx)
+		err := AddParticipantTx(userID, username, company, comment, pass, task.ID, task.ProcInstID, task.Step, tx)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
+
 	// 流转到下一流程
-	// nodeInfos, err := GetExecNodeInfosByProcInstID(task.ProcInstID)
-	// if err != nil {
-	// 	return err
-	// }
 	err = MoveStageByProcInstID(userID, username, company, comment, candidate, task.ID, task.ProcInstID, task.Step, pass, tx)
 	if err != nil {
 		return err
@@ -292,7 +289,7 @@ func MoveStageByProcInstID(userID, username, company, comment, candidate string,
 // 流程流转
 func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB) (err error) {
 	// 添加上一步的参与人
-	err = AddParticipantTx(userID, username, company, comment, taskID, procInstID, step, tx)
+	err = AddParticipantTx(userID, username, company, comment, pass, taskID, procInstID, step, tx)
 	if err != nil {
 		return err
 	}
@@ -309,8 +306,9 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 	}
 	// 指定下一步执行人
 	if len(candidate) > 0 {
-		nodeInfos[step].Aprover = candidate
+		// nodeInfos[step].Aprover = candidate
 	}
+
 	// 判断下一流程： 如果是审批人是：抄送人
 	// fmt.Printf("下一审批人类型：%s\n", nodeInfos[step].AproverType)
 	// fmt.Println(nodeInfos[step].AproverType == flow.NodeTypes[flow.NOTIFIER])
@@ -334,15 +332,19 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 		}
 		return MoveStage(nodeInfos, userID, username, company, comment, candidate, taskID, procInstID, step, pass, tx)
 	}
+
+	// 通过
 	if pass {
-		return MoveToNextStage(nodeInfos, userID, company, taskID, procInstID, step, tx)
+		return MoveToNextStage(nodeInfos, userID, company, taskID, procInstID, step, comment, tx)
 	}
-	return MoveToPrevStage(nodeInfos, userID, company, taskID, procInstID, step, tx)
+
+	// 驳回
+	return MoveToPrevStage(nodeInfos, userID, company, taskID, procInstID, step, comment, tx)
 }
 
 // MoveToNextStage MoveToNextStage
 // 通过
-func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, currentTaskID, procInstID, step int, tx *gorm.DB) error {
+func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, currentTaskID, procInstID, step int, comment string, tx *gorm.DB) error {
 	var currentTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
 	var task = getNewTask(nodeInfos, step, procInstID, currentTime) //新任务
 	var procInst = &model.ProcInst{                                 // 流程实例要更新的字段
@@ -395,35 +397,53 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 
 // MoveToPrevStage MoveToPrevStage
 // 驳回
-func MoveToPrevStage(nodeInfos []*flow.NodeInfo, userID, company string, currentTaskID, procInstID, step int, tx *gorm.DB) error {
+func MoveToPrevStage(nodeInfos []*flow.NodeInfo, userID, company string, currentTaskID, procInstID, step int, comment string, tx *gorm.DB) error {
 	// 生成新的任务
-	var task = getNewTask(nodeInfos, step, procInstID, util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)) //新任务
-	taksID, err := task.NewTaskTx(tx)
+	var currentTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
+	// var task = getNewTask(nodeInfos, step, procInstID, currentTime) //新任务
+	// task.IsFinished = true
+	// task.ClaimTime = currentTime
+	// task.ClaimTime = currentTime
+	// taksID, err := task.NewTaskTx(tx)
+	// if err != nil {
+	// 	return err
+	// }
+	// 删除候选用户组
+	err := DelCandidateByProcInstID(procInstID, tx)
 	if err != nil {
 		return err
 	}
-	var procInst = &model.ProcInst{ // 流程实例要更新的字段
-		NodeID:    nodeInfos[step].NodeID,
-		Candidate: nodeInfos[step].Aprover,
-		TaskID:    taksID,
+	// 流程实例要更新的字段
+	var procInst = &model.ProcInst{
+		// NodeID:     nodeInfos[step].NodeID,
+		// Candidate:  nodeInfos[step].Aprover,
+		// TaskID:     taksID,
+		EndTime:    currentTime,
+		IsFinished: true,
+		// Comment: comment,
+		// Pass:    false,
 	}
+	// str, _ := json.Marshal(procInst)
+	// fmt.Printf("%s", string(str))
+
 	procInst.ID = procInstID
 	err = UpdateProcInst(procInst, tx)
 	if err != nil {
 		return err
 	}
-	if step == 0 { // 流程回到起始位置，注意起始位置为0,
-		err = AddCandidateUserTx(nodeInfos[step].Aprover, company, step, taksID, procInstID, tx)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+	// 流程回到起始位置，注意起始位置为0,
+	// if step == 0 {
+	// 	err = AddCandidateUserTx(nodeInfos[step].Aprover, company, step, taksID, procInstID, tx)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	return nil
+	// }
 	// 添加candidate group
-	err = AddCandidateGroupTx(nodeInfos[step].Aprover, company, step, taksID, procInstID, tx)
-	if err != nil {
-		return err
-	}
+	// err = AddCandidateGroupTx(nodeInfos[step].Aprover, company, step, taksID, procInstID, tx)
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
 func getNewTask(nodeInfos []*flow.NodeInfo, step, procInstID int, currentTime string) *model.Task {

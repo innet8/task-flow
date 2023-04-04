@@ -162,6 +162,10 @@ func CompleteTask(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, "字段userID不能为空！")
 		return
 	}
+	if pass && len(taskRe.Comment) == 0 {
+		util.ResponseErr(writer, "字段comment不能为空！")
+		return
+	}
 	//
 	userInfo, errs := model.GetUserInfoById(taskRe.UserID)
 	if errs != nil {
