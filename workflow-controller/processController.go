@@ -141,8 +141,9 @@ func FindMyProcInstPageAsJSON(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 	if len(receiver.Company) == 0 {
-		util.Response(writer, "字段 company 不能为空", false)
-		return
+		receiver.Company = "系统默认"
+		// util.Response(writer, "字段 company 不能为空", false)
+		// return
 	}
 	result, err := service.FindAllPageAsJSON(receiver)
 	if err != nil {
@@ -200,8 +201,9 @@ func StartByMyself(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	if len(receiver.Company) == 0 {
-		util.Response(writer, "字段 company 不能为空", false)
-		return
+		receiver.Company = "系统默认"
+		// util.Response(writer, "字段 company 不能为空", false)
+		// return
 	}
 	result, err := service.StartByMyself(receiver)
 	if err != nil {
@@ -227,8 +229,9 @@ func FindProcNotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	if len(receiver.Company) == 0 {
-		util.Response(writer, "字段 company 不能为空", false)
-		return
+		receiver.Company = "系统默认"
+		// util.Response(writer, "字段 company 不能为空", false)
+		// return
 	}
 	result, err := service.FindProcNotify(receiver)
 	if err != nil {
@@ -252,7 +255,7 @@ func MoveFinishedProcInstToHistory(writer http.ResponseWriter, request *http.Req
 // FindProcInstByID 根据流程ID查询流程
 func FindProcInstByID(writer http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
-	if len(request.Form["id"]) == 0 {
+	if len(request.Form["id"]) == 0 || request.Form["id"][0] == "" {
 		util.ResponseErr(writer, "字段 id 不能为空")
 		return
 	}
@@ -266,5 +269,5 @@ func FindProcInstByID(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	util.Response(writer, data, true)
+	util.ResponseData(writer, data)
 }

@@ -16,7 +16,7 @@
         </div> -->
 
         <div class="fd-nav-title" style="position: fixed;left: 30px;z-index: 10;top: 30px;font-size: 20px;">{{ workFlowDef.name || '' }}</div>
-        <button type="button" class="ant-btn button-publish" @click="saveSet" style="position: fixed;right: 40px;z-index: 10;bottom: 30px;font-size: 20px;">
+        <button v-if="showbtn" type="button" class="ant-btn button-publish" @click="saveSet" style="position: fixed;right: 40px;z-index: 10;bottom: 30px;font-size: 20px;">
             <span>发 布</span>
         </button>
         
@@ -69,13 +69,23 @@ let workFlowDef = ref({});
 let flowPermission = ref([]);
 let directorMaxLevel = ref(0);
 let workFlowDefId = ref(0);
+let showbtn = ref(true);
 
 onMounted(async () => {
-    let company = "系统默认";
+    if(route.query.showbtn=="0"){
+        showbtn.value = false;
+    }
     if(!route.query.name){
         ElMessage.error("流程名称不能为空")
         return;
     }
+    // 
+    init()
+});
+
+// 初始化
+const init = async () => {
+    let company = "系统默认";
     let {data,status,message} = await getWorkFlowData({ company:company, name:route.query.name })
     if (status != 200) {
         ElMessage.error(message)
@@ -103,12 +113,12 @@ onMounted(async () => {
     directorMaxLevel.value = 4; //最高级别
     workFlowDef.value = processConfig.value;
     setTableId(workFlowDefId.value || 0);
-});
-
-const toReturn = () => {
-    // window.location.href = ""
 };
 
+/**
+ * 返回错误
+ * @param {*} param0 
+ */
 const reErr = ({ childNode }) => {
     if (childNode) {
         let { type, error, name, conditionNodes, ccSelfSelectFlag, nodeUserList } = childNode;
@@ -137,6 +147,10 @@ const reErr = ({ childNode }) => {
     }
 };
 
+/**
+ * 保存
+ * @param
+ */
 const saveSet = async () => {
     setIsTried(true);
     // 
@@ -160,11 +174,17 @@ const saveSet = async () => {
                 workFlowDefId: workFlowDefId.value,
             }
         })
+        if(window.parent){
+            parent.postMessage(JSON.stringify({"method":"saveSuccess","res":res}), '*')
+        }
     }else{
         ElMessage.error(res.message)
     }
 };
 
+/**
+ * 调整大小
+ */
 const zoomSize = (type) => {
     if (type == 1) {
         if (nowVal.value == 50) {
@@ -179,7 +199,9 @@ const zoomSize = (type) => {
     }
 };
 
-// 监听
+/**
+ * 监听保存事件
+ */
 window.addEventListener('message', (e) => {
     if (typeof e.data === 'string') {
         let propsBody = JSON.parse(e.data);

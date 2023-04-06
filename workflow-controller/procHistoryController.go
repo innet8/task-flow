@@ -61,8 +61,9 @@ func FindProcHistory(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	if len(receiver.Company) == 0 {
-		util.Response(writer, "字段 company 不能为空", false)
-		return
+		receiver.Company = "系统默认"
+		// util.Response(writer, "字段 company 不能为空", false)
+		// return
 	}
 	result, err := service.FindProcHistory(receiver)
 	if err != nil {
@@ -89,8 +90,9 @@ func StartHistoryByMyself(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	if len(receiver.Company) == 0 {
-		util.Response(writer, "字段 company 不能为空", false)
-		return
+		receiver.Company = "系统默认"
+		// util.Response(writer, "字段 company 不能为空", false)
+		// return
 	}
 	result, err := service.StartHistoryByMyself(receiver)
 	if err != nil {
@@ -116,8 +118,9 @@ func FindProcHistoryNotify(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	if len(receiver.Company) == 0 {
-		util.Response(writer, "字段 company 不能为空", false)
-		return
+		receiver.Company = "系统默认"
+		// util.Response(writer, "字段 company 不能为空", false)
+		// return
 	}
 	result, err := service.FindProcHistoryNotify(receiver)
 	if err != nil {

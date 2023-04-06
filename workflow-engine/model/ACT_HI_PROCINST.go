@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"workflow/workflow-engine/parameter"
 
 	"github.com/jinzhu/gorm"
 )
@@ -27,8 +28,10 @@ type ProcInst struct {
 	StartUserName string `gorm:"comment:'开始用户名'" json:"startUserName"`
 	IsFinished    bool   `gorm:"default:false;comment:'是否完成'" json:"isFinished"`
 	Var           string `gorm:"size:4000;comment:'执行流程的附加参数'" json:"var"`
-	// Comment       string `gorm:"comment:'评论'" json:"comment,omitempty"`
-	// Pass          bool   `gorm:"default:true;comment:'是否通过'" json:"pass"`
+}
+type ProcInsts struct {
+	ProcInst
+	Var *parameter.Vars `json:"var"`
 }
 
 // GroupsNotNull 候选组
@@ -88,7 +91,8 @@ func FindProcNotify(userID, company string, groups []string, pageIndex, pageSize
 	} else {
 		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and i.user_id='" + userID + "'"
 	}
-	err := db.Where("id in (" + fmt.Sprintf(sql, conf.DbPrefix) + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
+	sql = fmt.Sprintf(sql, conf.DbPrefix)
+	err := db.Where("id in (" + sql + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
 	if err != nil {
 		return datas, count, err
 	}

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // ToJSONStr 对象转换成字符串
@@ -83,4 +84,28 @@ func PrintHTTPRequestInfo(r *http.Request) {
 	body := make(map[string]interface{})
 	json.Unmarshal(s, &body)
 	fmt.Println("body:", body)
+}
+
+// Struct2StructAndDelKey 对象转换结构体，并过滤某些字段
+// 对象字段必须大写,否则结果为空
+func Struct2Struct(data interface{}, newdata interface{}, filtrationKeys_optional string) error {
+	result, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	str := fmt.Sprintf("%s", result)
+	// 过滤字段
+	if filtrationKeys_optional != "" {
+		keysArr := strings.Split(filtrationKeys_optional, ",")
+		for _, v := range keysArr {
+			str = strings.Replace(string(str), `"`+v+`":`, `"_`+v+`":`, 1)
+		}
+	}
+	// 转新的结构体
+	err = json.Unmarshal([]byte(str), newdata)
+	if err != nil {
+		return err
+	}
+	//
+	return nil
 }

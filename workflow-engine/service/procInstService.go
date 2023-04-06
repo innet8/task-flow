@@ -26,7 +26,6 @@ type ProcessReceiver struct {
 	DepartmentId int             `json:"departmentId"`
 	Department   string          `json:"department"`
 	Var          *parameter.Vars `json:"var"`
-	// Var          *map[string]string `json:"var"`
 }
 
 // ProcessPageReceiver 分页参数
@@ -63,7 +62,22 @@ func FindProcInstByID(id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return util.ToJSONStr(data)
+	// Var 转对象
+	vars := &parameter.Vars{}
+	err = util.Str2Struct(data.Var, vars)
+	if err != nil {
+		return "", err
+	}
+	// 新的结构体
+	datas := &model.ProcInsts{}
+	datas.Var = vars
+	// 复制到新的结构体，并指定排除字段
+	err = util.Struct2Struct(data, datas, "var")
+	if err != nil {
+		return "", err
+	}
+	//
+	return util.ToJSONStr(datas)
 }
 
 // FindAllPageAsJSON FindAllPageAsJSON

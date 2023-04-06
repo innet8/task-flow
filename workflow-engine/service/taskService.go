@@ -416,8 +416,8 @@ func MoveToPrevStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	// 流程实例要更新的字段
 	var procInst = &model.ProcInst{
 		// NodeID:     nodeInfos[step].NodeID,
-		// Candidate:  nodeInfos[step].Aprover,
 		// TaskID:     taksID,
+		Candidate:  strconv.Itoa(nodeInfos[step].AproverId),
 		EndTime:    currentTime,
 		IsFinished: true,
 		// Comment: comment,
