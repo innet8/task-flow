@@ -168,12 +168,12 @@ const saveSet = async () => {
     if (res.status == 200) {
         ElMessage.success("设置成功")
         workFlowDefId.value = res.data;
-        router.replace({
-            path:'/',
-            query:{
-                workFlowDefId: workFlowDefId.value,
-            }
-        })
+        // router.replace({
+        //     path:'/',
+        //     query:{
+        //         workFlowDefId: workFlowDefId.value,
+        //     }
+        // })
         if(window.parent){
             parent.postMessage(JSON.stringify({"method":"saveSuccess","res":res}), '*')
         }

@@ -349,7 +349,7 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	var task = getNewTask(nodeInfos, step, procInstID, currentTime) //新任务
 	var procInst = &model.ProcInst{                                 // 流程实例要更新的字段
 		NodeID:    nodeInfos[step].NodeID,
-		Candidate: nodeInfos[step].Aprover,
+		Candidate: strconv.Itoa(nodeInfos[step].AproverId),
 	}
 	procInst.ID = procInstID
 	if (step + 1) != len(nodeInfos) { // 下一步不是【结束】
