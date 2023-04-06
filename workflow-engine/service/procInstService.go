@@ -64,12 +64,7 @@ func FindProcInstByID(id int) (string, error) {
 		return "", err
 	}
 	// 节点信息
-	nodeInfos, err := GetExecNodeInfosByProcInstID(id)
-	if err != nil {
-		return "", err
-	}
-	// 任务信息
-	taskInfos, err := GetTaskLastByProInstID(id)
+	nodeInfos, err := GetExecNodeInfosDetailsByProcInstID(id)
 	if err != nil {
 		return "", err
 	}
@@ -83,14 +78,12 @@ func FindProcInstByID(id int) (string, error) {
 	// 新的结构体
 	type ProcInsts struct {
 		model.ProcInst
-		Var       *parameter.Vars  `json:"var"`
-		NodeInfos []*flow.NodeInfo `json:"nodeInfos,omitempty"`
-		TaskInfos *model.Task      `json:"taskInfos,omitempty"`
+		Var       *parameter.Vars `json:"var"`
+		NodeInfos []*NodeInfos    `json:"nodeInfos,omitempty"`
 	}
 	datas := &ProcInsts{}
 	datas.Var = vars
 	datas.NodeInfos = nodeInfos
-	datas.TaskInfos = taskInfos
 
 	// 复制到新的结构体，并指定排除字段
 	err = util.Struct2Struct(data, datas, "var")

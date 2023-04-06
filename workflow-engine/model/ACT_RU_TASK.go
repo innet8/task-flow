@@ -44,6 +44,13 @@ func GetTaskByID(id int) (*Task, error) {
 	return t, err
 }
 
+// GetTaskByProInstID 根据流程实例id任务列表
+func GetTaskByProInstID(procInstID int) ([]*Task, error) {
+	var datas []*Task
+	err := db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&datas).Error
+	return datas, err
+}
+
 // GetTaskLastByProInstID 根据流程实例id获取上一个任务
 func GetTaskLastByProInstID(procInstID int) (*Task, error) {
 	var t = &Task{}

@@ -16,6 +16,11 @@ import (
 
 var execLock sync.Mutex
 
+type NodeInfos struct {
+	flow.NodeInfo
+	Identitylink *model.Identitylink `json:"identitylink"` // 关联信息
+}
+
 // SaveExecution
 func SaveExecution(e *model.Execution) (ID int, err error) {
 	execLock.Lock()
@@ -91,5 +96,39 @@ func GetExecNodeInfosByProcInstID(procInstID int) ([]*flow.NodeInfo, error) {
 	}
 	var nodeInfos []*flow.NodeInfo
 	err = util.Str2Struct(nodeinfoStr, &nodeInfos)
+	return nodeInfos, err
+}
+
+// GetExecNodeInfosByProcInstID 获取执行流经过的节点信息-详情
+func GetExecNodeInfosDetailsByProcInstID(procInstID int) ([]*NodeInfos, error) {
+	nodeinfoStr, err := model.GetExecNodeInfosByProcInstID(procInstID)
+	if err != nil {
+		return nil, err
+	}
+
+	var nodeInfos []*NodeInfos
+
+	err = util.Str2Struct(nodeinfoStr, &nodeInfos)
+	if err != nil {
+		return nil, err
+	}
+
+	// 任务信息
+	taskInfos, err := GetTaskByProInstID(procInstID)
+	if err != nil {
+		return nil, err
+	}
+	for k, val := range nodeInfos {
+		for _, v := range taskInfos {
+			if val.NodeID == v.NodeID {
+				identitylinkInfos, err := model.GetIdentitylinkInfoByTaskID(v.ID)
+				if err != nil {
+					return nil, err
+				}
+				nodeInfos[k].Identitylink = identitylinkInfos
+			}
+		}
+	}
+
 	return nodeInfos, err
 }

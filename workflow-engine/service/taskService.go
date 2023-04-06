@@ -59,6 +59,11 @@ func GetTaskByID(id int) (task *model.Task, err error) {
 	return model.GetTaskByID(id)
 }
 
+// GetTaskByProInstID 通过流程实例id获取任务
+func GetTaskByProInstID(procInstID int) ([]*model.Task, error) {
+	return model.GetTaskByProInstID(procInstID)
+}
+
 // GetTaskLastByProInstID 通过流程实例id获取最后一个任务
 func GetTaskLastByProInstID(procInstID int) (*model.Task, error) {
 	return model.GetTaskLastByProInstID(procInstID)

@@ -90,3 +90,10 @@ func FindParticipantByProcInstID(procInstID int) ([]*Identitylink, error) {
 	err := db.Select("id,user_id,user_name,step,comment").Where("proc_inst_id=? and type=?", procInstID, IdentityTypes[PARTICIPANT]).Order("id asc").Find(&datas).Error
 	return datas, err
 }
+
+// GetIdentitylinkInfoByTaskID 根据taskID获取信息
+func GetIdentitylinkInfoByTaskID(taskID int) (*Identitylink, error) {
+	var datas Identitylink
+	err := db.Model(&Users{}).Where("task_id=?", taskID).Find(&datas).Error
+	return &datas, err
+}
