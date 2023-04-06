@@ -58,7 +58,18 @@ func findAll(pr *ProcessPageReceiver) ([]*model.ProcInst, int, error) {
 
 // FindProcInstByID FindProcInstByID
 func FindProcInstByID(id int) (string, error) {
+	// 流程信息
 	data, err := model.FindProcInstByID(id)
+	if err != nil {
+		return "", err
+	}
+	// 节点信息
+	nodeInfos, err := GetExecNodeInfosByProcInstID(id)
+	if err != nil {
+		return "", err
+	}
+	// 任务信息
+	taskInfos, err := GetTaskLastByProInstID(id)
 	if err != nil {
 		return "", err
 	}
@@ -68,9 +79,19 @@ func FindProcInstByID(id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	// 新的结构体
-	datas := &model.ProcInsts{}
+	type ProcInsts struct {
+		model.ProcInst
+		Var       *parameter.Vars  `json:"var"`
+		NodeInfos []*flow.NodeInfo `json:"nodeInfos,omitempty"`
+		TaskInfos *model.Task      `json:"taskInfos,omitempty"`
+	}
+	datas := &ProcInsts{}
 	datas.Var = vars
+	datas.NodeInfos = nodeInfos
+	datas.TaskInfos = taskInfos
+
 	// 复制到新的结构体，并指定排除字段
 	err = util.Struct2Struct(data, datas, "var")
 	if err != nil {

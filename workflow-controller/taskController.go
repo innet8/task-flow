@@ -180,7 +180,7 @@ func CompleteTask(writer http.ResponseWriter, request *http.Request) {
 	//
 	taskRe.Company = "系统默认"
 	taskRe.Candidate = userInfo.Userid
-
+	//
 	err = service.Complete(taskRe.TaskID, taskRe.UserID, taskRe.UserName, taskRe.Company, taskRe.Comment, taskRe.Candidate, pass)
 	if err != nil {
 		util.ResponseErr(writer, err)

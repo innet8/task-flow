@@ -115,6 +115,16 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 		}
 		return nil, errors.New("任务【" + fmt.Sprintf("%d", taskID) + "】已经被审批过了！！")
 	}
+
+	//判断是否对应的审批人
+	data, err := model.FindProcInstByID(task.ProcInstID)
+	if err != nil {
+		return nil, err
+	}
+	if data.Candidate != userID {
+		return nil, errors.New("无权限")
+	}
+
 	// 设置处理人和处理时间
 	task.Assignee = userID
 	task.ClaimTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
