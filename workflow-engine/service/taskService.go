@@ -310,8 +310,6 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 	}
 
 	// 判断下一流程： 如果是审批人是：抄送人
-	// fmt.Printf("下一审批人类型：%s\n", nodeInfos[step].AproverType)
-	// fmt.Println(nodeInfos[step].AproverType == flow.NodeTypes[flow.NOTIFIER])
 	if nodeInfos[step].AproverType == flow.NodeTypes[flow.NOTIFIER] {
 		// 生成新的任务
 		var task = model.Task{
@@ -326,11 +324,11 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 			return err
 		}
 		// 添加抄送人
-		err = AddNotifierTx(nodeInfos[step].Aprover, company, step, procInstID, tx)
+		err = AddNotifierTx(task.ID, nodeInfos[step].Aprover, company, step, procInstID, tx)
 		if err != nil {
 			return err
 		}
-		return MoveStage(nodeInfos, userID, username, company, comment, candidate, taskID, procInstID, step, pass, tx)
+		return MoveStage(nodeInfos, userID, username, company, comment, candidate, task.ID, procInstID, step, pass, tx)
 	}
 
 	// 通过

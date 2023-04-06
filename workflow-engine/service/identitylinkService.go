@@ -14,7 +14,7 @@ func SaveIdentitylinkTx(i *model.Identitylink, tx *gorm.DB) error {
 }
 
 // AddNotifierTx 添加抄送人候选用户组
-func AddNotifierTx(group, company string, step, procInstID int, tx *gorm.DB) error {
+func AddNotifierTx(taskID int, group, company string, step, procInstID int, tx *gorm.DB) error {
 	yes, err := ExistsNotifierByProcInstIDAndGroup(procInstID, group)
 	if err != nil {
 		return err
@@ -22,12 +22,15 @@ func AddNotifierTx(group, company string, step, procInstID int, tx *gorm.DB) err
 	if yes {
 		return nil
 	}
+	// taskIDint, _ := strconv.Atoi(taskID)
 	i := &model.Identitylink{
 		Group:      group,
 		Type:       model.IdentityTypes[model.NOTIFIER],
 		Step:       step,
 		ProcInstID: procInstID,
 		Company:    company,
+		State:      1,
+		TaskID:     taskID,
 	}
 	return SaveIdentitylinkTx(i, tx)
 }
