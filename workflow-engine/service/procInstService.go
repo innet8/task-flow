@@ -56,7 +56,7 @@ func findAll(pr *ProcessPageReceiver) ([]*model.ProcInst, int, error) {
 	return model.FindProcInsts(pr.UserID, pr.ProcName, pr.Company, pr.Groups, pr.Departments, pr.PageIndex, pr.PageSize)
 }
 
-// FindProcInstByID FindProcInstByID
+// FindProcInstByID 根据ID获取流程信息
 func FindProcInstByID(id int) (string, error) {
 	data, err := model.FindProcInstByID(id)
 	if err != nil {
@@ -80,7 +80,7 @@ func FindProcInstByID(id int) (string, error) {
 	return util.ToJSONStr(datas)
 }
 
-// FindAllPageAsJSON FindAllPageAsJSON
+// FindAllPageAsJSON
 func FindAllPageAsJSON(pr *ProcessPageReceiver) (string, error) {
 	datas, count, err := findAll(pr)
 	if err != nil {
@@ -89,8 +89,7 @@ func FindAllPageAsJSON(pr *ProcessPageReceiver) (string, error) {
 	return util.ToPageJSON(datas, count, pr.PageIndex, pr.PageSize)
 }
 
-// FindMyProcInstByToken FindMyProcInstByToken
-// 根据token获取流程信息
+// FindMyProcInstByToken 根据token获取流程信息
 func FindMyProcInstByToken(token string, receiver *ProcessPageReceiver) (string, error) {
 	// 根据 token 获取用户信息
 	userinfo, err := GetUserinfoFromRedis(token)
@@ -240,8 +239,7 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *parameter.Vars) (in
 // 	return procInst.Save()
 // }
 
-// CreateProcInstTx CreateProcInstTx
-// 开户事务
+// CreateProcInstTx 开户事务
 func CreateProcInstTx(procInst *model.ProcInst, tx *gorm.DB) (int, error) {
 
 	return procInst.SaveTx(tx)
@@ -279,13 +277,12 @@ func FindProcNotify(receiver *ProcessPageReceiver) (string, error) {
 	return util.ToPageJSON(datas, count, receiver.PageIndex, receiver.PageSize)
 }
 
-// UpdateProcInst UpdateProcInst
-// 更新流程实例
+// UpdateProcInst 更新流程实例
 func UpdateProcInst(procInst *model.ProcInst, tx *gorm.DB) error {
 	return procInst.UpdateTx(tx)
 }
 
-// MoveFinishedProcInstToHistory MoveFinishedProcInstToHistory
+// MoveFinishedProcInstToHistory 将已经结束的流程实例移动到历史表
 func MoveFinishedProcInstToHistory() error {
 	// 要注意并发，可能会运行多个app实例
 	// 加锁
@@ -345,20 +342,28 @@ func MoveFinishedProcInstToHistory() error {
 	return nil
 }
 
-// DelProcInstByIDTx DelProcInstByIDTx
+// DelProcInstByIDTx 删除流程实例
 func DelProcInstByIDTx(procInstID int, tx *gorm.DB) error {
 	return model.DelProcInstByIDTx(procInstID, tx)
 }
+
+// copyIdentitylinkToHistoryByProcInstID 将identitylink移至历史纪录
 func copyIdentitylinkToHistoryByProcInstID(procInstID int, tx *gorm.DB) error {
 	return model.CopyIdentitylinkToHistoryByProcInstID(procInstID, tx)
 }
+
+// copyExecutionToHistoryByProcInstID 将execution移至历史纪录
 func copyExecutionToHistoryByProcInstID(procInstID int, tx *gorm.DB) error {
 	return model.CopyExecutionToHistoryByProcInstIDTx(procInstID, tx)
 }
+
+// copyProcToHistory 复制 proc_inst
 func copyProcToHistory(procInst *model.ProcInst) error {
 	return model.SaveProcInstHistory(procInst)
 
 }
+
+// copyTaskToHistoryByProInstID 流程实例的task移至历史纪录
 func copyTaskToHistoryByProInstID(procInstID int, tx *gorm.DB) error {
 	return model.CopyTaskToHistoryByProInstID(procInstID, tx)
 }

@@ -16,7 +16,7 @@ type UserInfo struct {
 	Departments []string `json:"departments"` // 用户负责的部门
 }
 
-// GetUserinfoFromRedis GetUserinfoFromRedis
+// GetUserinfoFromRedis 从redis获取用户信息
 func GetUserinfoFromRedis(token string) (*UserInfo, error) {
 	result, err := GetValFromRedis(token)
 	if err != nil {

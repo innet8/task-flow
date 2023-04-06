@@ -8,7 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// ProcInstHistory ProcInstHistory
+// ProcInstHistory
 type ProcInstHistory struct {
 	ProcInst
 }
@@ -96,17 +96,17 @@ func FindProcHistory(userID, company string, pageIndex, pageSize int) ([]*ProcIn
 	return datas, count, err1
 }
 
-// SaveProcInstHistory SaveProcInstHistory
+// SaveProcInstHistory
 func SaveProcInstHistory(p *ProcInst) error {
 	return db.Table(conf.DbPrefix + "proc_inst_history").Create(p).Error
 }
 
-// DelProcInstHistoryByID DelProcInstHistoryByID
+// DelProcInstHistoryByID
 func DelProcInstHistoryByID(id int) error {
 	return db.Where("id=?", id).Delete(&ProcInstHistory{}).Error
 }
 
-// SaveProcInstHistoryTx SaveProcInstHistoryTx
+// SaveProcInstHistoryTx
 func SaveProcInstHistoryTx(p *ProcInst, tx *gorm.DB) error {
 	return tx.Table(conf.DbPrefix + "proc_inst_history").Create(p).Error
 }

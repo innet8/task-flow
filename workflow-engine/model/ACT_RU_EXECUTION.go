@@ -20,7 +20,7 @@ type Execution struct {
 	StartTime   string `gorm:"comment:'开始时间'" json:"startTime"`
 }
 
-// Save save
+// Save
 func (p *Execution) Save() (ID int, err error) {
 	err = db.Create(p).Error
 	if err != nil {
@@ -29,8 +29,7 @@ func (p *Execution) Save() (ID int, err error) {
 	return p.ID, nil
 }
 
-// SaveTx SaveTx
-// 接收外部事务
+// SaveTx 接收外部事务
 func (p *Execution) SaveTx(tx *gorm.DB) (ID int, err error) {
 	p.StartTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
 	if err := tx.Create(p).Error; err != nil {
@@ -39,8 +38,7 @@ func (p *Execution) SaveTx(tx *gorm.DB) (ID int, err error) {
 	return p.ID, nil
 }
 
-// GetExecByProcInst GetExecByProcInst
-// 根据流程实例id查询执行流
+// GetExecByProcInst 根据流程实例id查询执行流
 func GetExecByProcInst(procInstID int) (*Execution, error) {
 	var p = &Execution{}
 	err := db.Where("proc_inst_id=?", procInstID).Find(p).Error
@@ -54,8 +52,7 @@ func GetExecByProcInst(procInstID int) (*Execution, error) {
 	return p, nil
 }
 
-// GetExecNodeInfosByProcInstID GetExecNodeInfosByProcInstID
-// 根据流程实例procInstID查询执行流经过的所有节点信息
+// GetExecNodeInfosByProcInstID 根据流程实例procInstID查询执行流经过的所有节点信息
 func GetExecNodeInfosByProcInstID(procInstID int) (string, error) {
 	var e = &Execution{}
 	err := db.Select("node_infos").Where("proc_inst_id=?", procInstID).Find(e).Error
@@ -66,8 +63,7 @@ func GetExecNodeInfosByProcInstID(procInstID int) (string, error) {
 	return e.NodeInfos, nil
 }
 
-// ExistsExecByProcInst ExistsExecByProcInst
-// 指定流程实例的执行流是否已经存在
+// ExistsExecByProcInst 指定流程实例的执行流是否已经存在
 func ExistsExecByProcInst(procInst int) (bool, error) {
 	e, err := GetExecByProcInst(procInst)
 	// var p = &Execution{}

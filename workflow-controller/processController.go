@@ -119,8 +119,7 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 	util.Response(writer, fmt.Sprintf("%d", id), true)
 }
 
-// FindMyProcInstPageAsJSON FindMyProcInstPageAsJSON
-// 查询到我审批的流程实例
+// FindMyProcInstPageAsJSON 查询到我审批的流程实例
 func FindMyProcInstPageAsJSON(writer http.ResponseWriter, request *http.Request) {
 	if model.RedisOpen {
 		util.ResponseErr(writer, "已经连接 redis，请使用/workflow/process/findTaskByToken 路径访问")
@@ -153,8 +152,7 @@ func FindMyProcInstPageAsJSON(writer http.ResponseWriter, request *http.Request)
 	fmt.Fprintf(writer, result)
 }
 
-// FindMyProcInstByToken FindMyProcInstByToken
-// 查询待办的流程
+// FindMyProcInstByToken 查询待办的流程
 func FindMyProcInstByToken(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
 		util.ResponseErr(writer, "只支持Post方法！！")
@@ -241,8 +239,7 @@ func FindProcNotify(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, result)
 }
 
-// MoveFinishedProcInstToHistory MoveFinishedProcInstToHistory
-// 将已经结束的流程实例移动到历史数据库
+// MoveFinishedProcInstToHistory 将已经结束的流程实例移动到历史数据库
 func MoveFinishedProcInstToHistory(writer http.ResponseWriter, request *http.Request) {
 	err := service.MoveFinishedProcInstToHistory()
 	if err != nil {

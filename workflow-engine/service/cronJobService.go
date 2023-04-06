@@ -6,8 +6,7 @@ import (
 	"github.com/robfig/cron"
 )
 
-// CronJobs CronJobs
-// 所有定时任务，在启动时会执行
+// CronJobs 所有定时任务，在启动时会执行
 func CronJobs() {
 	go func() {
 		c := cron.New()
