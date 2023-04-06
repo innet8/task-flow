@@ -16,7 +16,7 @@ import (
 
 var execLock sync.Mutex
 
-// SaveExecution SaveExecution
+// SaveExecution
 func SaveExecution(e *model.Execution) (ID int, err error) {
 	execLock.Lock()
 	defer execLock.Unlock()
@@ -32,7 +32,7 @@ func SaveExecution(e *model.Execution) (ID int, err error) {
 	return e.Save()
 }
 
-// SaveExecTx SaveExecTx
+// SaveExecTx
 func SaveExecTx(e *model.Execution, tx *gorm.DB) (ID int, err error) {
 	execLock.Lock()
 	defer execLock.Unlock()
@@ -48,14 +48,12 @@ func SaveExecTx(e *model.Execution, tx *gorm.DB) (ID int, err error) {
 	return e.SaveTx(tx)
 }
 
-// GetExecByProcInst GetExecByProcInst
-// 根据流程实例查询执行流
+// GetExecByProcInst 根据流程实例查询执行流
 func GetExecByProcInst(procInst int) (*model.Execution, error) {
 	return model.GetExecByProcInst(procInst)
 }
 
-// GenerateExec GenerateExec
-// 根据流程定义node生成执行流
+// GenerateExec 根据流程定义node生成执行流
 func GenerateExec(e *model.Execution, node *flow.Node, userID string, departmentId int, variable *parameter.Vars, tx *gorm.DB) (int, error) {
 	list, err := flow.ParseProcessConfig(node, userID, departmentId, variable)
 	if err != nil {
@@ -85,8 +83,7 @@ func GenerateExec(e *model.Execution, node *flow.Node, userID string, department
 	return ID, err
 }
 
-// GetExecNodeInfosByProcInstID GetExecNodeInfosByProcInstID
-// 获取执行流经过的节点信息
+// GetExecNodeInfosByProcInstID 获取执行流经过的节点信息
 func GetExecNodeInfosByProcInstID(procInstID int) ([]*flow.NodeInfo, error) {
 	nodeinfoStr, err := model.GetExecNodeInfosByProcInstID(procInstID)
 	if err != nil {

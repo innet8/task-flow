@@ -8,7 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// SaveIdentitylinkTx SaveIdentitylinkTx
+// SaveIdentitylinkTx 保存Identitylink
 func SaveIdentitylinkTx(i *model.Identitylink, tx *gorm.DB) error {
 	return i.SaveTx(tx)
 }
@@ -35,8 +35,7 @@ func AddNotifierTx(taskID int, group, company string, step, procInstID int, tx *
 	return SaveIdentitylinkTx(i, tx)
 }
 
-// AddCandidateGroupTx AddCandidateGroupTx
-// 添加候选用户组
+// AddCandidateGroupTx 添加候选用户组
 func AddCandidateGroupTx(group, company string, step, taskID, procInstID int, tx *gorm.DB) error {
 	err := DelCandidateByProcInstID(procInstID, tx)
 	if err != nil {
@@ -53,8 +52,7 @@ func AddCandidateGroupTx(group, company string, step, taskID, procInstID int, tx
 	return SaveIdentitylinkTx(i, tx)
 }
 
-// AddCandidateUserTx AddCandidateUserTx
-// 添加候选用户
+// AddCandidateUserTx 添加候选用户
 func AddCandidateUserTx(userID, company string, step, taskID, procInstID int, tx *gorm.DB) error {
 	err := DelCandidateByProcInstID(procInstID, tx)
 	if err != nil {
@@ -97,8 +95,7 @@ func AddCandidateUserTx(userID, company string, step, taskID, procInstID int, tx
 	// return err2
 }
 
-// AddParticipantTx AddParticipantTx
-// 添加任务参与人
+// AddParticipantTx 添加任务参与人
 func AddParticipantTx(userID, username, company, comment string, pass bool, taskID, procInstID, step int, tx *gorm.DB) error {
 	var state int
 	if step == 0 {
@@ -124,14 +121,12 @@ func AddParticipantTx(userID, username, company, comment string, pass bool, task
 	return SaveIdentitylinkTx(i, tx)
 }
 
-// IfParticipantByTaskID IfParticipantByTaskID
-// 针对指定任务判断用户是否已经审批过了
+// IfParticipantByTaskID 针对指定任务判断用户是否已经审批过了
 func IfParticipantByTaskID(userID, company string, taskID int) (bool, error) {
 	return model.IfParticipantByTaskID(userID, company, taskID)
 }
 
-// DelCandidateByProcInstID DelCandidateByProcInstID
-// 删除历史候选人
+// DelCandidateByProcInstID 删除历史候选人
 func DelCandidateByProcInstID(procInstID int, tx *gorm.DB) error {
 	return model.DelCandidateByProcInstID(procInstID, tx)
 }

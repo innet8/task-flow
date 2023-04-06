@@ -35,10 +35,10 @@ const (
 	NOTIFIER
 )
 
-// IdentityTypes IdentityTypes
+// IdentityTypes 类型
 var IdentityTypes = [...]string{CANDIDATE: "candidate", PARTICIPANT: "participant", MANAGER: "主管", NOTIFIER: "notifier"}
 
-// SaveTx SaveTx
+// SaveTx
 func (i *Identitylink) SaveTx(tx *gorm.DB) error {
 	// if len(i.Company) == 0 {
 	// 	return errors.New("Identitylink表的company字段不能为空！！")
@@ -47,8 +47,7 @@ func (i *Identitylink) SaveTx(tx *gorm.DB) error {
 	return err
 }
 
-// DelCandidateByProcInstID DelCandidateByProcInstID
-// 删除历史候选人
+// DelCandidateByProcInstID 删除历史候选人
 func DelCandidateByProcInstID(procInstID int, tx *gorm.DB) error {
 	return tx.Where("proc_inst_id=? and type=?", procInstID, IdentityTypes[CANDIDATE]).Delete(&Identitylink{}).Error
 }
@@ -69,8 +68,7 @@ func ExistsNotifierByProcInstIDAndGroup(procInstID int, group string) (bool, err
 	return false, nil
 }
 
-// IfParticipantByTaskID IfParticipantByTaskID
-// 针对指定任务判断用户是否已经审批过了
+// IfParticipantByTaskID 针对指定任务判断用户是否已经审批过了
 func IfParticipantByTaskID(userID, company string, taskID int) (bool, error) {
 	var count int
 	err := db.Model(&Identitylink{}).Where("user_id=? and company=? and task_id=?", userID, company, taskID).Count(&count).Error

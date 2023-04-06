@@ -5,7 +5,7 @@ type ProcdefHistory struct {
 	Procdef
 }
 
-// Save Save
+// Save 保存并返回ID
 func (p *ProcdefHistory) Save() (ID int, err error) {
 	err = db.Create(p).Error
 	if err != nil {

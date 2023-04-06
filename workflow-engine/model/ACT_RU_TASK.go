@@ -31,29 +31,27 @@ func (t *Task) NewTask() (int, error) {
 	return t.ID, nil
 }
 
-// UpdateTx UpdateTx
+// UpdateTx 更新任务
 func (t *Task) UpdateTx(tx *gorm.DB) error {
 	err := tx.Model(&Task{}).Updates(t).Error
 	return err
 }
 
-// GetTaskByID GetTaskById
+// GetTaskByID
 func GetTaskByID(id int) (*Task, error) {
 	var t = &Task{}
 	err := db.Where("id=?", id).Find(t).Error
 	return t, err
 }
 
-// GetTaskLastByProInstID GetTaskLastByProInstID
-// 根据流程实例id获取上一个任务
+// GetTaskLastByProInstID 根据流程实例id获取上一个任务
 func GetTaskLastByProInstID(procInstID int) (*Task, error) {
 	var t = &Task{}
 	err := db.Where("proc_inst_id=? and is_finished=1", procInstID).Order("claim_time desc").First(t).Error
 	return t, err
 }
 
-// NewTaskTx begin tx
-// 开启事务
+// NewTaskTx 开启事务
 func (t *Task) NewTaskTx(tx *gorm.DB) (int, error) {
 	// str, _ := util.ToJSONStr(t)
 	// fmt.Printf("newTask:%s", str)

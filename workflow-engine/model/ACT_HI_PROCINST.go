@@ -67,7 +67,7 @@ func StartByMyself(userID, company string, pageIndex, pageSize int) ([]*ProcInst
 	return findProcInsts(maps, pageIndex, pageSize)
 }
 
-// FindProcInstByID FindProcInstByID
+// FindProcInstByID 根据ID查询流程实例
 func FindProcInstByID(id int) (*ProcInst, error) {
 	var data = ProcInst{}
 	err := db.Where("id=?", id).Find(&data).Error
@@ -137,8 +137,7 @@ func findProcInsts(maps map[string]interface{}, pageIndex, pageSize int) ([]*Pro
 	return datas, count, err1
 }
 
-// FindProcInsts FindProcInsts
-// 分页查询
+// FindProcInsts 分页查询
 func FindProcInsts(userID, procName, company string, groups, departments []string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
 	var datas []*ProcInst
 	var count int
@@ -186,7 +185,7 @@ func FindProcInsts(userID, procName, company string, groups, departments []strin
 	return datas, count, err1
 }
 
-// Save save
+// Save
 func (p *ProcInst) Save() (int, error) {
 	err := db.Create(p).Error
 	if err != nil {
@@ -195,7 +194,7 @@ func (p *ProcInst) Save() (int, error) {
 	return p.ID, nil
 }
 
-//SaveTx SaveTx
+// SaveTx 事务保存
 func (p *ProcInst) SaveTx(tx *gorm.DB) (int, error) {
 	if err := tx.Create(p).Error; err != nil {
 		tx.Rollback()
@@ -204,23 +203,22 @@ func (p *ProcInst) SaveTx(tx *gorm.DB) (int, error) {
 	return p.ID, nil
 }
 
-// DelProcInstByID DelProcInstByID
+// DelProcInstByID 删除流程实例
 func DelProcInstByID(id int) error {
 	return db.Where("id=?", id).Delete(&ProcInst{}).Error
 }
 
-// DelProcInstByIDTx DelProcInstByIDTx
-// 事务
+// DelProcInstByIDTx 事务
 func DelProcInstByIDTx(id int, tx *gorm.DB) error {
 	return tx.Where("id=?", id).Delete(&ProcInst{}).Error
 }
 
-// UpdateTx UpdateTx
+// UpdateTx 更新
 func (p *ProcInst) UpdateTx(tx *gorm.DB) error {
 	return tx.Model(&ProcInst{}).Updates(p).Error
 }
 
-// FindFinishedProc FindFinishedProc
+// FindFinishedProc 查询已完成的流程
 func FindFinishedProc() ([]*ProcInst, error) {
 	var datas []*ProcInst
 	err := db.Where("is_finished=1").Find(&datas).Error

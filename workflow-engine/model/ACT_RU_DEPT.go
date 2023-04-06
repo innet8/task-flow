@@ -69,6 +69,8 @@ func GetDeptTreeList(deptID int) ([]*UserDepartments, error) {
 	datas = getDeptTreeList(datas, deptID)
 	return datas, err
 }
+
+// getDeptTreeList 获取树列表
 func getDeptTreeList(nodes []*UserDepartments, ParentId int) []*UserDepartments {
 	var result []*UserDepartments
 	for _, node := range nodes {

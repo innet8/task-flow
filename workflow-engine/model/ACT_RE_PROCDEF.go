@@ -18,8 +18,7 @@ type Procdef struct {
 	DeployTime string `gorm:"comment:'部署时间'" json:"deployTime,omitempty"`
 }
 
-// Save save and return id
-// 保存并返回ID
+// Save 保存并返回ID
 func (p *Procdef) Save() (ID int, err error) {
 	err = db.Create(p).Error
 	if err != nil {
@@ -28,7 +27,7 @@ func (p *Procdef) Save() (ID int, err error) {
 	return p.ID, nil
 }
 
-// SaveTx SaveTx
+// SaveTx
 func (p *Procdef) SaveTx(tx *gorm.DB) error {
 	err := tx.Create(p).Error
 	if err != nil {
@@ -37,8 +36,7 @@ func (p *Procdef) SaveTx(tx *gorm.DB) error {
 	return nil
 }
 
-// GetProcdefLatestByNameAndCompany :get latest procdef by name and company
-// 根据名字和公司查询最新的流程定义
+// GetProcdefLatestByNameAndCompany 根据名字和公司查询最新的流程定义
 func GetProcdefLatestByNameAndCompany(name, company string) (*Procdef, error) {
 	var p []*Procdef
 	err := db.Where("name=? and company=?", name, company).Order("version desc").Find(&p).Error
@@ -55,20 +53,18 @@ func GetProcdefByID(id int) (*Procdef, error) {
 	return p, err
 }
 
-// DelProcdefByID del by id
-// 根据id删除
+// DelProcdefByID 根据id删除
 func DelProcdefByID(id int) error {
 	err := db.Where("id = ?", id).Delete(&Procdef{}).Error
 	return err
 }
 
-// DelProcdefByIDTx DelProcdefByIDTx
+// DelProcdefByIDTx
 func DelProcdefByIDTx(id int, tx *gorm.DB) error {
 	return tx.Where("id = ?", id).Delete(&Procdef{}).Error
 }
 
-// FindProcdefsWithCountAndPaged return result with total count and error
-// 返回查询结果和总条数
+// FindProcdefsWithCountAndPaged 返回查询结果和总条数
 func FindProcdefsWithCountAndPaged(pageIndex, pageSize int, maps map[string]interface{}) (datas []*Procdef, count int, err error) {
 	err = db.Select("id,name,version,userid,deploy_time").Where(maps).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Find(&datas).Error
 	if err != nil && err != gorm.ErrRecordNotFound {

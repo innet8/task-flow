@@ -40,8 +40,7 @@ func NewTask(t *model.Task) (int, error) {
 	return t.NewTask()
 }
 
-// NewTaskTx NewTaskTx
-// 开启事务
+// NewTaskTx 开启事务
 func NewTaskTx(t *model.Task, tx *gorm.DB) (int, error) {
 	if len(t.NodeID) == 0 {
 		return 0, errors.New("request param nodeID can not be null / 任务当前所在节点nodeId不能为空！")
@@ -55,12 +54,12 @@ func DeleteTask(id int) error {
 	return model.DeleteTask(id)
 }
 
-// GetTaskByID GetTaskById
+// GetTaskByID 通过id获取任务
 func GetTaskByID(id int) (task *model.Task, err error) {
 	return model.GetTaskByID(id)
 }
 
-// GetTaskLastByProInstID GetTaskLastByProInstID
+// GetTaskLastByProInstID 通过流程实例id获取最后一个任务
 func GetTaskLastByProInstID(procInstID int) (*model.Task, error) {
 	return model.GetTaskLastByProInstID(procInstID)
 }
@@ -82,8 +81,7 @@ func CompleteByToken(token string, receiver *TaskReceiver) error {
 	return nil
 }
 
-// Complete Complete
-// 审批
+// Complete 审批
 func Complete(taskID int, userID, username, company, comment, candidate string, pass bool) error {
 	tx := model.GetTx()
 	err := CompleteTaskTx(taskID, userID, username, company, comment, candidate, pass, tx)
@@ -95,7 +93,7 @@ func Complete(taskID int, userID, username, company, comment, candidate string, 
 	return nil
 }
 
-// UpdateTaskWhenComplete UpdateTaskWhenComplete
+// UpdateTaskWhenComplete 更新任务
 func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (*model.Task, error) {
 	// 获取task
 	completeLock.Lock()         // 关锁
@@ -150,8 +148,7 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 	return task, nil
 }
 
-// CompleteTaskTx CompleteTaskTx
-// 执行任务
+// CompleteTaskTx 执行任务
 func CompleteTaskTx(taskID int, userID, username, company, comment, candidate string, pass bool, tx *gorm.DB) error {
 
 	//更新任务
@@ -286,7 +283,7 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 	return nil
 }
 
-// MoveStageByProcInstID MoveStageByProcInstID
+// MoveStageByProcInstID 根据流程实例id流转流程
 func MoveStageByProcInstID(userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB) (err error) {
 	nodeInfos, err := GetExecNodeInfosByProcInstID(procInstID)
 	if err != nil {
@@ -295,8 +292,7 @@ func MoveStageByProcInstID(userID, username, company, comment, candidate string,
 	return MoveStage(nodeInfos, userID, username, company, comment, candidate, taskID, procInstID, step, pass, tx)
 }
 
-// MoveStage MoveStage
-// 流程流转
+// MoveStage 流程流转
 func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB) (err error) {
 	// 添加上一步的参与人
 	err = AddParticipantTx(userID, username, company, comment, pass, taskID, procInstID, step, tx)
@@ -350,8 +346,7 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 	return MoveToPrevStage(nodeInfos, userID, company, taskID, procInstID, step, comment, tx)
 }
 
-// MoveToNextStage MoveToNextStage
-// 通过
+// MoveToNextStage 通过
 func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, currentTaskID, procInstID, step int, comment string, tx *gorm.DB) error {
 	var currentTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
 	var task = getNewTask(nodeInfos, step, procInstID, currentTime) //新任务
@@ -403,8 +398,7 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	return nil
 }
 
-// MoveToPrevStage MoveToPrevStage
-// 驳回
+// MoveToPrevStage 驳回
 func MoveToPrevStage(nodeInfos []*flow.NodeInfo, userID, company string, currentTaskID, procInstID, step int, comment string, tx *gorm.DB) error {
 	// 生成新的任务
 	var currentTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)

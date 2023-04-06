@@ -35,14 +35,12 @@ func GetProcdefByID(id int) (*model.Procdef, error) {
 	return model.GetProcdefByID(id)
 }
 
-// GetProcdefLatestByNameAndCompany GetProcdefLatestByNameAndCompany
-// 根据流程定义名字和公司查询流程定义
+// GetProcdefLatestByNameAndCompany 根据流程定义名字和公司查询流程定义
 func GetProcdefLatestByNameAndCompany(name, company string) (*model.Procdef, error) {
 	return model.GetProcdefLatestByNameAndCompany(name, company)
 }
 
-// GetResourceByNameAndCompany GetResourceByNameAndCompany
-// 获取流程定义配置信息
+// GetResourceByNameAndCompany 获取流程定义配置信息
 func GetResourceByNameAndCompany(name, company string) (*flow.Node, int, string, error) {
 	prodef, err := GetProcdefLatestByNameAndCompany(name, company)
 	if err != nil {
@@ -56,8 +54,7 @@ func GetResourceByNameAndCompany(name, company string) (*flow.Node, int, string,
 	return node, prodef.ID, prodef.Name, err
 }
 
-// GetResourceByID GetResourceByID
-// 根据id查询流程定义
+// GetResourceByID 根据id查询流程定义
 func GetResourceByID(id int) (*flow.Node, int, error) {
 	prodef, err := GetProcdefByID(id)
 	if err != nil {
@@ -68,7 +65,7 @@ func GetResourceByID(id int) (*flow.Node, int, error) {
 	return node, prodef.ID, err
 }
 
-// SaveProcdefByToken SaveProcdefByToken
+// SaveProcdefByToken 保存流程定义
 func (p *Procdef) SaveProcdefByToken(token string) (int, error) {
 	// 根据 token 获取用户信息
 	userinfo, err := GetUserinfoFromRedis(token)
@@ -143,8 +140,7 @@ func SaveProcdef(p *model.Procdef) (id int, err error) {
 	return p.ID, nil
 }
 
-// ExistsProcdefByNameAndCompany if exists
-// 查询流程定义是否存在
+// ExistsProcdefByNameAndCompany 查询流程定义是否存在
 func ExistsProcdefByNameAndCompany(name, company string) (yes bool, version int, err error) {
 	p, err := GetProcdefLatestByNameAndCompany(name, company)
 	if p == nil {
@@ -154,8 +150,7 @@ func ExistsProcdefByNameAndCompany(name, company string) (yes bool, version int,
 	return true, version, err
 }
 
-// FindAllPageAsJSON find by page and  transform result to string
-// 分页查询并将结果转换成 json 字符串
+// FindAllPageAsJSON 分页查询并将结果转换成 json 字符串
 func (p *Procdef) FindAllPageAsJSON() (string, error) {
 	datas, count, err := p.FindAll()
 	if err != nil {
@@ -164,7 +159,7 @@ func (p *Procdef) FindAllPageAsJSON() (string, error) {
 	return util.ToPageJSON(datas, count, p.PageIndex, p.PageSize)
 }
 
-// FindAll FindAll
+// FindAll
 func (p *Procdef) FindAll() ([]*model.Procdef, int, error) {
 	var page = util.Page{}
 	page.PageRequest(p.PageIndex, p.PageSize)
@@ -183,7 +178,7 @@ func (p *Procdef) getMaps() map[string]interface{} {
 	return maps
 }
 
-// DelProcdefByID del by id
+// DelProcdefByID 删除流程定义
 func DelProcdefByID(id int) error {
 	return model.DelProcdefByID(id)
 }

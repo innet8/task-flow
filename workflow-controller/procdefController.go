@@ -12,7 +12,7 @@ import (
 	"workflow/util"
 )
 
-// SaveProcdefByToken SaveProcdefByToken
+// SaveProcdefByToken 保存流程定义
 func SaveProcdefByToken(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
 		util.ResponseErr(writer, "只支持Post方法！！Only support Post ")
@@ -45,8 +45,7 @@ func SaveProcdefByToken(writer http.ResponseWriter, request *http.Request) {
 	util.Response(writer, fmt.Sprintf("%d", id), true)
 }
 
-// SaveProcdef save new procdefnition1
-// 保存流程定义
+// SaveProcdef 保存流程定义
 func SaveProcdef(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
 		util.ResponseErr(writer, "只支持Post方法！！Only support Post ")
@@ -99,7 +98,7 @@ func FindAllProcdefPage(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, datas)
 }
 
-// 根据 id 查询流程详情
+// FindByIdProcdef 根据id查询流程详情
 func FindByIdProcdef(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		util.ResponseErr(writer, "只支持get方法！！")
@@ -146,7 +145,7 @@ func FindByIdProcdef(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, fmt.Sprintf("%s", datas))
 }
 
-// 根据 name 查询流程详情
+// FindByNameProcdef 根据name查询流程详情
 func FindByNameProcdef(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		util.ResponseErr(writer, "只支持get方法！！")
@@ -193,8 +192,7 @@ func FindByNameProcdef(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, fmt.Sprintf("%s", datas))
 }
 
-// DelProcdefByID del by id
-// 根据 id 删除
+// DelProcdefByID 根据id删除流程
 func DelProcdefByID(writer http.ResponseWriter, request *http.Request) {
 	request.ParseForm()
 	var ids []string = request.Form["id"]

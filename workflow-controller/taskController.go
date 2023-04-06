@@ -126,8 +126,7 @@ func CompleteTaskByToken(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseOk(writer)
 }
 
-// CompleteTask CompleteTask
-// 审批
+// CompleteTask 审批
 func CompleteTask(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
 		util.ResponseErr(writer, "只支持Post方法！！Only support Post ")
