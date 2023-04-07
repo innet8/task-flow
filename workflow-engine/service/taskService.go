@@ -343,7 +343,7 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 			return err
 		}
 		// 添加抄送人
-		err = AddNotifierTx(task.ID, nodeInfos[step].Aprover, company, step, procInstID, tx)
+		err = AddNotifierTx(task.ID, nodeInfos[step].Aprover, company, step, procInstID, tx, nodeInfos[step].NodeUserList)
 		if err != nil {
 			return err
 		}

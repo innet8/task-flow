@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+	"workflow/workflow-engine/flow"
 	"workflow/workflow-engine/model"
 
 	"workflow/util"
@@ -14,7 +16,7 @@ func SaveIdentitylinkTx(i *model.Identitylink, tx *gorm.DB) error {
 }
 
 // AddNotifierTx 添加抄送人候选用户组
-func AddNotifierTx(taskID int, group, company string, step, procInstID int, tx *gorm.DB) error {
+func AddNotifierTx(taskID int, group, company string, step, procInstID int, tx *gorm.DB, nodeUserList []*flow.NodeUser) error {
 	yes, err := ExistsNotifierByProcInstIDAndGroup(procInstID, group)
 	if err != nil {
 		return err
@@ -22,8 +24,15 @@ func AddNotifierTx(taskID int, group, company string, step, procInstID int, tx *
 	if yes {
 		return nil
 	}
-	// taskIDint, _ := strconv.Atoi(taskID)
-	i := &model.Identitylink{
+
+	ids := make([]string, len(nodeUserList))
+	names := make([]string, len(nodeUserList))
+	for i, _ := range nodeUserList {
+		ids[i] = nodeUserList[i].TargetId
+		names[i] = nodeUserList[i].Name
+	}
+
+	d := &model.Identitylink{
 		Group:      group,
 		Type:       model.IdentityTypes[model.NOTIFIER],
 		Step:       step,
@@ -31,8 +40,10 @@ func AddNotifierTx(taskID int, group, company string, step, procInstID int, tx *
 		Company:    company,
 		State:      1,
 		TaskID:     taskID,
+		UserID:     strings.Join(ids, ","),
+		UserName:   strings.Join(names, ","),
 	}
-	return SaveIdentitylinkTx(i, tx)
+	return SaveIdentitylinkTx(d, tx)
 }
 
 // AddCandidateGroupTx 添加候选用户组

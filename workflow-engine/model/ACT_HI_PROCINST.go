@@ -82,9 +82,9 @@ func FindProcNotify(userID, company string, groups []string, pageIndex, pageSize
 		for _, val := range groups {
 			s = append(s, "\""+val+"\"")
 		}
-		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and (i.user_id='" + userID + "' or i.group in (" + strings.Join(s, ",") + "))"
+		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and (find_in_set('" + userID + "',i.user_id) or i.group in (" + strings.Join(s, ",") + "))"
 	} else {
-		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and i.user_id='" + userID + "'"
+		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and find_in_set('" + userID + "',i.user_id)"
 	}
 	sql = fmt.Sprintf(sql, conf.DbPrefix)
 	err := db.Where("id in (" + sql + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
