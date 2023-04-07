@@ -105,10 +105,18 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 	proc.Department = deptInfo.Name
 
 	// 检测var
-	falses, err := types.CheckVars(proc.Var)
-	if falses == false {
-		util.Response(writer, fmt.Sprintf("%s", err), false)
-		return
+	if proc.ProcName == "加班申请" {
+		falses, err := types.CheckOvertimeVars(proc.Var)
+		if falses == false {
+			util.Response(writer, fmt.Sprintf("%s", err), false)
+			return
+		}
+	} else {
+		falses, err := types.CheckVacateVars(proc.Var)
+		if falses == false {
+			util.Response(writer, fmt.Sprintf("%s", err), false)
+			return
+		}
 	}
 
 	datas, err := proc.StartProcessInstanceByID(proc.Var)
