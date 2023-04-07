@@ -111,13 +111,13 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	id, err := proc.StartProcessInstanceByID(proc.Var)
+	datas, err := proc.StartProcessInstanceByID(proc.Var)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return
 	}
 
-	util.ResponseData(writer, fmt.Sprintf("%d", id))
+	util.ResponseData(writer, datas)
 }
 
 // FindMyProcInstPageAsJSON 查询到我审批的流程实例

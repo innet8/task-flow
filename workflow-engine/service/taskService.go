@@ -243,10 +243,6 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 		}
 		return err2
 	}
-	// str1,_:=util.ToJSONStr(currentTask)
-	// str2,_:=util.ToJSONStr(lastTask)
-	// fmt.Println(str1)
-	// fmt.Println(str2)
 	if currentTask.Step == 0 {
 		return errors.New("开始位置无法撤回")
 	}
@@ -283,6 +279,17 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 		tx.Rollback()
 		return err
 	}
+
+	// 更新状态
+	var procInst = &model.ProcInst{State: 4}
+	procInst.ID = procInstID
+	err = UpdateProcInst(procInst, tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	//
 	tx.Commit()
 	// fmt.Printf("撤回流程耗时：%v\n", time.Since(timesx))
 	return nil
@@ -381,6 +388,8 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 		}
 		// 更新流程实例
 		procInst.TaskID = taksID
+		procInst.State = 1
+		procInst.LatestComment = comment
 		err = UpdateProcInst(procInst, tx)
 		if err != nil {
 			return err
@@ -403,6 +412,8 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 		procInst.EndTime = currentTime
 		procInst.IsFinished = true
 		procInst.Candidate = "审批结束"
+		procInst.State = 2
+		procInst.LatestComment = comment
 		err = UpdateProcInst(procInst, tx)
 		if err != nil {
 			return err
@@ -432,14 +443,12 @@ func MoveToPrevStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	var procInst = &model.ProcInst{
 		// NodeID:     nodeInfos[step].NodeID,
 		// TaskID:     taksID,
-		Candidate:  strconv.Itoa(nodeInfos[step].AproverId),
-		EndTime:    currentTime,
-		IsFinished: true,
-		// Comment: comment,
-		// Pass:    false,
+		Candidate:     strconv.Itoa(nodeInfos[step].AproverId),
+		EndTime:       currentTime,
+		IsFinished:    true,
+		LatestComment: comment,
+		State:         3,
 	}
-	// str, _ := json.Marshal(procInst)
-	// fmt.Printf("%s", string(str))
 
 	procInst.ID = procInstID
 	err = UpdateProcInst(procInst, tx)

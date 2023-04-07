@@ -13,7 +13,7 @@ type ProcInst struct {
 	Model
 	ProcDefID     int    `gorm:"not null;default:0;comment:'流程定义ID'" json:"procDefId"`
 	ProcDefName   string `gorm:"comment:'流程定义名'" json:"procDefName"`
-	Title         string `gorm:"comment:'标题'" json:"title"`
+	Title         string `gorm:"comment:'标题'" json:"title,omitempty"`
 	DepartmentId  int    `gorm:"comment:'用户部门ID'" json:"departmentId"`
 	Department    string `gorm:"comment:'用户部门'" json:"department"`
 	Company       string `gorm:"comment:'用户公司'" json:"company"`
@@ -27,6 +27,8 @@ type ProcInst struct {
 	StartUserName string `gorm:"comment:'开始用户名'" json:"startUserName"`
 	IsFinished    bool   `gorm:"default:false;comment:'是否完成'" json:"isFinished"`
 	Var           string `gorm:"size:4000;comment:'执行流程的附加参数'" json:"var"`
+	State         int    `gorm:"not null;default:0;comment:'当前状态: 0待审批，1审批中，2通过，3拒绝，4撤回'" json:"state"`
+	LatestComment string `gorm:"size:500;comment:'最新评论'" json:"latestComment"`
 }
 
 // GroupsNotNull 候选组

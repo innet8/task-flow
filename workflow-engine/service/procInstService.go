@@ -43,10 +43,8 @@ type ProcessPageReceiver struct {
 // 格式化返回参数
 type ProcInsts struct {
 	model.ProcInst
-	Var           *types.Vars  `json:"var,omitempty"`
-	NodeInfos     []*NodeInfos `json:"nodeInfos,omitempty"`
-	State         int          `json:"state"`         //当前状态，0待审批，1审批中，2通过，3拒绝，4撤回
-	LatestComment string       `json:"latestComment"` // 最新评论
+	Var       *types.Vars  `json:"var,omitempty"`
+	NodeInfos []*NodeInfos `json:"nodeInfos,omitempty"`
 }
 
 var copyLock sync.Mutex
@@ -84,31 +82,6 @@ func FindProcInstByID(id int) (string, error) {
 		return "", err
 	}
 	datas.NodeInfos = nodeInfos
-	//
-	var stateNum int
-	for _, v := range nodeInfos {
-		// 最新评论
-		if v.Identitylink != nil && v.Identitylink.Comment != "" {
-			datas.LatestComment = v.Identitylink.Comment
-		}
-		// 0待审批，1审批中，2通过，3拒绝，4撤回
-		if (v.Identitylink != nil && v.Identitylink.State == 1) || v.Type != flow.NodeTypes[flow.APPROVER] {
-			stateNum++
-			if stateNum == len(nodeInfos) {
-				datas.State = 2
-			} else if datas.State == 0 {
-				datas.State = 1
-			}
-		}
-		if v.Identitylink != nil && v.Identitylink.State == 2 {
-			datas.State = 3
-		}
-		if v.Identitylink != nil && v.Identitylink.State == 3 {
-			datas.State = 4
-		}
-	}
-	//
-
 	//
 	return util.ToJSONStr(datas)
 }
@@ -149,23 +122,23 @@ func FindMyProcInstByToken(token string, receiver *ProcessPageReceiver) (string,
 }
 
 // StartProcessInstanceByToken 启动流程
-func StartProcessInstanceByToken(token string, p *ProcessReceiver) (int, error) {
+func StartProcessInstanceByToken(token string, p *ProcessReceiver) (string, error) {
 	// 根据 token 获取用户信息
 	userinfo, err := GetUserinfoFromRedis(token)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	if len(userinfo.Company) == 0 {
-		return 0, errors.New("保存在redis中的【用户信息 userinfo】字段 company 不能为空")
+		return "", errors.New("保存在redis中的【用户信息 userinfo】字段 company 不能为空")
 	}
 	if len(userinfo.Username) == 0 {
-		return 0, errors.New("保存在redis中的【用户信息 userinfo】字段 username 不能为空")
+		return "", errors.New("保存在redis中的【用户信息 userinfo】字段 username 不能为空")
 	}
 	if len(userinfo.ID) == 0 {
-		return 0, errors.New("保存在redis中的【用户信息 userinfo】字段 ID 不能为空")
+		return "", errors.New("保存在redis中的【用户信息 userinfo】字段 ID 不能为空")
 	}
 	if len(userinfo.Department) == 0 {
-		return 0, errors.New("保存在redis中的【用户信息 userinfo】字段 department 不能为空")
+		return "", errors.New("保存在redis中的【用户信息 userinfo】字段 department 不能为空")
 	}
 	p.Company = userinfo.Company
 	p.Department = userinfo.Department
@@ -175,13 +148,13 @@ func StartProcessInstanceByToken(token string, p *ProcessReceiver) (int, error) 
 }
 
 // StartProcessInstanceByID 启动流程
-func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (int, error) {
+func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (string, error) {
 	// times := time.Now()
 	// runtime.GOMAXPROCS(2)
 	// 获取流程定义
 	node, prodefID, procdefName, err := GetResourceByNameAndCompany(p.ProcName, p.Company)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	// fmt.Printf("获取流程定义耗时：%v", time.Since(times))
 	//--------以下需要添加事务-----------------
@@ -190,10 +163,10 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (int, e
 	// 新建流程实例
 	jsonStr, err := json.Marshal(variable)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	//
-	var procInst = model.ProcInst{
+	var procInst = &model.ProcInst{
 		ProcDefID:     prodefID,
 		ProcDefName:   procdefName,
 		Title:         p.Title,
@@ -207,7 +180,7 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (int, e
 	}
 	//开启事务
 	// times = time.Now()
-	procInstID, err := CreateProcInstTx(&procInst, tx) // 事务
+	procInstID, err := CreateProcInstTx(procInst, tx) // 事务
 	// fmt.Printf("启动流程实例耗时：%v", time.Since(times))
 	exec := &model.Execution{
 		ProcDefID:  prodefID,
@@ -229,14 +202,14 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (int, e
 	_, err = GenerateExec(exec, node, p.UserID, p.DepartmentId, variable, tx) //事务
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return "", err
 	}
 	// 获取执行流信息
 	var nodeinfos []*flow.NodeInfo
 	err = util.Str2Struct(exec.NodeInfos, &nodeinfos)
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return "", err
 	}
 
 	// fmt.Printf("生成执行流耗时：%v", time.Since(times))
@@ -249,7 +222,7 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (int, e
 	_, err = NewTaskTx(task, tx)
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return "", err
 	}
 	// fmt.Printf("生成新任务耗时：%v", time.Since(times))
 	//--------------------流转------------------
@@ -258,12 +231,16 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (int, e
 	err = MoveStage(nodeinfos, p.UserID, p.Username, p.Company, "启动流程", "", task.ID, procInstID, step, true, tx)
 	if err != nil {
 		tx.Rollback()
-		return 0, err
+		return "", err
 	}
 	// fmt.Printf("流转到下一流程耗时：%v", time.Since(times))
 	// fmt.Println("--------------提交事务----------")
 	tx.Commit() //结束事务
-	return procInstID, err
+
+	//
+	var datas = &ProcInsts{}
+	Var2Json(procInst, datas)
+	return util.ToJSONStr(datas)
 }
 
 // CreateProcInstTx 开户事务
