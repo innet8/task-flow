@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"sync"
 	"time"
 
@@ -187,7 +188,7 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (string
 		ProcInstID: procInstID,
 	}
 	task := &model.Task{
-		NodeID:        "开始",
+		NodeID:        "0",
 		ProcInstID:    procInstID,
 		Assignee:      p.UserID,
 		IsFinished:    true,
@@ -238,6 +239,9 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (string
 	tx.Commit() //结束事务
 
 	//
+	procInst.NodeID = "0"
+	procInst.TaskID = task.ID
+	procInst.Candidate = strconv.Itoa(nodeinfos[1].AproverId)
 	var datas = &ProcInsts{}
 	Var2Json(procInst, datas)
 	return util.ToJSONStr(datas)
