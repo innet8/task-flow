@@ -116,7 +116,8 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	util.Response(writer, fmt.Sprintf("%d", id), true)
+
+	util.ResponseData(writer, fmt.Sprintf("%d", id))
 }
 
 // FindMyProcInstPageAsJSON 查询到我审批的流程实例
@@ -149,7 +150,8 @@ func FindMyProcInstPageAsJSON(writer http.ResponseWriter, request *http.Request)
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+
+	util.ResponseData(writer, result)
 }
 
 // FindMyProcInstByToken 查询待办的流程
@@ -179,7 +181,8 @@ func FindMyProcInstByToken(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+
+	util.ResponseData(writer, result)
 }
 
 // StartByMyself 我启动的流程
@@ -208,7 +211,8 @@ func StartByMyself(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+
+	util.ResponseData(writer, result)
 }
 
 // FindProcNotify 查询抄送我的流程
@@ -236,7 +240,8 @@ func FindProcNotify(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+
+	util.ResponseData(writer, result)
 }
 
 // MoveFinishedProcInstToHistory 将已经结束的流程实例移动到历史数据库

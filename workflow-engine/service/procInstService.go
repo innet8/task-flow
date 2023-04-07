@@ -43,8 +43,10 @@ type ProcessPageReceiver struct {
 // 格式化返回参数
 type ProcInsts struct {
 	model.ProcInst
-	Var       *types.Vars  `json:"var,omitempty"`
-	NodeInfos []*NodeInfos `json:"nodeInfos,omitempty"`
+	Var           *types.Vars  `json:"var,omitempty"`
+	NodeInfos     []*NodeInfos `json:"nodeInfos,omitempty"`
+	State         int          `json:"state"`         //当前状态，0待审批，1审批中，2通过，3拒绝，4撤回
+	LatestComment string       `json:"latestComment"` // 最新评论
 }
 
 var copyLock sync.Mutex
@@ -82,6 +84,31 @@ func FindProcInstByID(id int) (string, error) {
 		return "", err
 	}
 	datas.NodeInfos = nodeInfos
+	//
+	var stateNum int
+	for _, v := range nodeInfos {
+		// 最新评论
+		if v.Identitylink != nil && v.Identitylink.Comment != "" {
+			datas.LatestComment = v.Identitylink.Comment
+		}
+		// 0待审批，1审批中，2通过，3拒绝，4撤回
+		if (v.Identitylink != nil && v.Identitylink.State == 1) || v.Type != flow.NodeTypes[flow.APPROVER] {
+			stateNum++
+			if stateNum == len(nodeInfos) {
+				datas.State = 2
+			} else if datas.State == 0 {
+				datas.State = 1
+			}
+		}
+		if v.Identitylink != nil && v.Identitylink.State == 2 {
+			datas.State = 3
+		}
+		if v.Identitylink != nil && v.Identitylink.State == 3 {
+			datas.State = 4
+		}
+	}
+	//
+
 	//
 	return util.ToJSONStr(datas)
 }

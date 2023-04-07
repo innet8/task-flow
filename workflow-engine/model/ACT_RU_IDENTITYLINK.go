@@ -17,7 +17,7 @@ type Identitylink struct {
 	Step       int    `gorm:"comment:'一步'" json:"step"`
 	ProcInstID int    `gorm:"comment:'Proc机构ID'" json:"procInstID,omitempty"`
 	Company    string `gorm:"comment:'公司'" json:"company,omitempty"`
-	Comment    string `gorm:"comment:'评论'" json:"comment,omitempty"`
+	Comment    string `gorm:"comment:'评论'" json:"comment"`
 	State      int    `gorm:"default:0;comment:'状态:0待处理,1通过,2拒绝,3撤回'" json:"state"`
 }
 
