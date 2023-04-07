@@ -87,7 +87,7 @@ func IfParticipantByTaskID(userID, company string, taskID int) (bool, error) {
 // FindParticipantByProcInstID 查询参与审批的人
 func FindParticipantByProcInstID(procInstID int) ([]*Identitylink, error) {
 	var datas []*Identitylink
-	err := db.Select("id,user_id,user_name,step,comment").Where("proc_inst_id=? and type=?", procInstID, IdentityTypes[PARTICIPANT]).Order("id asc").Find(&datas).Error
+	err := db.Select("id,user_id,user_name,step,comment,state").Where("proc_inst_id=? and type=?", procInstID, IdentityTypes[PARTICIPANT]).Order("id asc").Find(&datas).Error
 	return datas, err
 }
 

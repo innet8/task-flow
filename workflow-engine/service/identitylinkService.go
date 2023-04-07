@@ -101,7 +101,7 @@ func AddParticipantTx(userID, username, company, comment string, pass bool, task
 	if step == 0 {
 		state = 1
 	} else {
-		if states != nil {
+		if states != nil && states[0] != 0 {
 			state = states[0]
 		} else if pass {
 			state = 1

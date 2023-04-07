@@ -294,13 +294,21 @@ func MoveStageByProcInstID(userID, username, company, comment, candidate string,
 	if err != nil {
 		return err
 	}
-	return MoveStage(nodeInfos, userID, username, company, comment, candidate, taskID, procInstID, step, pass, tx, state[0])
+	var t int
+	if state != nil {
+		t = state[0]
+	}
+	return MoveStage(nodeInfos, userID, username, company, comment, candidate, taskID, procInstID, step, pass, tx, t)
 }
 
 // MoveStage 流程流转
 func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB, state ...int) (err error) {
+	var t int
+	if state != nil {
+		t = state[0]
+	}
 	// 添加上一步的参与人
-	err = AddParticipantTx(userID, username, company, comment, pass, taskID, procInstID, step, tx, state[0])
+	err = AddParticipantTx(userID, username, company, comment, pass, taskID, procInstID, step, tx, t)
 	if err != nil {
 		return err
 	}

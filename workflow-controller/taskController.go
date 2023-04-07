@@ -139,8 +139,6 @@ func CompleteTask(writer http.ResponseWriter, request *http.Request) {
 	}
 	var taskRe = service.TaskReceiver{}
 	err := util.Body2Struct(request, &taskRe)
-	// str, _ := util.ToJSONStr(taskRe)
-	// log.Println(str)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return
