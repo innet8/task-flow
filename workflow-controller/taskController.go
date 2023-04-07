@@ -39,8 +39,9 @@ func WithDrawTask(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	if len(taskRe.Company) == 0 {
-		util.ResponseErr(writer, "字段company不能为空！")
-		return
+		taskRe.Company = "系统默认"
+		// util.ResponseErr(writer, "字段company不能为空！")
+		// return
 	}
 	err = service.WithDrawTask(taskRe.TaskID, taskRe.ProcInstID, taskRe.UserID, taskRe.UserName, taskRe.Company, taskRe.Comment)
 	if err != nil {

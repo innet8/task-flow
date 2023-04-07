@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"workflow/workflow-engine/model"
-	"workflow/workflow-engine/parameter"
+	"workflow/workflow-engine/types"
 
 	"workflow/util"
 
@@ -105,7 +105,7 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 	proc.Department = deptInfo.Name
 
 	// 检测var
-	falses, err := parameter.CheckVars(proc.Var)
+	falses, err := types.CheckVars(proc.Var)
 	if falses == false {
 		util.Response(writer, fmt.Sprintf("%s", err), false)
 		return

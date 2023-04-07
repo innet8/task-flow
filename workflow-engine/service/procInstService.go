@@ -10,22 +10,22 @@ import (
 
 	"workflow/workflow-engine/flow"
 	"workflow/workflow-engine/model"
-	"workflow/workflow-engine/parameter"
+	"workflow/workflow-engine/types"
 
 	"workflow/util"
 )
 
 // ProcessReceiver 接收页面传递参数
 type ProcessReceiver struct {
-	UserID       string          `json:"userId"`
-	ProcInstID   string          `json:"procInstID"`
-	Username     string          `json:"username"`
-	Company      string          `json:"company"`
-	ProcName     string          `json:"procName"`
-	Title        string          `json:"title"`
-	DepartmentId int             `json:"departmentId"`
-	Department   string          `json:"department"`
-	Var          *parameter.Vars `json:"var"`
+	UserID       string      `json:"userId"`
+	ProcInstID   string      `json:"procInstID"`
+	Username     string      `json:"username"`
+	Company      string      `json:"company"`
+	ProcName     string      `json:"procName"`
+	Title        string      `json:"title"`
+	DepartmentId int         `json:"departmentId"`
+	Department   string      `json:"department"`
+	Var          *types.Vars `json:"var"`
 }
 
 // ProcessPageReceiver 分页参数
@@ -38,6 +38,13 @@ type ProcessPageReceiver struct {
 	Company     string   `json:"company"`
 	ProcName    string   `json:"procName"`
 	ProcInstID  string   `json:"procInstID"`
+}
+
+// 格式化返回参数
+type ProcInsts struct {
+	model.ProcInst
+	Var       *types.Vars  `json:"var,omitempty"`
+	NodeInfos []*NodeInfos `json:"nodeInfos,omitempty"`
 }
 
 var copyLock sync.Mutex
@@ -63,33 +70,18 @@ func FindProcInstByID(id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// 新的结构体
+	datas := &ProcInsts{}
+	err = Var2Json(data, datas)
+	if err != nil {
+		return "", err
+	}
 	// 节点信息
 	nodeInfos, err := GetExecNodeInfosDetailsByProcInstID(id)
 	if err != nil {
 		return "", err
 	}
-	// Var 转对象
-	vars := &parameter.Vars{}
-	err = util.Str2Struct(data.Var, vars)
-	if err != nil {
-		return "", err
-	}
-
-	// 新的结构体
-	type ProcInsts struct {
-		model.ProcInst
-		Var       *parameter.Vars `json:"var"`
-		NodeInfos []*NodeInfos    `json:"nodeInfos,omitempty"`
-	}
-	datas := &ProcInsts{}
-	datas.Var = vars
 	datas.NodeInfos = nodeInfos
-
-	// 复制到新的结构体，并指定排除字段
-	err = util.Struct2Struct(data, datas, "var")
-	if err != nil {
-		return "", err
-	}
 	//
 	return util.ToJSONStr(datas)
 }
@@ -100,7 +92,11 @@ func FindAllPageAsJSON(pr *ProcessPageReceiver) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return util.ToPageJSON(datas, count, pr.PageIndex, pr.PageSize)
+	result, err := AllVar2Json(datas)
+	if err != nil {
+		return "", err
+	}
+	return util.ToPageJSON(result, count, pr.PageIndex, pr.PageSize)
 }
 
 // FindMyProcInstByToken 根据token获取流程信息
@@ -152,7 +148,7 @@ func StartProcessInstanceByToken(token string, p *ProcessReceiver) (int, error) 
 }
 
 // StartProcessInstanceByID 启动流程
-func (p *ProcessReceiver) StartProcessInstanceByID(variable *parameter.Vars) (int, error) {
+func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (int, error) {
 	// times := time.Now()
 	// runtime.GOMAXPROCS(2)
 	// 获取流程定义
@@ -243,19 +239,8 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *parameter.Vars) (in
 	return procInstID, err
 }
 
-// CreateProcInstByID 新建流程实例
-// func CreateProcInstByID(processDefinitionID int, startUserID string) (int, error) {
-// 	var procInst = model.ProcInst{
-// 		ProcDefID:   processDefinitionID,
-// 		StartTime:   util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS),
-// 		StartUserID: startUserID,
-// 	}
-// 	return procInst.Save()
-// }
-
 // CreateProcInstTx 开户事务
 func CreateProcInstTx(procInst *model.ProcInst, tx *gorm.DB) (int, error) {
-
 	return procInst.SaveTx(tx)
 }
 
@@ -277,7 +262,11 @@ func StartByMyself(receiver *ProcessPageReceiver) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return util.ToPageJSON(datas, count, receiver.PageIndex, receiver.PageSize)
+	result, err := AllVar2Json(datas)
+	if err != nil {
+		return "", err
+	}
+	return util.ToPageJSON(result, count, receiver.PageIndex, receiver.PageSize)
 }
 
 // FindProcNotify 查询抄送我的
@@ -288,7 +277,11 @@ func FindProcNotify(receiver *ProcessPageReceiver) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return util.ToPageJSON(datas, count, receiver.PageIndex, receiver.PageSize)
+	result, err := AllVar2Json(datas)
+	if err != nil {
+		return "", err
+	}
+	return util.ToPageJSON(result, count, receiver.PageIndex, receiver.PageSize)
 }
 
 // UpdateProcInst 更新流程实例
@@ -380,4 +373,37 @@ func copyProcToHistory(procInst *model.ProcInst) error {
 // copyTaskToHistoryByProInstID 流程实例的task移至历史纪录
 func copyTaskToHistoryByProInstID(procInstID int, tx *gorm.DB) error {
 	return model.CopyTaskToHistoryByProInstID(procInstID, tx)
+}
+
+// Var 转对象
+func Var2Json(p *model.ProcInst, data *ProcInsts) error {
+	vars := &types.Vars{}
+	// vars-json字符串转对象
+	err := util.Str2Struct(p.Var, vars)
+	if err != nil {
+		return err
+	}
+	// 复制到新的结构体，并指定排除字段
+	err = util.Struct2Struct(p, data, "var")
+	if err != nil {
+		return err
+	}
+	//
+	data.Var = vars
+	//
+	return nil
+}
+
+// Vars 转对象
+func AllVar2Json(datas []*model.ProcInst) ([]*ProcInsts, error) {
+	var result []*ProcInsts
+	for _, v := range datas {
+		dat := &ProcInsts{}
+		err := Var2Json(v, dat)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, dat)
+	}
+	return result, nil
 }

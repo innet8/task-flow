@@ -11,7 +11,7 @@ import (
 
 	"workflow/util"
 	"workflow/workflow-engine/model"
-	"workflow/workflow-engine/parameter"
+	"workflow/workflow-engine/types"
 )
 
 // ActionConditionType 条件类型
@@ -323,14 +323,14 @@ func CheckConditionNode(nodes []*Node) error {
 }
 
 // ParseProcessConfig 解析流程定义json数据
-func ParseProcessConfig(node *Node, userID string, departmentId int, variable *parameter.Vars) (*list.List, error) {
+func ParseProcessConfig(node *Node, userID string, departmentId int, variable *types.Vars) (*list.List, error) {
 	// defer fmt.Println("----------解析结束--------")
 	list := list.New()
 	err := parseProcessConfig(node, userID, departmentId, variable, list)
 	return list, err
 }
 
-func parseProcessConfig(node *Node, userID string, departmentId int, variable *parameter.Vars, list *list.List) (err error) {
+func parseProcessConfig(node *Node, userID string, departmentId int, variable *types.Vars, list *list.List) (err error) {
 	// fmt.Printf("nodeId=%s\n", node.NodeID)
 	node.add2ExecutionList(list, userID, departmentId)
 
@@ -373,7 +373,7 @@ func parseProcessConfig(node *Node, userID string, departmentId int, variable *p
 }
 
 // GetConditionNode 获取条件节点
-func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *parameter.Vars) (result *Node, err error) {
+func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *types.Vars) (result *Node, err error) {
 	// map2 := *maps
 	// 用户信息
 	// userInfo, errs := model.GetUserInfoById(userID)

@@ -218,9 +218,9 @@ func WithDrawTaskByToken(token string, receiver *TaskReceiver) error {
 func WithDrawTask(taskID, procInstID int, userID, username, company, comment string) error {
 	var err1, err2 error
 	var currentTask, lastTask *model.Task
-	var timesx time.Time
 	var wg sync.WaitGroup
-	timesx = time.Now()
+	// var timesx time.Time
+	// timesx = time.Now()
 	wg.Add(2)
 	go func() {
 		currentTask, err1 = GetTaskByID(taskID)
@@ -267,8 +267,8 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 	if sub < 0 {
 		pass = true
 	}
-	fmt.Printf("判断是否可以撤回,耗时：%v\n", time.Since(timesx))
-	timesx = time.Now()
+	// fmt.Printf("判断是否可以撤回,耗时：%v\n", time.Since(timesx))
+	// timesx = time.Now()
 	tx := model.GetTx()
 	// 更新当前的任务
 	currentTask.IsFinished = true
@@ -278,29 +278,29 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 		return err
 	}
 	// 撤回
-	err = MoveStageByProcInstID(userID, username, company, comment, "", currentTask.ID, procInstID, currentTask.Step, pass, tx)
+	err = MoveStageByProcInstID(userID, username, company, comment, "", currentTask.ID, procInstID, currentTask.Step, pass, tx, 3)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 	tx.Commit()
-	fmt.Printf("撤回流程耗时：%v\n", time.Since(timesx))
+	// fmt.Printf("撤回流程耗时：%v\n", time.Since(timesx))
 	return nil
 }
 
 // MoveStageByProcInstID 根据流程实例id流转流程
-func MoveStageByProcInstID(userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB) (err error) {
+func MoveStageByProcInstID(userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB, state ...int) (err error) {
 	nodeInfos, err := GetExecNodeInfosByProcInstID(procInstID)
 	if err != nil {
 		return err
 	}
-	return MoveStage(nodeInfos, userID, username, company, comment, candidate, taskID, procInstID, step, pass, tx)
+	return MoveStage(nodeInfos, userID, username, company, comment, candidate, taskID, procInstID, step, pass, tx, state[0])
 }
 
 // MoveStage 流程流转
-func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB) (err error) {
+func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, candidate string, taskID, procInstID, step int, pass bool, tx *gorm.DB, state ...int) (err error) {
 	// 添加上一步的参与人
-	err = AddParticipantTx(userID, username, company, comment, pass, taskID, procInstID, step, tx)
+	err = AddParticipantTx(userID, username, company, comment, pass, taskID, procInstID, step, tx, state[0])
 	if err != nil {
 		return err
 	}

@@ -96,12 +96,14 @@ func AddCandidateUserTx(userID, company string, step, taskID, procInstID int, tx
 }
 
 // AddParticipantTx 添加任务参与人
-func AddParticipantTx(userID, username, company, comment string, pass bool, taskID, procInstID, step int, tx *gorm.DB) error {
+func AddParticipantTx(userID, username, company, comment string, pass bool, taskID, procInstID, step int, tx *gorm.DB, states ...int) error {
 	var state int
 	if step == 0 {
 		state = 1
 	} else {
-		if pass {
+		if states != nil {
+			state = states[0]
+		} else if pass {
 			state = 1
 		} else {
 			state = 2

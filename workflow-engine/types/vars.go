@@ -1,4 +1,4 @@
-package parameter
+package types
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ type Vars struct {
 	EndTime     string `json:"endTime"`     //结束时间
 }
 
-var Types = []string{"年假", "事假", "病假", "调休假", "婚假", "产假", "陪产假", "丧假", "哺乳假"}
+var Typess = []string{"年假", "事假", "病假", "调休假", "婚假", "产假", "陪产假", "丧假", "哺乳假"}
 
 // 验证类型
 func CheckVars(vars *Vars) (bool, error) {
@@ -23,8 +23,8 @@ func CheckVars(vars *Vars) (bool, error) {
 	if len(vars.Type) == 0 {
 		return false, errors.New("var.type 不存在")
 	}
-	if !strings.Contains(strings.Join(Types, ","), vars.Type) {
-		return false, errors.New("var.type错误,只允许：" + strings.Join(Types, ","))
+	if !strings.Contains(strings.Join(Typess, ","), vars.Type) {
+		return false, errors.New("var.type错误,只允许：" + strings.Join(Typess, ","))
 	}
 	if len(vars.StartTime) == 0 {
 		return false, errors.New("var.startTime 不存在")
