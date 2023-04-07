@@ -19,7 +19,13 @@ func ToJSONStr(data interface{}) (string, error) {
 
 // ToPageJSON 转换成json字符串
 func ToPageJSON(datas interface{}, count, pageIndex, pageSize int) (string, error) {
-	data, err := json.Marshal(datas)
+	var data any
+	var err error
+	if fmt.Sprintf("%s", datas) == "[]" {
+		data = "[]"
+	} else {
+		data, err = json.Marshal(datas)
+	}
 	result := fmt.Sprintf("{\"rows\":%s,\"pageSize\":%d,\"total\":%d,\"page\":%d}", data, pageSize, count, pageIndex)
 	return result, err
 }
