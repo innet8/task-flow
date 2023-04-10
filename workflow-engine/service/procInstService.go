@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"strconv"
 	"sync"
 	"time"
 
@@ -240,8 +239,8 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (string
 
 	//
 	procInst.NodeID = "0"
-	procInst.TaskID = task.ID
-	procInst.Candidate = strconv.Itoa(nodeinfos[1].AproverId)
+	procInst.TaskID = task.ID + 1
+	procInst.Candidate = nodeinfos[1].AproverId
 	var datas = &ProcInsts{}
 	Var2Json(procInst, datas)
 	return util.ToJSONStr(datas)

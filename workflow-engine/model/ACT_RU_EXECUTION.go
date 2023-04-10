@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"workflow/util"
@@ -56,9 +57,16 @@ func GetExecByProcInst(procInstID int) (*Execution, error) {
 func GetExecNodeInfosByProcInstID(procInstID int) (string, error) {
 	var e = &Execution{}
 	err := db.Select("node_infos").Where("proc_inst_id=?", procInstID).Find(e).Error
-	// fmt.Println(e)
 	if err != nil {
-		return "", err
+		var datas = &ExecutionHistory{}
+		if fmt.Sprintf("%s", err) == "record not found" {
+			err = db.Select("node_infos").Where("proc_inst_id=?", procInstID).Find(datas).Error
+			if err != nil {
+				return "", err
+			}
+			strjson, _ := util.ToJSONStr(datas)
+			util.Str2Struct(strjson, e)
+		}
 	}
 	return e.NodeInfos, nil
 }

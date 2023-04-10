@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -124,7 +125,7 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 	if err != nil {
 		return nil, err
 	}
-	if data.Candidate != userID {
+	if !util.IsContain(strings.Split(data.Candidate, ","), userID) {
 		return nil, errors.New("无权限")
 	}
 
@@ -145,8 +146,6 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 		task.IsFinished = true
 	}
 	err = task.UpdateTx(tx)
-	// str, _ := util.ToJSONStr(task)
-	// log.Println(str)
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +338,7 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 	if nodeInfos[step].AproverType == flow.NodeTypes[flow.NOTIFIER] {
 		// 生成新的任务
 		var task = model.Task{
-			NodeID:     flow.NodeTypes[flow.NOTIFIER],
+			NodeID:     nodeInfos[step].NodeID,
 			Step:       step,
 			ProcInstID: procInstID,
 			IsFinished: true,
@@ -372,7 +371,7 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	var task = getNewTask(nodeInfos, step, procInstID, currentTime) //新任务
 	var procInst = &model.ProcInst{                                 // 流程实例要更新的字段
 		NodeID:    nodeInfos[step].NodeID,
-		Candidate: strconv.Itoa(nodeInfos[step].AproverId),
+		Candidate: nodeInfos[step].AproverId,
 	}
 	procInst.ID = procInstID
 	if (step + 1) != len(nodeInfos) { // 下一步不是【结束】
@@ -443,7 +442,7 @@ func MoveToPrevStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	var procInst = &model.ProcInst{
 		// NodeID:     nodeInfos[step].NodeID,
 		// TaskID:     taksID,
-		Candidate:     strconv.Itoa(nodeInfos[step].AproverId),
+		Candidate:     nodeInfos[step].AproverId,
 		EndTime:       currentTime,
 		IsFinished:    true,
 		LatestComment: comment,

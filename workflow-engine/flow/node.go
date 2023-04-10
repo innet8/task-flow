@@ -159,7 +159,7 @@ type NodeInfo struct {
 	Type                    string      `json:"type"`
 	Settype                 int         `json:"settype,omitempty"`
 	Aprover                 string      `json:"approver"`
-	AproverId               int         `json:"aproverId"`
+	AproverId               string      `json:"aproverId"`
 	AproverType             string      `json:"aproverType"`
 	MemberCount             int8        `json:"memberCount"`
 	Level                   int8        `json:"level"`
@@ -183,15 +183,19 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 		// 审批人设置
 		if n.Settype == 1 {
 			var strArr []string
+			var strIdArr []string
 			for _, user := range n.NodeUserList {
 				strArr = append(strArr, user.Name)
+				strIdArr = append(strIdArr, user.TargetId)
 			}
-			aprover := strings.Join(strArr, ",")
+			aprovers := strings.Join(strArr, ",")
+			aproverIds := strings.Join(strIdArr, ",")
 			list.PushBack(NodeInfo{
 				NodeID:       n.NodeID,
 				Type:         n.Type,
 				Settype:      n.Settype,
-				Aprover:      aprover,
+				Aprover:      aprovers,
+				AproverId:    aproverIds,
 				AproverType:  n.Type,
 				Level:        int8(n.DirectorLevel),
 				MemberCount:  1,
@@ -202,14 +206,13 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 			// 主管
 			dept, _ := model.GetDeptLevelByID(departmentId, n.DirectorLevel)
 			if dept != nil {
-				ownerUserid, _ := strconv.Atoi(dept.OwnerUserid)
 				userInfo, _ := model.GetUserInfoById(dept.OwnerUserid)
 				list.PushBack(NodeInfo{
 					NodeID:       n.NodeID,
 					Type:         n.Type,
 					Settype:      n.Settype,
 					Aprover:      userInfo.Nickname,
-					AproverId:    ownerUserid,
+					AproverId:    dept.OwnerUserid,
 					AproverType:  n.Type,
 					Level:        int8(n.DirectorLevel),
 					MemberCount:  1,
@@ -225,14 +228,13 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 			for i := 0; i < n.ExamineEndDirectorLevel; i++ {
 				dept, _ := model.GetDeptLevelByID(departmentId, i+1)
 				if dept != nil {
-					ownerUserid, _ := strconv.Atoi(dept.OwnerUserid)
 					userInfo, _ := model.GetUserInfoById(dept.OwnerUserid)
 					list.PushBack(NodeInfo{
 						NodeID:       n.NodeID + strconv.Itoa(i),
 						Type:         n.Type,
 						Settype:      n.Settype,
 						Aprover:      userInfo.Nickname,
-						AproverId:    ownerUserid,
+						AproverId:    dept.OwnerUserid,
 						AproverType:  n.Type,
 						Level:        int8(i + 1),
 						MemberCount:  1,

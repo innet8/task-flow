@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"workflow/util"
 
 	"github.com/jinzhu/gorm"
 )
@@ -94,6 +95,17 @@ func FindParticipantByProcInstID(procInstID int) ([]*Identitylink, error) {
 // GetIdentitylinkInfoByTaskID 根据taskID获取信息
 func GetIdentitylinkInfoByTaskID(taskID int) (*Identitylink, error) {
 	var datas Identitylink
-	err := db.Model(&Users{}).Where("task_id=?", taskID).Find(&datas).Error
+	err := db.Where("task_id=?", taskID).Order("id desc").Find(&datas).Error
+	// 历史
+	if fmt.Sprintf("%s", err) == "record not found" {
+		var datass IdentitylinkHistory
+		err = db.Where("task_id=?", taskID).Order("id desc").Find(&datass).Error
+		if err != nil {
+			return nil, err
+		}
+		strjson, _ := util.ToJSONStr(&datass)
+		util.Str2Struct(strjson, &datas)
+	}
+	//
 	return &datas, err
 }

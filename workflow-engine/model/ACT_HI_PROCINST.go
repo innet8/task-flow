@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"workflow/util"
 
 	"github.com/jinzhu/gorm"
 )
@@ -66,12 +67,20 @@ func StartByMyself(userID, company string, pageIndex, pageSize int) ([]*ProcInst
 
 // FindProcInstByID 根据ID查询流程实例
 func FindProcInstByID(id int) (*ProcInst, error) {
-	var data = ProcInst{}
-	err := db.Where("id=?", id).Find(&data).Error
+	var data = &ProcInst{}
+	var datas = &ProcInstHistory{}
+	err := db.Where("id=?", id).Find(data).Error
 	if err != nil {
-		return nil, err
+		if fmt.Sprintf("%s", err) == "record not found" {
+			err = db.Where("id=?", id).Find(datas).Error
+			if err != nil {
+				return nil, err
+			}
+			datas, _ := util.ToJSONStr(datas)
+			util.Str2Struct(datas, data)
+		}
 	}
-	return &data, nil
+	return data, nil
 }
 
 // FindProcNotify 查询抄送我的流程
@@ -146,7 +155,7 @@ func FindProcInsts(userID, procName, company string, groups, departments []strin
 	selectDatas := func(in chan<- error, wg *sync.WaitGroup) {
 		go func() {
 			err := db.Scopes(GroupsNotNull(groups, sql), DepartmentsNotNull(departments, sql)).
-				Or("candidate=? and "+sql, userID).
+				Or("find_in_set(?,candidate) and "+sql, userID).
 				Offset((pageIndex - 1) * pageSize).Limit(pageSize).
 				Order("start_time desc").
 				Find(&datas).Error

@@ -8,3 +8,13 @@ import (
 func IsDoubleStr(doubelstr string) (bool, error) {
 	return regexp.MatchString(`^[-+]?[0-9]+(\.[0-9]+)?$`, doubelstr)
 }
+
+// 判断元素是否存在数组中
+func IsContain(items []string, item string) bool {
+	for _, eachItem := range items {
+		if eachItem == item {
+			return true
+		}
+	}
+	return false
+}

@@ -27,7 +27,7 @@ func AddNotifierTx(taskID int, group, company string, step, procInstID int, tx *
 
 	ids := make([]string, len(nodeUserList))
 	names := make([]string, len(nodeUserList))
-	for i, _ := range nodeUserList {
+	for i := range nodeUserList {
 		ids[i] = nodeUserList[i].TargetId
 		names[i] = nodeUserList[i].Name
 	}

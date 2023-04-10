@@ -1,6 +1,8 @@
 package model
 
 import (
+	"workflow/util"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -48,6 +50,15 @@ func GetTaskByID(id int) (*Task, error) {
 func GetTaskByProInstID(procInstID int) ([]*Task, error) {
 	var datas []*Task
 	err := db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&datas).Error
+	if err == nil {
+		var datass []*TaskHistory
+		err = db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&datass).Error
+		if err != nil {
+			return nil, err
+		}
+		strjson, _ := util.ToJSONStr(&datass)
+		util.Str2Struct(strjson, &datas)
+	}
 	return datas, err
 }
 
