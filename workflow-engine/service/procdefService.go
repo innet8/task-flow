@@ -180,6 +180,14 @@ func (p *Procdef) getMaps() map[string]interface{} {
 
 // DelProcdefByID 删除流程定义
 func DelProcdefByID(id int) error {
+	// 验证流程定义是否存在
+	procdef, err := GetProcdefByID(id)
+	if err != nil {
+		return err
+	}
+	if procdef == nil {
+		return errors.New("流程定义不存在")
+	}
 	return model.DelProcdefByID(id)
 }
 
