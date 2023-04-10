@@ -148,57 +148,6 @@ run_exec() {
     docker exec -it "$name" /bin/sh -c "$cmd"
 }
 
-run_mysql() {
-    if [ "$1" = "backup" ]; then
-        # 备份数据库
-        database=$(env_get MYSQL_DATABASE)
-        username=$(env_get MYSQL_USER)
-        password=$(env_get MYSQL_PASSWORD)
-        mkdir -p ${cur_path}/docker/mysql/backup
-        filename="${cur_path}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
-        run_exec mysql "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
-        judge "备份数据库"
-        [ -f "$filename" ] && echo -e "备份文件：$filename"
-    elif [ "$1" = "recovery" ]; then
-        # 还原数据库
-        database=$(env_get MYSQL_DATABASE)
-        username=$(env_get MYSQL_USER)
-        password=$(env_get MYSQL_PASSWORD)
-        mkdir -p ${cur_path}/docker/mysql/backup
-        list=`ls -1 "${cur_path}/docker/mysql/backup" | grep ".sql.gz"`
-        if [ -z "$list" ]; then
-            echo -e "${Error} ${RedBG} 没有备份文件！${Font}"
-            exit 1
-        fi
-        echo "$list"
-        read -rp "请输入备份文件名称还原：" inputname
-        filename="${cur_path}/docker/mysql/backup/${inputname}"
-        if [ ! -f "$filename" ]; then
-            echo -e "${Error} ${RedBG} 备份文件：${inputname} 不存在！ ${Font}"
-            exit 1
-        fi
-        container_name=`docker_name mysql`
-        if [ -z "$container_name" ]; then
-            echo -e "${Error} ${RedBG} 没有找到 mysql 容器! ${Font}"
-            exit 1
-        fi
-        docker cp $filename $container_name:/
-        run_exec mysql "gunzip < /$inputname | mysql -u$username -p$password $database"
-        judge "还原数据库"
-    fi
-}
-
-run_doc() {
-    local go_path=`go env | grep "GOPATH" | awk -F '=' '{print $2}'`
-    go_path=`sed -e 's/^"//' -e 's/"$//' <<<"$go_path"`
-    if [ ! -f "${go_path}/bin/swag" ]; then
-        go install github.com/swaggo/swag/cmd/swag@latest
-    fi
-    cd ${cur_path}
-    ${go_path}/bin/swag init
-    go get -u github.com/swaggo/gin-swagger
-    go get -u github.com/swaggo/files
-}
 
 ####################################################################################
 ####################################################################################
@@ -218,45 +167,10 @@ if [ $# -gt 0 ]; then
         echo -e "密码: ${GreenBG}123456${Font}"
     elif [[ "$1" == "update" ]]; then
         shift 1
-        run_mysql backup
         git fetch --all
         git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
         git pull
         $COMPOSE up -d
-    elif [[ "$1" == "uninstall" ]]; then
-        shift 1
-        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(y/n): " uninstall
-        [[ -z ${uninstall} ]] && uninstall="N"
-        case $uninstall in
-        [yY][eE][sS] | [yY])
-            echo -e "${RedBG} 开始卸载... ${Font}"
-            ;;
-        *)
-            echo -e "${GreenBG} 终止卸载。 ${Font}"
-            exit 2
-            ;;
-        esac
-        $COMPOSE down
-        rm -rf "./docker/mysql/data"
-        rm -rf "./docker/mysql/logs"
-        echo -e "${OK} ${GreenBG} 卸载完成 ${Font}"
-    elif [[ "$1" == "reinstall" ]]; then
-        shift 1
-        ./cmd uninstall $@
-        sleep 3
-        ./cmd install $@
-    elif [[ "$1" == "redis" ]]; then
-        shift 1
-        e="redis $@" && run_exec redis "$e"
-    elif [[ "$1" == "mysql" ]]; then
-        shift 1
-        if [ "$1" = "backup" ]; then
-            run_mysql backup
-        elif [ "$1" = "recovery" ]; then
-            run_mysql recovery
-        else
-            e="mysql $@" && run_exec mysql "$e"
-        fi
     elif [[ "$1" == "restart" ]]; then
         shift 1
         $COMPOSE stop "$@"
@@ -264,11 +178,14 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "dev" ]]; then
         fresh -c fresh.conf
     elif [[ "$1" == "build" ]]; then
-        run_exec golang "rm -f main & go build main.go"
+        run_exec golang "rm -f main & GOOS=linux go build -o main main.go"
         echo -e "${OK} ${GreenBG} 编译完成 ${Font}"
-        echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get SERVER_PORT)${Font}"
-    elif [[ "$1" == "doc" ]]; then
-        run_doc
+    elif [[ "$1" == "build-image" ]]; then
+        cd workflow-vue3 && npm run build && cd ../
+        GOOS=linux go build -o main main.go
+        DOCKER_BUILDKIT=1 docker build -t weifashi/go-workflow:1.0.0 .
+        $COMPOSE up -d
+        docker ps | grep "task-flow-workflow" | awk '{print $1}'
     else
         $COMPOSE "$@"
     fi

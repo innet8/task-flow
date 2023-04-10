@@ -31,7 +31,7 @@ func main() {
 	// 启动数据库连接
 	model.Setup()
 	// 启动redis连接
-	model.SetRedis()
+	// model.SetRedis()
 	// 启动定时任务
 	service.CronJobs()
 	// 启动服务

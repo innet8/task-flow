@@ -44,9 +44,11 @@ type Configuration struct {
 var Config = &Configuration{}
 
 func init() {
-	errs := godotenv.Load(".env")
-	if errs != nil {
-		os.Exit(101)
+	if os.Getenv("MYSQL_HOST") == "" {
+		errs := godotenv.Load(".env")
+		if errs != nil {
+			// os.Exit(101)
+		}
 	}
 	LoadConfig()
 }
@@ -73,19 +75,19 @@ func (c *Configuration) setFromEnv() error {
 		case "Port":
 			newFieldname = "SERVER_PORT"
 		case "DbHost":
-			// newFieldname = "MYSQL_HOST"
+			newFieldname = "MYSQL_HOST"
 		case "DbPort":
 			newFieldname = "MYSQL_PORT"
 		case "DbName":
-			newFieldname = "MYSQL_DATABASE"
+			newFieldname = "MYSQL_DBNAME"
 		case "DbUser":
-			newFieldname = "MYSQL_USER"
+			newFieldname = "MYSQL_USERNAME"
 		case "DbPassword":
 			newFieldname = "MYSQL_PASSWORD"
 		case "DbPrefix":
 			newFieldname = "MYSQL_Prefix"
 		case "RedisHost":
-			// newFieldname = "REDIS_HOST"
+			newFieldname = "REDIS_HOST"
 		case "RedisPort":
 			newFieldname = "REDIS_PORT"
 		case "RedisPassword":
