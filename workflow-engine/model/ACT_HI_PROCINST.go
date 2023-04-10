@@ -68,16 +68,16 @@ func StartByMyself(userID, company string, pageIndex, pageSize int) ([]*ProcInst
 // FindProcInstByID 根据ID查询流程实例
 func FindProcInstByID(id int) (*ProcInst, error) {
 	var data = &ProcInst{}
-	var datas = &ProcInstHistory{}
 	err := db.Where("id=?", id).Find(data).Error
 	if err != nil {
 		if fmt.Sprintf("%s", err) == "record not found" {
+			var datas = &ProcInstHistory{}
 			err = db.Where("id=?", id).Find(datas).Error
 			if err != nil {
 				return nil, err
 			}
-			datas, _ := util.ToJSONStr(datas)
-			util.Str2Struct(datas, data)
+			strjson, _ := util.ToJSONStr(datas)
+			util.Str2Struct(strjson, data)
 		}
 	}
 	return data, nil

@@ -105,7 +105,6 @@ func GetExecNodeInfosDetailsByProcInstID(procInstID int) ([]*NodeInfos, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	var nodeInfos []*NodeInfos
 
 	err = util.Str2Struct(nodeinfoStr, &nodeInfos)
@@ -122,10 +121,9 @@ func GetExecNodeInfosDetailsByProcInstID(procInstID int) ([]*NodeInfos, error) {
 		for _, v := range taskInfos {
 			if val.NodeID == v.NodeID {
 				identitylinkInfos, err := model.GetIdentitylinkInfoByTaskID(v.ID)
-				if err != nil {
-					return nil, err
+				if err == nil {
+					nodeInfos[k].Identitylink = identitylinkInfos
 				}
-				nodeInfos[k].Identitylink = identitylinkInfos
 			}
 		}
 	}
