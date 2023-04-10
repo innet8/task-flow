@@ -6,11 +6,9 @@
                     <el-radio-group v-model="approverConfig.settype" class="clear" @change="changeType">
                         <el-radio :label="1">指定成员</el-radio>
                         <el-radio :label="2">主管</el-radio>
-                        <!-- <el-radio :label="4">发起人自选</el-radio>
-                        <el-radio :label="5">发起人自己</el-radio> -->
-                        <el-radio :label="7">连续多级主管</el-radio>
+                        <el-radio :label="3">连续多级主管</el-radio>
                     </el-radio-group>
-                    <el-button type="primary" @click="addApprover" v-if="approverConfig.settype==1">添加/修改成员</el-button>
+                    <el-button type="primary" @click="addApprover" v-if="approverConfig.settype==1 && approverConfig.nodeUserList?.length==0">添加/修改成员</el-button>
                     <p class="selected_list" v-if="approverConfig.settype==1">
                         <span v-for="(item,index) in approverConfig.nodeUserList" :key="index">{{item.name}}
                             <img src="@/assets/images/add-close1.png" @click="$func.removeEle(approverConfig.nodeUserList,item,'targetId')">
@@ -50,7 +48,7 @@
                         <a v-if="approverConfig.nodeUserList.length!=0&&approverConfig.selectRange!=1" @click="approverConfig.nodeUserList=[]">清除</a>
                     </p>
                 </div>
-                <div class="approver_manager" v-if="approverConfig.settype==7">
+                <div class="approver_manager" v-if="approverConfig.settype==3">
                     <p>审批终点</p>
                     <p style="padding-bottom:20px">
                         <span>发起人的：</span>
@@ -67,7 +65,7 @@
                         <el-radio :label="2" v-if="approverConfig.settype!=2">会签(须所有审批人同意)</el-radio>
                     </el-radio-group>
                 </div>
-                <div class="approver_some" v-if="approverConfig.settype==2||approverConfig.settype==7">
+                <div class="approver_some" v-if="approverConfig.settype==2||approverConfig.settype==3">
                     <p>审批人为空时</p>
                     <el-radio-group v-model="approverConfig.noHanderAction" class="clear">
                         <el-radio :label="1">自动审批通过</el-radio>
@@ -132,10 +130,7 @@ const changeType = (val)=> {
     approverConfig.value.noHanderAction = 1;
     if (val == 2) {
         approverConfig.value.directorLevel = 1;
-    } else if (val == 4) {
-        approverConfig.value.selectMode = 1;
-        approverConfig.value.selectRange = 1;
-    } else if (val == 7) {
+    } else if (val == 3) {
         approverConfig.value.examineEndDirectorLevel = 1
     }
 }

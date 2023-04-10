@@ -76,23 +76,7 @@ All.prototype = {
             } else if (nodeConfig.examineMode == 2) {
                 return level + "会签"
             }
-        } else if (nodeConfig.settype == 4) {
-            if (nodeConfig.selectRange == 1) {
-                return "发起人自选"
-            } else {
-                if (nodeConfig.nodeUserList.length > 0) {
-                    if (nodeConfig.selectRange == 2) {
-                        return "发起人自选"
-                    } else {
-                        return '发起人从' + nodeConfig.nodeUserList[0].name + '中自选'
-                    }
-                } else {
-                    return "";
-                }
-            }
-        } else if (nodeConfig.settype == 5) {
-            return "发起人自己"
-        } else if (nodeConfig.settype == 7) {
+        }  else if (nodeConfig.settype == 3) {
             return '从直接主管到通讯录中级别最高的第' + nodeConfig.examineEndDirectorLevel + '个层级主管'
         }
     },

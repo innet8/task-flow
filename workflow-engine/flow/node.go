@@ -73,7 +73,7 @@ type Node struct {
 	ConditionNodes          []*Node              `json:"conditionNodes,omitempty"`          // 条件节点
 	ConditionList           []*NodeConditionList `json:"conditionList,omitempty"`           // 条件列表
 	Properties              *NodeProperties      `json:"properties,omitempty"`              // 属性
-	Settype                 int                  `json:"settype,omitempty"`                 // 审批人设置 1指定成员 2主管 4发起人自选 5发起人自己 7连续多级主管
+	Settype                 int                  `json:"settype,omitempty"`                 // 审批人设置 1指定成员 2主管 3连续多级主管
 	SelectMode              int                  `json:"selectMode,omitempty"`              // 审批人数 1选一个人 2选多个人
 	SelectRange             int                  `json:"selectRange,omitempty"`             // 选择范围 1.全公司 2指定成员 2指定角色
 	PriorityLevel           int                  `json:"priorityLevel,omitempty"`           // 优先级
@@ -190,6 +190,14 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 			}
 			aprovers := strings.Join(strArr, ",")
 			aproverIds := strings.Join(strIdArr, ",")
+
+			var memberCount int8
+			if n.ExamineMode == 1 {
+				memberCount = 1
+			} else {
+				memberCount = int8(len(n.NodeUserList))
+			}
+
 			list.PushBack(NodeInfo{
 				NodeID:       n.NodeID,
 				Type:         n.Type,
@@ -198,7 +206,7 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 				AproverId:    aproverIds,
 				AproverType:  n.Type,
 				Level:        int8(n.DirectorLevel),
-				MemberCount:  1,
+				MemberCount:  memberCount,
 				ActType:      actType,
 				NodeUserList: n.NodeUserList,
 			})
@@ -220,7 +228,7 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 					NodeUserList: n.NodeUserList,
 				})
 			}
-		} else if n.Settype == 7 {
+		} else if n.Settype == 3 {
 			//  连续多级主管
 			if n.ExamineEndDirectorLevel == 1 {
 				n.ExamineEndDirectorLevel = 10
