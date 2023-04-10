@@ -81,8 +81,7 @@ func SaveProcdef(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, fmt.Sprintf("%d", id))
 }
 
-// FindAllProcdefPage find by page
-// 分页查询
+// FindAllProcdefPage 分页查询
 func FindAllProcdefPage(writer http.ResponseWriter, request *http.Request) {
 	var procdef = service.Procdef{PageIndex: 1, PageSize: 10}
 	err := util.Body2Struct(request, &procdef)

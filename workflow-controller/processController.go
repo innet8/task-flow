@@ -106,14 +106,14 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 
 	// 检测var
 	if proc.ProcName == "加班申请" {
-		falses, err := types.CheckOvertimeVars(proc.Var)
-		if falses == false {
+		is, err := types.CheckOvertimeVars(proc.Var)
+		if !is {
 			util.Response(writer, fmt.Sprintf("%s", err), false)
 			return
 		}
 	} else {
-		falses, err := types.CheckVacateVars(proc.Var)
-		if falses == false {
+		is, err := types.CheckVacateVars(proc.Var)
+		if !is {
 			util.Response(writer, fmt.Sprintf("%s", err), false)
 			return
 		}
@@ -276,7 +276,7 @@ func FindProcInstByID(writer http.ResponseWriter, request *http.Request) {
 	}
 	data, err := service.FindProcInstByID(id)
 	if err != nil {
-		util.ResponseErr(writer, err)
+		util.ResponseData(writer, "{}")
 		return
 	}
 	util.ResponseData(writer, data)

@@ -110,14 +110,14 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 		return nil, err
 	}
 	if task == nil {
-		return nil, errors.New("任务【" + fmt.Sprintf("%d", task.ID) + "】不存在")
+		return nil, errors.New("任务不存在")
 	}
 	// 判断是否已经结束
 	if task.IsFinished == true {
 		if task.NodeID == "结束" {
 			return nil, errors.New("流程已经结束")
 		}
-		return nil, errors.New("任务【" + fmt.Sprintf("%d", taskID) + "】已经被审批过了！！")
+		return nil, errors.New("任务已经被审批过了！！")
 	}
 
 	//判断是否对应的审批人
