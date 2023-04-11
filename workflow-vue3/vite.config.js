@@ -17,8 +17,7 @@ import path from "path";
 export default defineConfig(({ mode }) => {
 
     const env = loadEnv(mode, '../', '');
-    process.env.VITE_SERVER_PORT = env.SERVER_PORT
-    process.env.VITE_PUBLIC_URL = env.PUBLIC_URL
+    process.env.VITE_PUBLIC_URL =  env.PUBLIC_URL
     
     return {
         resolve: {
@@ -38,7 +37,7 @@ export default defineConfig(({ mode }) => {
                 }
             }
         },
-        // base: mode === "production" ? '/Workflow-Vue3/dist/' : '/',
+        // base: mode === "production" ? '/workflow/' : '/',
         plugins: [
             vue(),
             AutoImport({
@@ -52,7 +51,7 @@ export default defineConfig(({ mode }) => {
 
             /** If you set esmExternals to true, this plugins assumes that 
               all external dependencies are ES modules */
-
+            assetsDir: "workflow/assets",
             commonjsOptions: {
                 esmExternals: true
             },

@@ -79,6 +79,10 @@ onMounted(async () => {
         ElMessage.error("流程名称不能为空")
         return;
     }
+    // token
+    if(route.query.token){
+        sessionStorage.token = route.query.token
+    }
     // 
     init()
 });
