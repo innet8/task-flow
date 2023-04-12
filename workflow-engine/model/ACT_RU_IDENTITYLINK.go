@@ -92,6 +92,14 @@ func FindParticipantByProcInstID(procInstID int) ([]*Identitylink, error) {
 	return datas, err
 }
 
+// FindParticipantAllByProcInstID 查询参与所有的人
+func FindParticipantAllByProcInstID(procInstID int) ([]*Identitylink, error) {
+	var datas []*Identitylink
+	//候选人 参与人  抄送人 上级领导
+	err := db.Select("id,user_id,user_name,step,comment,state").Where("proc_inst_id=? and type in(?,?,?,?)", procInstID, IdentityTypes[CANDIDATE], IdentityTypes[PARTICIPANT], IdentityTypes[NOTIFIER], IdentityTypes[MANAGER]).Order("id asc").Find(&datas).Error
+	return datas, err
+}
+
 // GetIdentitylinkInfoByTaskID 根据taskID获取信息
 func GetIdentitylinkInfoByTaskID(taskID int) (*Identitylink, error) {
 	var datas Identitylink

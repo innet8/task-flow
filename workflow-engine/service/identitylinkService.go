@@ -161,3 +161,16 @@ func FindParticipantByProcInstID(procInstID int) (string, error) {
 	}
 	return str, nil
 }
+
+// FindParticipantAllByProcInstID 查询参与审批的人
+func FindParticipantAllByProcInstID(procInstID int) (string, error) {
+	datas, err := model.FindParticipantAllByProcInstID(procInstID)
+	if err != nil {
+		return "", err
+	}
+	str, err := util.ToJSONStr(datas)
+	if err != nil {
+		return "", err
+	}
+	return str, nil
+}

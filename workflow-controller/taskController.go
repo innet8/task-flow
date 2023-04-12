@@ -119,12 +119,14 @@ func CompleteTaskByToken(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, "字段taskID不能为空！")
 		return
 	}
-	err = service.CompleteByToken(token, &taskRe)
+	var task *model.Task
+	task, err = service.CompleteByToken(token, &taskRe)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return
 	}
-	util.ResponseOk(writer)
+	str, _ := util.ToJSONStr(task)
+	util.ResponseData(writer, str)
 }
 
 // CompleteTask 审批
@@ -179,10 +181,13 @@ func CompleteTask(writer http.ResponseWriter, request *http.Request) {
 	taskRe.Company = "系统默认"
 	taskRe.Candidate = userInfo.Userid
 	//
-	err = service.Complete(taskRe.TaskID, taskRe.UserID, taskRe.UserName, taskRe.Company, taskRe.Comment, taskRe.Candidate, pass)
+	var task *model.Task
+	var str string
+	task, err = service.Complete(taskRe.TaskID, taskRe.UserID, taskRe.UserName, taskRe.Company, taskRe.Comment, taskRe.Candidate, pass)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return
 	}
-	util.ResponseOk(writer)
+	str, _ = util.ToJSONStr(task)
+	util.ResponseData(writer, str)
 }

@@ -46,8 +46,10 @@ func setMux() {
 	// -----------------------任务--------------------------
 	Mux.HandleFunc("/api/v1/workflow/task/complete", intercept(controller.CompleteTask)) //审批任务
 	Mux.HandleFunc("/api/v1/workflow/task/withdraw", intercept(controller.WithDrawTask)) //撤回任务
+
 	// ----------------------- 关系表 -------------------------
-	Mux.HandleFunc("/api/v1/workflow/identitylink/findParticipant", intercept(controller.FindParticipantByProcInstID)) //查询流程实例的参与者（审批中）
+	Mux.HandleFunc("/api/v1/workflow/identitylink/findParticipant", intercept(controller.FindParticipantByProcInstID))       //查询流程实例的参与者（审批中）
+	Mux.HandleFunc("/api/v1/workflow/identitylink/findParticipantAll", intercept(controller.FindParticipantAllByProcInstID)) //查询流程示例所有的参与者（审批中）
 
 	// ******************************** 历史纪录 ***********************************
 	// -------------------------- 流程实例 -------------------------------

@@ -71,32 +71,33 @@ func GetTaskLastByProInstID(procInstID int) (*model.Task, error) {
 }
 
 // CompleteByToken 通过token 审批任务
-func CompleteByToken(token string, receiver *TaskReceiver) error {
+func CompleteByToken(token string, receiver *TaskReceiver) (*model.Task, error) {
 	userinfo, err := GetUserinfoFromRedis(token)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	pass, err := strconv.ParseBool(receiver.Pass)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = Complete(receiver.TaskID, userinfo.ID, userinfo.Username, userinfo.Company, receiver.Comment, receiver.Candidate, pass)
+	var task *model.Task
+	task, err = Complete(receiver.TaskID, userinfo.ID, userinfo.Username, userinfo.Company, receiver.Comment, receiver.Candidate, pass)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return task, nil
 }
 
 // Complete 审批
-func Complete(taskID int, userID, username, company, comment, candidate string, pass bool) error {
+func Complete(taskID int, userID, username, company, comment, candidate string, pass bool) (*model.Task, error) {
 	tx := model.GetTx()
-	err := CompleteTaskTx(taskID, userID, username, company, comment, candidate, pass, tx)
+	task, err := CompleteTaskTx(taskID, userID, username, company, comment, candidate, pass, tx)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return nil, err
 	}
 	tx.Commit()
-	return nil
+	return task, nil
 }
 
 // UpdateTaskWhenComplete 更新任务
@@ -153,12 +154,12 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 }
 
 // CompleteTaskTx 执行任务
-func CompleteTaskTx(taskID int, userID, username, company, comment, candidate string, pass bool, tx *gorm.DB) error {
+func CompleteTaskTx(taskID int, userID, username, company, comment, candidate string, pass bool, tx *gorm.DB) (*model.Task, error) {
 
 	//更新任务
 	task, err := UpdateTaskWhenComplete(taskID, userID, pass, tx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// 如果是会签
@@ -168,11 +169,11 @@ func CompleteTaskTx(taskID int, userID, username, company, comment, candidate st
 		yes, err := IfParticipantByTaskID(userID, company, taskID)
 		if err != nil {
 			tx.Rollback()
-			return err
+			return nil, err
 		}
 		if yes {
 			tx.Rollback()
-			return errors.New("您已经审批过了，请等待他人审批！）")
+			return nil, errors.New("您已经审批过了，请等待他人审批！）")
 		}
 	}
 
@@ -181,18 +182,18 @@ func CompleteTaskTx(taskID int, userID, username, company, comment, candidate st
 		// 添加参与人
 		err := AddParticipantTx(userID, username, company, comment, pass, task.ID, task.ProcInstID, task.Step, tx)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return nil, nil
 	}
 
 	// 流转到下一流程
 	err = MoveStageByProcInstID(userID, username, company, comment, candidate, task.ID, task.ProcInstID, task.Step, pass, tx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return task, nil
 }
 
 // WithDrawTaskByToken 撤回任务
