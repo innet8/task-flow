@@ -19,6 +19,8 @@ var execLock sync.Mutex
 type NodeInfos struct {
 	flow.NodeInfo
 	Identitylink *model.Identitylink `json:"identitylink"` // 关联信息
+	ClaimTime    string              `json:"claimTime"`
+	IsFinished   bool                `json:"isFinished"`
 }
 
 // SaveExecution
@@ -120,6 +122,8 @@ func GetExecNodeInfosDetailsByProcInstID(procInstID int) ([]*NodeInfos, error) {
 	for k, val := range nodeInfos {
 		for _, v := range taskInfos {
 			if val.NodeID == v.NodeID {
+				nodeInfos[k].IsFinished = v.IsFinished
+				nodeInfos[k].ClaimTime = v.ClaimTime
 				identitylinkInfos, err := model.GetIdentitylinkInfoByTaskID(v.ID)
 				if err == nil {
 					nodeInfos[k].Identitylink = identitylinkInfos
