@@ -17,10 +17,11 @@ func FindParticipantByProcInstID(writer http.ResponseWriter, request *http.Reque
 	}
 	request.ParseForm()
 	if len(request.Form["procInstId"]) == 0 {
-		util.ResponseErr(writer, "流程 procInstId 不能为空")
+		util.ResponseErr(writer, "流程Id不能为空")
 		return
 	}
 	procInstId, err := strconv.Atoi(request.Form["procInstId"][0])
+
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return

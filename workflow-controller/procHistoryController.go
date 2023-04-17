@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
 	"workflow/workflow-engine/model"
@@ -37,7 +36,7 @@ func FindProcHistoryByToken(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+	util.ResponseData(writer, result)
 }
 
 // FindProcHistory 查询我的审批纪录
@@ -70,7 +69,7 @@ func FindProcHistory(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+	util.ResponseData(writer, result)
 }
 
 // StartHistoryByMyself 查询我发起的流程
@@ -99,7 +98,7 @@ func StartHistoryByMyself(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+	util.ResponseData(writer, result)
 }
 
 // FindProcHistoryNotify 查询抄送我的流程
@@ -127,5 +126,5 @@ func FindProcHistoryNotify(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
+	util.ResponseData(writer, result)
 }

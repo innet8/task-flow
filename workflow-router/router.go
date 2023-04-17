@@ -37,11 +37,11 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/procdef/findByName", intercept(controller.FindByNameProcdef)) // 根据名称查询流程实例
 	Mux.HandleFunc("/api/v1/workflow/procdef/delById", intercept(controller.DelProcdefByID))       // 根据id删除流程定义
 	// -----------------------流程实例-----------------------
-	Mux.HandleFunc("/api/v1/workflow/process/start", intercept(controller.StartProcessInstance))        // 启动流程
+	Mux.HandleFunc("/api/v1/workflow/process/start", intercept(controller.StartProcessInstance))        // 启动流程（审批中）
 	Mux.HandleFunc("/api/v1/workflow/process/findById", intercept(controller.FindProcInstByID))         // 根据id查询流程实例
-	Mux.HandleFunc("/api/v1/workflow/process/findTask", intercept(controller.FindMyProcInstPageAsJSON)) // 查询需要我审批的流程
-	Mux.HandleFunc("/api/v1/workflow/process/startByMyself", intercept(controller.StartByMyself))       // 查询我启动的流程
-	Mux.HandleFunc("/api/v1/workflow/process/findProcNotify", intercept(controller.FindProcNotify))     // 查询抄送我的流程
+	Mux.HandleFunc("/api/v1/workflow/process/findTask", intercept(controller.FindMyProcInstPageAsJSON)) // 查询需要我审批的流程（审批中）
+	Mux.HandleFunc("/api/v1/workflow/process/startByMyself", intercept(controller.StartByMyself))       // 查询我启动的流程（审批中）
+	Mux.HandleFunc("/api/v1/workflow/process/findProcNotify", intercept(controller.FindProcNotify))     // 查询抄送我的流程（审批中）
 	// Mux.HandleFunc("/workflow/process/moveToHistory", controller.MoveFinishedProcInstToHistory)
 	// -----------------------任务--------------------------
 	Mux.HandleFunc("/api/v1/workflow/task/complete", intercept(controller.CompleteTask)) //审批任务
@@ -53,10 +53,9 @@ func setMux() {
 
 	// ******************************** 历史纪录 ***********************************
 	// -------------------------- 流程实例 -------------------------------
-	// Mux.HandleFunc("/api/v1/workflow/procHistory/findTask", intercept(controller.FindProcHistory))               // 查询需要我审批的流程（已结束）
-	// Mux.HandleFunc("/api/v1/workflow/procHistory/findTaskByToken", intercept(controller.FindProcHistoryByToken)) // 查询需要我审批的流程（已结束）
-	// Mux.HandleFunc("/api/v1/workflow/procHistory/startByMyself", intercept(controller.StartHistoryByMyself))     // 查询我启动的流程（已结束）
-	// Mux.HandleFunc("/api/v1/workflow/procHistory/findProcNotify", intercept(controller.FindProcHistoryNotify))   // 查询抄送我的流程（已结束）
+	Mux.HandleFunc("/api/v1/workflow/procHistory/findTask", intercept(controller.FindProcHistory))             // 查询需要我审批的流程（已结束）
+	Mux.HandleFunc("/api/v1/workflow/procHistory/startByMyself", intercept(controller.StartHistoryByMyself))   // 查询我启动的流程（已结束）
+	Mux.HandleFunc("/api/v1/workflow/procHistory/findProcNotify", intercept(controller.FindProcHistoryNotify)) // 查询抄送我的流程（已结束）
 	// ----------------------- 关系表 -------------------------
 	Mux.HandleFunc("/api/v1/workflow/identitylinkHistory/findParticipant", intercept(controller.FindParticipantHistoryByProcInstID)) //查询流程实例的参与者（已结束）
 

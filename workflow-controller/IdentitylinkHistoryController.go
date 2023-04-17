@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -17,11 +16,12 @@ func FindParticipantHistoryByProcInstID(writer http.ResponseWriter, request *htt
 		return
 	}
 	request.ParseForm()
-	if len(request.Form["procInstID"]) == 0 {
-		util.ResponseErr(writer, "流程 procInstID 不能为空")
+	//调试输出
+	if len(request.Form["procInstId"]) == 0 {
+		util.ResponseErr(writer, "流程Id不能为空")
 		return
 	}
-	procInstID, err := strconv.Atoi(request.Form["procInstID"][0])
+	procInstID, err := strconv.Atoi(request.Form["procInstId"][0])
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return
@@ -31,6 +31,5 @@ func FindParticipantHistoryByProcInstID(writer http.ResponseWriter, request *htt
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Fprintf(writer, result)
-
+	util.ResponseData(writer, result)
 }
