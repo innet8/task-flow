@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"workflow/util"
@@ -32,6 +33,11 @@ type ProcInst struct {
 	LatestComment string `gorm:"size:500;comment:'最新评论'" json:"latestComment"`
 }
 
+type ProcInstUnion struct {
+	*ProcInst
+	Total int
+}
+
 // GroupsNotNull 候选组
 func GroupsNotNull(groups []string, sql string) func(db *gorm.DB) *gorm.DB {
 	if len(groups) > 0 {
@@ -56,6 +62,67 @@ func DepartmentsNotNull(departments []string, sql string) func(db *gorm.DB) *gor
 	}
 }
 
+// StartByMyselfAll 查询我发起的所有流程实例
+func StartByMyselfAll(userID, procDefName string, state, pageIndex, pageSize int) ([]*ProcInst, int, error) {
+	maps := map[string]interface{}{
+		"start_user_id": userID,
+		"proc_def_name": procDefName,
+		"state":         state,
+	}
+	// userID转整数
+	return findProcInstAll(maps, pageIndex, pageSize)
+}
+
+// findProcInstAll 查询我发起的所有流程实例
+func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*ProcInst, int, error) {
+	// 定义一个结构体来存储联合查询结果
+	var datas []*ProcInst
+	var userID int
+	// 获取用户ID
+	userID, _ = strconv.Atoi(maps["start_user_id"].(string))
+	// 获取联合查询结果和总数
+	var procInstUnion []*ProcInstUnion
+	db.Raw(`
+    SELECT *, COUNT(*) OVER() AS total FROM (
+        SELECT * FROM `+conf.DbPrefix+`proc_inst WHERE start_user_id = ? AND proc_def_name = ? AND state = ?
+        UNION ALL
+        SELECT * FROM `+conf.DbPrefix+`proc_inst_history WHERE start_user_id = ? AND proc_def_name = ? AND state = ?
+    ) AS proc_inst_union
+    ORDER BY start_time DESC
+    LIMIT ? OFFSET ?
+    `, userID, maps["proc_def_name"], maps["state"], userID, maps["proc_def_name"], maps["state"], pageSize, (pageIndex-1)*pageSize).Scan(&procInstUnion)
+
+	// 判断是否有数据
+	if len(procInstUnion) == 0 {
+		return nil, 0, nil
+	}
+	// 将 ProcInstUnion 转换成 ProcInst
+	for _, union := range procInstUnion {
+		datas = append(datas, &ProcInst{
+			ProcDefID:     union.ProcDefID,
+			ProcDefName:   union.ProcDefName,
+			Title:         union.Title,
+			DepartmentId:  union.DepartmentId,
+			Department:    union.Department,
+			Company:       union.Company,
+			NodeID:        union.NodeID,
+			Candidate:     union.Candidate,
+			TaskID:        union.TaskID,
+			StartTime:     union.StartTime,
+			EndTime:       union.EndTime,
+			Duration:      union.Duration,
+			StartUserID:   union.StartUserID,
+			StartUserName: union.StartUserName,
+			IsFinished:    union.IsFinished,
+			Var:           union.Var,
+			State:         union.State,
+			LatestComment: union.LatestComment,
+		})
+	}
+	// 返回
+	return datas, procInstUnion[0].Total, nil
+}
+
 // StartByMyself 我发起的流程
 func StartByMyself(userID, company string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
 	maps := map[string]interface{}{
@@ -65,49 +132,7 @@ func StartByMyself(userID, company string, pageIndex, pageSize int) ([]*ProcInst
 	return findProcInsts(maps, pageIndex, pageSize)
 }
 
-// FindProcInstByID 根据ID查询流程实例
-func FindProcInstByID(id int) (*ProcInst, error) {
-	var data = &ProcInst{}
-	err := db.Where("id=?", id).Find(data).Error
-	if err != nil {
-		if fmt.Sprintf("%s", err) == "record not found" {
-			var datas = &ProcInstHistory{}
-			err = db.Where("id=?", id).Find(datas).Error
-			if err != nil {
-				return nil, err
-			}
-			strjson, _ := util.ToJSONStr(datas)
-			util.Str2Struct(strjson, data)
-		}
-	}
-	return data, nil
-}
-
-// FindProcNotify 查询抄送我的流程
-func FindProcNotify(userID, company string, groups []string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
-	var datas []*ProcInst
-	var count int
-	var sql string
-	if len(groups) != 0 {
-		var s []string
-		for _, val := range groups {
-			s = append(s, "\""+val+"\"")
-		}
-		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and (find_in_set('" + userID + "',i.user_id) or i.group in (" + strings.Join(s, ",") + "))"
-	} else {
-		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and find_in_set('" + userID + "',i.user_id)"
-	}
-	sql = fmt.Sprintf(sql, conf.DbPrefix)
-	err := db.Where("id in (" + sql + ")").Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order("start_time desc").Find(&datas).Error
-	if err != nil {
-		return datas, count, err
-	}
-	err = db.Model(&ProcInst{}).Where("id in (" + sql + ")").Count(&count).Error
-	if err != nil {
-		return nil, count, err
-	}
-	return datas, count, err
-}
+// findProcInsts 查询我发起的流程实例（审核中）
 func findProcInsts(maps map[string]interface{}, pageIndex, pageSize int) ([]*ProcInst, int, error) {
 	var datas []*ProcInst
 	var count int
@@ -143,13 +168,71 @@ func findProcInsts(maps map[string]interface{}, pageIndex, pageSize int) ([]*Pro
 	return datas, count, err1
 }
 
-// FindProcInsts 分页查询
-func FindProcInsts(userID, procName, company string, groups, departments []string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
+// FindProcInstByID 根据ID查询流程实例
+func FindProcInstByID(id int) (*ProcInst, error) {
+	var data = &ProcInst{}
+	err := db.Where("id=?", id).Find(data).Error
+	if err != nil {
+		if fmt.Sprintf("%s", err) == "record not found" {
+			var datas = &ProcInstHistory{}
+			err = db.Where("id=?", id).Find(datas).Error
+			if err != nil {
+				return nil, err
+			}
+			strjson, _ := util.ToJSONStr(datas)
+			util.Str2Struct(strjson, data)
+		}
+	}
+	return data, nil
+}
+
+// FindProcNotify 查询抄送我的流程
+func FindProcNotify(userID, procName, company string, groups []string, sort string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
 	var datas []*ProcInst
 	var count int
+	var sql string
+	var order string
+	// 判断排序
+	if sort == "asc" {
+		order = "start_time asc"
+	} else {
+		order = "start_time desc"
+	}
+	if len(groups) != 0 {
+		var s []string
+		for _, val := range groups {
+			s = append(s, "\""+val+"\"")
+		}
+		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and (find_in_set('" + userID + "',i.user_id) or i.group in (" + strings.Join(s, ",") + "))"
+	} else {
+		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and find_in_set('" + userID + "',i.user_id)"
+	}
+	sql = fmt.Sprintf(sql, conf.DbPrefix)
+	err := db.Where("id in ("+sql+")").Where("proc_def_name = ?", procName).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
+	if err != nil {
+		return datas, count, err
+	}
+	err = db.Model(&ProcInst{}).Where("id in ("+sql+")").Where("proc_def_name = ?", procName).Count(&count).Error
+	if err != nil {
+		return nil, count, err
+	}
+	return datas, count, err
+}
+
+// FindProcInsts 分页查询
+func FindProcInsts(userID, procName, company string, groups, departments []string, sort string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
+	var datas []*ProcInst
+	var count int
+	var order string
 	var sql = " company='" + company + "' and is_finished=0 "
 	if len(procName) > 0 {
 		sql += "and proc_def_name='" + procName + "'"
+	}
+	// 判断排序
+	if sort == "asc" {
+		order = "start_time asc"
+	} else {
+		order = "start_time desc"
 	}
 	// fmt.Println(sql)
 	selectDatas := func(in chan<- error, wg *sync.WaitGroup) {
@@ -157,7 +240,7 @@ func FindProcInsts(userID, procName, company string, groups, departments []strin
 			err := db.Scopes(GroupsNotNull(groups, sql), DepartmentsNotNull(departments, sql)).
 				Or("find_in_set(?,candidate) and "+sql, userID).
 				Offset((pageIndex - 1) * pageSize).Limit(pageSize).
-				Order("start_time desc").
+				Order(order).
 				Find(&datas).Error
 			in <- err
 			wg.Done()

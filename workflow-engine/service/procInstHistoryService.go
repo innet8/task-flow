@@ -42,7 +42,7 @@ func FindProcHistoryByToken(token string, receiver *ProcessPageReceiver) (string
 func findAllProcHistory(receiver *ProcessPageReceiver) ([]*model.ProcInstHistory, int, error) {
 	var page = util.Page{}
 	page.PageRequest(receiver.PageIndex, receiver.PageSize)
-	return model.FindProcHistory(receiver.UserID, receiver.Company, receiver.PageIndex, receiver.PageSize)
+	return model.FindProcHistory(receiver.UserID, receiver.ProcName, receiver.Company, receiver.Sort, receiver.PageIndex, receiver.PageSize)
 }
 
 // DelProcInstHistoryByID
@@ -69,7 +69,7 @@ func StartHistoryByMyself(receiver *ProcessPageReceiver) (string, error) {
 func FindProcHistoryNotify(receiver *ProcessPageReceiver) (string, error) {
 	var page = util.Page{}
 	page.PageRequest(receiver.PageIndex, receiver.PageSize)
-	datas, count, err := model.FindProcHistoryNotify(receiver.UserID, receiver.Company, receiver.Groups, receiver.PageIndex, receiver.PageSize)
+	datas, count, err := model.FindProcHistoryNotify(receiver.UserID, receiver.ProcName, receiver.Company, receiver.Groups, receiver.Sort, receiver.PageIndex, receiver.PageSize)
 	if err != nil {
 		return "", err
 	}

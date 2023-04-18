@@ -193,6 +193,30 @@ func FindMyProcInstByToken(writer http.ResponseWriter, request *http.Request) {
 	util.ResponseData(writer, result)
 }
 
+// StartByMyselfAll 我启动的所有流程
+func StartByMyselfAll(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != "POST" {
+		util.ResponseErr(writer, "只支持Post方法！！Only suppoert Post ")
+		return
+	}
+	var receiver = service.GetDefaultProcessPageReceiver()
+	err := util.Body2Struct(request, &receiver)
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+	if len(receiver.UserID) == 0 {
+		util.Response(writer, "用户userID不能为空", false)
+		return
+	}
+	result, err := service.StartByMyselfAll(receiver)
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+	util.ResponseData(writer, result)
+}
+
 // StartByMyself 我启动的流程
 func StartByMyself(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {

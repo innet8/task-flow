@@ -36,8 +36,10 @@ type ProcessPageReceiver struct {
 	UserID      string   `json:"userID"`
 	Username    string   `json:"username"`
 	Company     string   `json:"company"`
-	ProcName    string   `json:"procName"`
+	ProcName    string   `json:"procName"` // 流程名称
 	ProcInstID  string   `json:"procInstID"`
+	State       int      `json:"state"` // 流程状态
+	Sort        string   `json:"sort"`  // 排序
 }
 
 // 格式化返回参数
@@ -60,7 +62,7 @@ func GetDefaultProcessPageReceiver() *ProcessPageReceiver {
 func findAll(pr *ProcessPageReceiver) ([]*model.ProcInst, int, error) {
 	var page = util.Page{}
 	page.PageRequest(pr.PageIndex, pr.PageSize)
-	return model.FindProcInsts(pr.UserID, pr.ProcName, pr.Company, pr.Groups, pr.Departments, pr.PageIndex, pr.PageSize)
+	return model.FindProcInsts(pr.UserID, pr.ProcName, pr.Company, pr.Groups, pr.Departments, pr.Sort, pr.PageIndex, pr.PageSize)
 }
 
 // FindProcInstByID 根据ID获取流程信息
@@ -261,6 +263,21 @@ func SetProcInstFinish(procInstID int, endTime string, tx *gorm.DB) error {
 	return p.UpdateTx(tx)
 }
 
+// StartByMyselfAll 我发起的所有流程
+func StartByMyselfAll(receiver *ProcessPageReceiver) (string, error) {
+	var page = util.Page{}
+	page.PageRequest(receiver.PageIndex, receiver.PageSize)
+	datas, count, err := model.StartByMyselfAll(receiver.UserID, receiver.ProcName, receiver.State, receiver.PageIndex, receiver.PageSize)
+	if err != nil {
+		return "", err
+	}
+	result, err := AllVar2Json(datas)
+	if err != nil {
+		return "", err
+	}
+	return util.ToPageJSON(result, count, receiver.PageIndex, receiver.PageSize)
+}
+
 // StartByMyself 我发起的流程
 func StartByMyself(receiver *ProcessPageReceiver) (string, error) {
 	var page = util.Page{}
@@ -280,7 +297,7 @@ func StartByMyself(receiver *ProcessPageReceiver) (string, error) {
 func FindProcNotify(receiver *ProcessPageReceiver) (string, error) {
 	var page = util.Page{}
 	page.PageRequest(receiver.PageIndex, receiver.PageSize)
-	datas, count, err := model.FindProcNotify(receiver.UserID, receiver.Company, receiver.Groups, receiver.PageIndex, receiver.PageSize)
+	datas, count, err := model.FindProcNotify(receiver.UserID, receiver.ProcName, receiver.Company, receiver.Groups, receiver.Sort, receiver.PageIndex, receiver.PageSize)
 	if err != nil {
 		return "", err
 	}
