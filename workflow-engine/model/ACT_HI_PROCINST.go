@@ -200,6 +200,7 @@ func FindProcNotify(userID, procName, company string, groups []string, sort stri
 	var datas []*ProcInst
 	var count int
 	var sql string
+	var values []interface{}
 	var order string
 	// 判断排序
 	if sort == "asc" {
@@ -208,20 +209,29 @@ func FindProcNotify(userID, procName, company string, groups []string, sort stri
 		order = "start_time desc"
 	}
 	if len(groups) != 0 {
-		var s []string
-		for _, val := range groups {
-			s = append(s, "\""+val+"\"")
+		var placeholders []string
+		for range groups {
+			placeholders = append(placeholders, "?")
 		}
-		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and (find_in_set('" + userID + "',i.user_id) or i.group in (" + strings.Join(s, ",") + "))"
+		sql = "SELECT proc_inst_id FROM %sidentitylink i WHERE i.type='notifier' AND i.company=? AND (FIND_IN_SET(?, i.user_id) OR i.group IN (" + strings.Join(placeholders, ",") + "))"
+		values = append(values, company, userID)
+		for _, group := range groups {
+			values = append(values, group)
+		}
 	} else {
-		sql = "select proc_inst_id from %sidentitylink i where i.type='notifier' and i.company='" + company + "' and find_in_set('" + userID + "',i.user_id)"
+		sql = "SELECT proc_inst_id FROM %sidentitylink i WHERE i.type='notifier' AND i.company=? AND FIND_IN_SET(?, i.user_id)"
+		values = append(values, company, userID)
+	}
+	if procName != "" {
+		sql += " AND proc_def_name = ?"
+		values = append(values, procName)
 	}
 	sql = fmt.Sprintf(sql, conf.DbPrefix)
-	err := db.Where("id in ("+sql+")").Where("proc_def_name = ?", procName).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
+	err := db.Where("id in ("+sql+")", values...).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
 	if err != nil {
 		return datas, count, err
 	}
-	err = db.Model(&ProcInst{}).Where("id in ("+sql+")").Where("proc_def_name = ?", procName).Count(&count).Error
+	err = db.Model(&ProcInst{}).Where("id in ("+sql+")", values...).Count(&count).Error
 	if err != nil {
 		return nil, count, err
 	}

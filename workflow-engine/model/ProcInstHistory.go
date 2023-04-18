@@ -62,43 +62,46 @@ func FindProcHistory(userID, procName, company string, sort string, pageIndex, p
 	var count int
 	var err1 error
 	var order string
-	var wg sync.WaitGroup
 	// 判段排序
 	if sort == "asc" {
 		order = "start_time asc"
 	} else {
 		order = "start_time desc"
 	}
-	numberOfRoutine := 2
-	errStream := make(chan error, numberOfRoutine)
-	selectDatas := func(wg *sync.WaitGroup) {
-		go func() {
-			err := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID).
-				Where("proc_def_name = ?", procName).
-				Offset((pageIndex - 1) * pageSize).Limit(pageSize).
-				Order(order).Find(&datas).Error
-			errStream <- err
-			wg.Done()
-		}()
-	}
-	selectCount := func(wg *sync.WaitGroup) {
-		go func() {
-			err := db.Model(&ProcInstHistory{}).
-				Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID).
-				Where("proc_def_name = ?", procName).
-				Count(&count).Error
-			errStream <- err
-			wg.Done()
-		}()
-	}
-	wg.Add(numberOfRoutine)
-	selectDatas(&wg)
-	selectCount(&wg)
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	errStream := make(chan error, 2)
+
+	go func() {
+		defer wg.Done()
+
+		dbQuery := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID)
+		if procName != "" {
+			dbQuery = dbQuery.Where("proc_def_name = ?", procName)
+		}
+		err := dbQuery.Offset((pageIndex - 1) * pageSize).Limit(pageSize).
+			Order(order).Find(&datas).Error
+		errStream <- err
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		dbQuery := db.Model(&ProcInstHistory{})
+		dbQuery = dbQuery.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID)
+		if procName != "" {
+			dbQuery = dbQuery.Where("proc_def_name = ?", procName)
+		}
+		err := dbQuery.Count(&count).Error
+		errStream <- err
+	}()
+
 	wg.Wait()
 	close(errStream)
 
-	for i := 0; i < numberOfRoutine; i++ {
-		if err := <-errStream; err != nil {
+	for err := range errStream {
+		if err != nil {
 			err1 = err
 		}
 	}
@@ -125,6 +128,7 @@ func FindProcHistoryNotify(userID, procName, company string, groups []string, so
 	var datas []*ProcInstHistory
 	var count int
 	var sql string
+	var values []interface{}
 	var order string
 	// 判断排序
 	if sort == "asc" {
@@ -133,20 +137,29 @@ func FindProcHistoryNotify(userID, procName, company string, groups []string, so
 		order = "start_time desc"
 	}
 	if len(groups) != 0 {
-		var s []string
-		for _, val := range groups {
-			s = append(s, "\""+val+"\"")
+		var placeholders []string
+		for range groups {
+			placeholders = append(placeholders, "?")
 		}
-		sql = "select proc_inst_id from %sidentitylink_history i where i.type='notifier' and i.company='" + company + "' and (find_in_set('" + userID + "',i.user_id) or i.group in (" + strings.Join(s, ",") + "))"
+		sql = "SELECT proc_inst_id FROM %sidentitylink_history WHERE type='notifier' AND company=? AND (FIND_IN_SET(?, user_id) OR `group` IN (" + strings.Join(placeholders, ",") + "))"
+		values = append(values, company, userID)
+		for _, group := range groups {
+			values = append(values, group)
+		}
 	} else {
-		sql = "select proc_inst_id from %sidentitylink_history i where i.type='notifier' and i.company='" + company + "' and find_in_set('" + userID + "',i.user_id)"
+		sql = "SELECT proc_inst_id FROM %sidentitylink_history WHERE type='notifier' AND company=? AND FIND_IN_SET(?, user_id)"
+		values = append(values, company, userID)
+	}
+	if procName != "" {
+		sql += " AND proc_def_name = ?"
+		values = append(values, procName)
 	}
 	sql = fmt.Sprintf(sql, conf.DbPrefix)
-	err := db.Where("id in ("+sql+")").Where("proc_def_name = ?", procName).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
+	err := db.Where("id in ("+sql+")", values...).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
 	if err != nil {
 		return datas, count, err
 	}
-	err = db.Model(&ProcInstHistory{}).Where("id in ("+sql+")").Where("proc_def_name = ?", procName).Count(&count).Error
+	err = db.Model(&ProcInstHistory{}).Where("id in ("+sql+")", values...).Count(&count).Error
 	if err != nil {
 		return nil, count, err
 	}
