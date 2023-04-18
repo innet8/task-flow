@@ -78,20 +78,24 @@ func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*P
 	// 定义一个结构体来存储联合查询结果
 	var datas []*ProcInst
 	var userID int
-	// 获取用户ID
 	userID, _ = strconv.Atoi(maps["start_user_id"].(string))
 	// 获取联合查询结果和总数
 	var procInstUnion []*ProcInstUnion
-	db.Raw(`
-    SELECT *, COUNT(*) OVER() AS total FROM (
-        SELECT * FROM `+conf.DbPrefix+`proc_inst WHERE start_user_id = ? AND proc_def_name = ? AND state = ?
-        UNION ALL
-        SELECT * FROM `+conf.DbPrefix+`proc_inst_history WHERE start_user_id = ? AND proc_def_name = ? AND state = ?
-    ) AS proc_inst_union
-    ORDER BY start_time DESC
-    LIMIT ? OFFSET ?
-    `, userID, maps["proc_def_name"], maps["state"], userID, maps["proc_def_name"], maps["state"], pageSize, (pageIndex-1)*pageSize).Scan(&procInstUnion)
-
+	query := `
+		SELECT *, COUNT(*) OVER() AS total FROM (
+			SELECT * FROM ` + conf.DbPrefix + `proc_inst WHERE start_user_id = ? AND state = ?
+			UNION ALL
+			SELECT * FROM ` + conf.DbPrefix + `proc_inst_history WHERE start_user_id = ? AND state = ?
+		) AS proc_inst_union
+	`
+	args := []interface{}{userID, maps["state"], userID, maps["state"]}
+	if maps["proc_def_name"] != "" {
+		query += " WHERE proc_def_name = ?"
+		args = append(args, maps["proc_def_name"])
+	}
+	query += " ORDER BY start_time DESC LIMIT ? OFFSET ?"
+	args = append(args, pageSize, (pageIndex-1)*pageSize)
+	db.Raw(query, args...).Scan(&procInstUnion)
 	// 判断是否有数据
 	if len(procInstUnion) == 0 {
 		return nil, 0, nil
@@ -99,6 +103,7 @@ func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*P
 	// 将 ProcInstUnion 转换成 ProcInst
 	for _, union := range procInstUnion {
 		datas = append(datas, &ProcInst{
+			Model:         union.Model,
 			ProcDefID:     union.ProcDefID,
 			ProcDefName:   union.ProcDefName,
 			Title:         union.Title,
