@@ -83,15 +83,19 @@ func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*P
 	var procInstUnion []*ProcInstUnion
 	query := `
 		SELECT *, COUNT(*) OVER() AS total FROM (
-			SELECT * FROM ` + conf.DbPrefix + `proc_inst WHERE start_user_id = ? AND state = ?
+			SELECT * FROM ` + conf.DbPrefix + `proc_inst WHERE start_user_id = ?
 			UNION ALL
-			SELECT * FROM ` + conf.DbPrefix + `proc_inst_history WHERE start_user_id = ? AND state = ?
+			SELECT * FROM ` + conf.DbPrefix + `proc_inst_history WHERE start_user_id = ?
 		) AS proc_inst_union
 	`
-	args := []interface{}{userID, maps["state"], userID, maps["state"]}
+	args := []interface{}{userID, userID}
 	if maps["proc_def_name"] != "" {
 		query += " WHERE proc_def_name = ?"
 		args = append(args, maps["proc_def_name"])
+	}
+	if maps["state"] != 0 {
+		query += " WHERE state = ?"
+		args = append(args, maps["state"])
 	}
 	query += " ORDER BY start_time DESC LIMIT ? OFFSET ?"
 	args = append(args, pageSize, (pageIndex-1)*pageSize)
