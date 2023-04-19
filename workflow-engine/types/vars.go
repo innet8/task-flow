@@ -62,5 +62,14 @@ func CheckOvertimeVars(vars *Vars) (bool, error) {
 	if len(vars.Description) == 0 {
 		return false, errors.New("var.description 不存在")
 	}
+	if !util.ValidateTimeFormat(vars.StartTime) {
+		return false, errors.New("startTime 无效的时间格式")
+	}
+	if !util.ValidateTimeFormat(vars.EndTime) {
+		return false, errors.New("endTime 无效的时间格式")
+	}
+	if vars.StartTime > vars.EndTime {
+		return false, errors.New("startTime不能大于endTime")
+	}
 	return true, nil
 }
