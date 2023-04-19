@@ -215,11 +215,15 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 			dept, _ := model.GetDeptLevelByID(departmentId, n.DirectorLevel)
 			if dept != nil {
 				userInfo, _ := model.GetUserInfoById(dept.OwnerUserid)
+				aprover := userInfo.Nickname
+				if aprover == "" {
+					aprover = userInfo.Email
+				}
 				list.PushBack(NodeInfo{
 					NodeID:       n.NodeID,
 					Type:         n.Type,
 					Settype:      n.Settype,
-					Aprover:      userInfo.Nickname,
+					Aprover:      aprover,
 					AproverId:    dept.OwnerUserid,
 					AproverType:  n.Type,
 					Level:        int8(n.DirectorLevel),
@@ -237,11 +241,15 @@ func (n *Node) add2ExecutionList(list *list.List, userID string, departmentId in
 				dept, _ := model.GetDeptLevelByID(departmentId, i+1)
 				if dept != nil {
 					userInfo, _ := model.GetUserInfoById(dept.OwnerUserid)
+					aprover := userInfo.Nickname
+					if aprover == "" {
+						aprover = userInfo.Email
+					}
 					list.PushBack(NodeInfo{
 						NodeID:       n.NodeID + strconv.Itoa(i),
 						Type:         n.Type,
 						Settype:      n.Settype,
-						Aprover:      userInfo.Nickname,
+						Aprover:      aprover,
 						AproverId:    dept.OwnerUserid,
 						AproverType:  n.Type,
 						Level:        int8(i + 1),

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"workflow/util"
 
 	"github.com/jinzhu/gorm"
@@ -51,7 +50,6 @@ func GetTaskByID(id int) (*Task, error) {
 func GetTaskByProInstID(procInstID int) ([]*Task, error) {
 	var datas []*Task
 	err := db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&datas).Error
-	fmt.Println("taskInfos")
 	if err != nil || len(datas) == 0 {
 		var datass []*TaskHistory
 		err = db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&datass).Error
