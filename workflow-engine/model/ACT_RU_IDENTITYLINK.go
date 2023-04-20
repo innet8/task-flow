@@ -96,7 +96,17 @@ func FindParticipantByProcInstID(procInstID int) ([]*Identitylink, error) {
 func FindParticipantAllByProcInstID(procInstID int) ([]*Identitylink, error) {
 	var datas []*Identitylink
 	//候选人 参与人  抄送人 上级领导
-	err := db.Select("id,user_id,user_name,step,comment,state").Where("proc_inst_id=? and type in(?,?,?,?)", procInstID, IdentityTypes[CANDIDATE], IdentityTypes[PARTICIPANT], IdentityTypes[NOTIFIER], IdentityTypes[MANAGER]).Order("id asc").Find(&datas).Error
+	err := db.Select("id,type,user_id,user_name,step,comment,state").Where("proc_inst_id=? and type in(?,?,?,?)", procInstID, IdentityTypes[CANDIDATE], IdentityTypes[PARTICIPANT], IdentityTypes[NOTIFIER], IdentityTypes[MANAGER]).Order("id asc").Find(&datas).Error
+	// 历史
+	if len(datas) == 0 {
+		var datasH []*IdentitylinkHistory
+		err = db.Select("id,type,user_id,user_name,step,comment,state").Where("proc_inst_id=? and type in(?,?,?,?)", procInstID, IdentityTypes[CANDIDATE], IdentityTypes[PARTICIPANT], IdentityTypes[NOTIFIER], IdentityTypes[MANAGER]).Order("id asc").Find(&datasH).Error
+		if err != nil {
+			return nil, err
+		}
+		strjson, _ := util.ToJSONStr(&datasH)
+		util.Str2Struct(strjson, &datas)
+	}
 	return datas, err
 }
 

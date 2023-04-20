@@ -305,3 +305,24 @@ func FindProcInstByID(writer http.ResponseWriter, request *http.Request) {
 	}
 	util.ResponseData(writer, data)
 }
+
+// FindAllProcIns 查询所有流程
+func FindAllProcIns(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != "POST" {
+		util.ResponseErr(writer, "只支持Post方法！！")
+		return
+	}
+	var receiver = service.GetDefaultProcessPageReceiver()
+	err := util.Body2Struct(request, &receiver)
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+	result, err := service.FindAllProcIns(receiver)
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+
+	util.ResponseData(writer, result)
+}

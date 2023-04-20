@@ -62,18 +62,30 @@ func DepartmentsNotNull(departments []string, sql string) func(db *gorm.DB) *gor
 	}
 }
 
-// StartByMyselfAll 查询我发起的所有流程实例
+// FindAllProcIns 查询所有流程实例
+func FindAllProcIns(userID, procDefName string, state int, startTime string, endTime string, isFinished int) ([]*ProcInst, int, error) {
+	maps := map[string]interface{}{
+		"start_user_id": userID,
+		"proc_def_name": procDefName,
+		"state":         state,
+		"start_time":    startTime,
+		"end_time":      endTime,
+		"is_finished":   isFinished,
+	}
+	return findProcInstAll(maps, 0, 0)
+}
+
+// StartByMyselfAll 查询我的所有流程实例
 func StartByMyselfAll(userID, procDefName string, state, pageIndex, pageSize int) ([]*ProcInst, int, error) {
 	maps := map[string]interface{}{
 		"start_user_id": userID,
 		"proc_def_name": procDefName,
 		"state":         state,
 	}
-	// userID转整数
 	return findProcInstAll(maps, pageIndex, pageSize)
 }
 
-// findProcInstAll 查询我发起的所有流程实例
+// findProcInstAll 查询所有流程实例
 func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*ProcInst, int, error) {
 	// 定义一个结构体来存储联合查询结果
 	var datas []*ProcInst
@@ -83,22 +95,43 @@ func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*P
 	var procInstUnion []*ProcInstUnion
 	query := `
 		SELECT *, COUNT(*) OVER() AS total FROM (
-			SELECT * FROM ` + conf.DbPrefix + `proc_inst WHERE start_user_id = ?
+			SELECT * FROM ` + conf.DbPrefix + `proc_inst
 			UNION ALL
-			SELECT * FROM ` + conf.DbPrefix + `proc_inst_history WHERE start_user_id = ?
+			SELECT * FROM ` + conf.DbPrefix + `proc_inst_history
 		) AS proc_inst_union
 	`
-	args := []interface{}{userID, userID}
+	args := []interface{}{}
+	// 拼接查询条件
+	query += " WHERE 1 = 1"
+	if maps["start_user_id"] != "" {
+		query += " and start_user_id = ?"
+		args = append(args, userID)
+	}
 	if maps["proc_def_name"] != "" {
-		query += " WHERE proc_def_name = ?"
+		query += " and proc_def_name = ?"
 		args = append(args, maps["proc_def_name"])
 	}
 	if maps["state"] != 0 {
-		query += " WHERE state = ?"
+		query += " and state = ?"
 		args = append(args, maps["state"])
 	}
-	query += " ORDER BY start_time DESC LIMIT ? OFFSET ?"
-	args = append(args, pageSize, (pageIndex-1)*pageSize)
+	// 判断is_finished存在就执行
+	if maps["is_finished"] == 0 || maps["is_finished"] == 1 {
+		query += " and is_finished = ?"
+		args = append(args, maps["is_finished"])
+	}
+	// 判断开始和结束时间是否存在，如果存在则查询时间段内的数据
+	if maps["start_user_id"] == "" && maps["start_time"] != "" && maps["end_time"] != "" {
+		query += " AND start_time BETWEEN ? AND ?"
+		args = append(args, maps["start_time"], maps["end_time"])
+	}
+	// 判断分页参数是否存在,如果不存在则不分页
+	if pageIndex > 0 && pageSize > 0 {
+		query += " ORDER BY start_time DESC LIMIT ? OFFSET ?"
+		args = append(args, pageSize, (pageIndex-1)*pageSize)
+	} else {
+		query += " ORDER BY start_time ASC "
+	}
 	db.Raw(query, args...).Scan(&procInstUnion)
 	// 判断是否有数据
 	if len(procInstUnion) == 0 {
