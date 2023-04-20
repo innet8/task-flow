@@ -233,19 +233,28 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (string
 	//--------------------流转------------------
 	// times = time.Now()
 	// 流程移动到下一环节
-	err = MoveStage(nodeinfos, p.UserID, p.Username, p.Company, "启动流程", "", task.ID, procInstID, step, true, tx)
+	err = MoveStage(nodeinfos, p.UserID, p.Username, p.Company, "", "", task.ID, procInstID, step, true, tx)
 	if err != nil {
 		tx.Rollback()
 		return "", err
 	}
+
 	// fmt.Printf("流转到下一流程耗时：%v", time.Since(times))
 	// fmt.Println("--------------提交事务----------")
 	tx.Commit() //结束事务
 
-	//
+	// 查询下一个审批人
 	procInst.NodeID = "0"
-	procInst.TaskID = task.ID + 1
-	procInst.Candidate = nodeinfos[1].AproverId
+	for key, v := range nodeinfos {
+		if v.Type == "approver" {
+			procInst.Candidate = v.AproverId
+			procInst.TaskID = task.ID + key
+			procInst.NodeID = v.NodeID
+			break
+		}
+	}
+
+	//
 	var datas = &ProcInsts{}
 	Var2Json(procInst, datas)
 	return util.ToJSONStr(datas)

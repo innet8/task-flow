@@ -257,7 +257,7 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 	}
 	sub := currentTask.Step - lastTask.Step
 	if math.Abs(float64(sub)) != 1 {
-		return errors.New("只能撤回相邻的任务！！")
+		// return errors.New("只能撤回相邻的任务！")
 	}
 	var pass = false
 	if sub < 0 {
@@ -330,6 +330,7 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 			return errors.New("处于开始位置，无法回退到上一个节点")
 		}
 	}
+
 	// 指定下一步执行人
 	if len(candidate) > 0 {
 		// nodeInfos[step].Aprover = candidate
@@ -355,6 +356,25 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 			return err
 		}
 		return MoveStage(nodeInfos, userID, username, company, comment, candidate, task.ID, procInstID, step, pass, tx)
+	}
+
+	//  判断下一流程： 如果审批人是自己，自动通过
+	if nodeInfos[step].AproverId == userID {
+		// 通过
+		MoveToNextStage(nodeInfos, userID, company, taskID, procInstID, step, comment, tx)
+		// 生成新的任务
+		var task = model.Task{
+			NodeID:     nodeInfos[step].NodeID,
+			Step:       step,
+			ProcInstID: procInstID,
+			IsFinished: true,
+		}
+		task.IsFinished = true
+		_, err := task.NewTaskTx(tx)
+		if err != nil {
+			return err
+		}
+		return MoveStage(nodeInfos, userID, username, company, "自动通过,审批人与发起人为同一人", candidate, task.ID, procInstID, step, pass, tx)
 	}
 
 	// 通过
