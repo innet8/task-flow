@@ -360,8 +360,6 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 
 	//  判断下一流程： 如果审批人是自己，自动通过
 	if nodeInfos[step].AproverId == userID {
-		// 通过
-		MoveToNextStage(nodeInfos, userID, company, taskID, procInstID, step, comment, tx)
 		// 生成新的任务
 		var task = model.Task{
 			NodeID:     nodeInfos[step].NodeID,
@@ -374,6 +372,12 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 		if err != nil {
 			return err
 		}
+		// 通过
+		err = MoveToNextStage(nodeInfos, userID, company, taskID, procInstID, step, comment, tx)
+		if err != nil {
+			return err
+		}
+		//
 		return MoveStage(nodeInfos, userID, username, company, "自动通过,审批人与发起人为同一人", candidate, task.ID, procInstID, step, pass, tx)
 	}
 
