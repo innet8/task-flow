@@ -116,7 +116,7 @@ func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*P
 		args = append(args, maps["state"])
 	}
 	// 判断is_finished存在就执行
-	if maps["is_finished"] != "" {
+	if maps["is_finished"] == 0 || maps["is_finished"] == 1 {
 		query += " and is_finished = ?"
 		args = append(args, maps["is_finished"])
 	}
