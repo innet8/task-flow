@@ -38,8 +38,11 @@ type ProcessPageReceiver struct {
 	Company     string   `json:"company"`
 	ProcName    string   `json:"procName"` // 流程名称
 	ProcInstID  string   `json:"procInstID"`
-	State       int      `json:"state"` // 流程状态
-	Sort        string   `json:"sort"`  // 排序
+	State       int      `json:"state"`      // 流程状态
+	Sort        string   `json:"sort"`       // 排序
+	StartTime   string   `json:"startTime"`  // 开始时间
+	EndTime     string   `json:"endTime"`    // 结束时间
+	IsFinished  int      `json:"isFinished"` // 是否是结束
 }
 
 // 格式化返回参数
@@ -261,6 +264,19 @@ func SetProcInstFinish(procInstID int, endTime string, tx *gorm.DB) error {
 	p.EndTime = endTime
 	p.IsFinished = true
 	return p.UpdateTx(tx)
+}
+
+// FindAllProcIns 发起的所有流程及节点详情信息
+func FindAllProcIns(receiver *ProcessPageReceiver) (string, error) {
+	datas, _, err := model.FindAllProcIns(receiver.UserID, receiver.ProcName, receiver.State, receiver.StartTime, receiver.EndTime, receiver.IsFinished)
+	if err != nil {
+		return "", err
+	}
+	result, err := AllVar2Json(datas)
+	if err != nil {
+		return "", err
+	}
+	return util.ToJSONStr(result)
 }
 
 // StartByMyselfAll 我发起的所有流程

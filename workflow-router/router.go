@@ -38,7 +38,8 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/procdef/delById", intercept(controller.DelProcdefByID))       // 根据id删除流程定义
 	// -----------------------流程实例-----------------------
 	Mux.HandleFunc("/api/v1/workflow/process/start", intercept(controller.StartProcessInstance))        // 启动流程（审批中）
-	Mux.HandleFunc("/api/v1/workflow/process/findById", intercept(controller.FindProcInstByID))         // 根据id查询流程实例
+	Mux.HandleFunc("/api/v1/workflow/process/findById", intercept(controller.FindProcInstByID))         // 根据id查询流程实例（所有）
+	Mux.HandleFunc("/api/v1/workflow/process/findAllProcIns", intercept(controller.FindAllProcIns))     // 查询所有流程实例（所有）
 	Mux.HandleFunc("/api/v1/workflow/process/findTask", intercept(controller.FindMyProcInstPageAsJSON)) // 查询需要我审批的流程（审批中）
 	Mux.HandleFunc("/api/v1/workflow/process/startByMyselfAll", intercept(controller.StartByMyselfAll)) // 查询我启动的流程（所有）
 	Mux.HandleFunc("/api/v1/workflow/process/startByMyself", intercept(controller.StartByMyself))       // 查询我启动的流程（审批中）
@@ -50,7 +51,7 @@ func setMux() {
 
 	// ----------------------- 关系表 -------------------------
 	Mux.HandleFunc("/api/v1/workflow/identitylink/findParticipant", intercept(controller.FindParticipantByProcInstID))       //查询流程实例的参与者（审批中）
-	Mux.HandleFunc("/api/v1/workflow/identitylink/findParticipantAll", intercept(controller.FindParticipantAllByProcInstID)) //查询流程示例所有的参与者（审批中）
+	Mux.HandleFunc("/api/v1/workflow/identitylink/findParticipantAll", intercept(controller.FindParticipantAllByProcInstID)) //查询流程示例所有的参与者（所有）
 
 	// ******************************** 历史纪录 ***********************************
 	// -------------------------- 流程实例 -------------------------------
