@@ -37,13 +37,13 @@ func CheckVacateVars(vars *Vars) (bool, error) {
 		return false, errors.New("var.description 不存在")
 	}
 	if !util.ValidateTimeFormat(vars.StartTime) {
-		return false, errors.New("startTime 无效的时间格式")
+		return false, errors.New("开始时间 无效的时间格式")
 	}
 	if !util.ValidateTimeFormat(vars.EndTime) {
-		return false, errors.New("endTime 无效的时间格式")
+		return false, errors.New("结束时间 无效的时间格式")
 	}
 	if vars.StartTime > vars.EndTime {
-		return false, errors.New("startTime不能大于endTime")
+		return false, errors.New("开始时间不能大于结束时间")
 	}
 	return true, nil
 }
@@ -63,13 +63,13 @@ func CheckOvertimeVars(vars *Vars) (bool, error) {
 		return false, errors.New("var.description 不存在")
 	}
 	if !util.ValidateTimeFormat(vars.StartTime) {
-		return false, errors.New("startTime 无效的时间格式")
+		return false, errors.New("开始时间 无效的时间格式")
 	}
 	if !util.ValidateTimeFormat(vars.EndTime) {
-		return false, errors.New("endTime 无效的时间格式")
+		return false, errors.New("结束时间 无效的时间格式")
 	}
 	if vars.StartTime > vars.EndTime {
-		return false, errors.New("startTime不能大于endTime")
+		return false, errors.New("开始时间不能大于结束时间")
 	}
 	return true, nil
 }
