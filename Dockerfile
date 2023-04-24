@@ -1,9 +1,9 @@
 # 构建镜像
-# DOCKER_BUILDKIT=1 docker build -t weifashi/go-workflow:1.0.0 .
+# DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:1.0.0 .
 # 提交镜像到docker
-# docker commit 24714f0897c5 imagecommit
+# docker commit 2fe777047e57 imagecommit
 # 推送 
-# docker push weifashi/go-workflow:1.0.0
+# docker push hitosea2020/go-workflow:1.0.0
 
 # FROM alpine
 FROM nginx:alpine

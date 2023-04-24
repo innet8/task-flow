@@ -1,23 +1,23 @@
 <template>
-    <el-drawer :append-to-body="true" title="条件设置" v-model="visible" custom-class="condition_copyer" :show-close="false" :size="550" :before-close="saveCondition"> 
+    <el-drawer :append-to-body="true" :title="$L('条件设置')" v-model="visible" custom-class="condition_copyer" :show-close="false" :size="550" :before-close="saveCondition"> 
         <template #header="{ titleId, titleClass }">
-            <h3 :id="titleId" :class="titleClass">条件设置</h3>
+            <h3 :id="titleId" :class="titleClass">{{ $L('条件设置') }}</h3>
             <select v-model="conditionConfig.priorityLevel" class="priority_level">
-                <option v-for="item in conditionsConfig.conditionNodes.length" :value="item" :key="item">优先级{{item}}</option>
+                <option v-for="item in conditionsConfig.conditionNodes.length" :value="item" :key="item"> {{ $L('优先级') }}{{item}}</option>
             </select>
         </template>
         <div class="demo-drawer__content">
             <div class="condition_content drawer_content">
-                <p class="tip">当审批单同时满足以下条件时进入此流程</p>
+                <p class="tip">{{$L('当审批单同时满足以下条件时进入此流程')}}</p>
                 <ul>
                     <li v-for="(item,index) in conditionConfig.conditionList" :key="index">
-                        <span class="ellipsis">{{item.type==1 ? '发起人':item.showName}}：</span>
+                        <span class="ellipsis">{{ $L(item.type==1 ? '发起人': item.showName) }} ：</span>
                         <div v-if="item.type==1">
                             <p :class="conditionConfig.nodeUserList.length > 0?'selected_list':''" @click.self="addConditionRole" style="cursor:text">
                                 <span v-for="(item1,index1) in conditionConfig.nodeUserList" :key="index1">
                                     {{item1.name}}<img src="@/assets/images/add-close1.png" @click="$func.removeEle(conditionConfig.nodeUserList,item1,'targetId')">
                                 </span>
-                                <input type="text" placeholder="请选择具体人员/角色/部门" v-if="conditionConfig.nodeUserList.length == 0" @click="addConditionRole">
+                                <input type="text" :placeholder="$L('请选择具体人员/角色/部门')" v-if="conditionConfig.nodeUserList.length == 0" @click="addConditionRole">
                             </p>
                         </div>
                         <div v-else-if="item.columnType == 'String' && item.showType == 3">
@@ -29,14 +29,14 @@
                         <div v-else>
                             <p>
                                 <select v-model="item.optType" :style="'width:'+(item.optType==6?370:100)+'px'" @change="changeOptType(item)">
-                                    <option value="1">小于</option>
-                                    <option value="2">大于</option>
-                                    <option value="3">小于等于</option>
-                                    <option value="4">等于</option>
-                                    <option value="5">大于等于</option>
-                                    <option value="6">介于两个数之间</option>
+                                    <option value="1">{{$L('小于')}}</option>
+                                    <option value="2">{{$L('大于')}}</option>
+                                    <option value="3">{{$L('小于等于')}}</option>
+                                    <option value="4">{{$L('等于')}}</option>
+                                    <option value="5">{{$L('大于等于')}}</option>
+                                    <option value="6">{{$L('介于两个数之间')}}</option>
                                 </select>
-                                <input v-if="item.optType!=6" type="text" :placeholder="'请输入'+item.showName" v-enter-number="2" v-model="item.zdy1">
+                                <input v-if="item.optType!=6" type="text" :placeholder="$L('请输入'+item.showName)" v-enter-number="2" v-model="item.zdy1">
                             </p>
                             <p v-if="item.optType==6">
                                 <input type="text" style="width:75px;" class="mr_10" v-enter-number="2" v-model="item.zdy1">
@@ -44,7 +44,7 @@
                                     <option value="<">&lt;</option>
                                     <option value="≤">≤</option>
                                 </select>
-                                <span class="ellipsis" style="display:inline-block;width:60px;vertical-align: text-bottom;">{{item.showName}}</span>
+                                <span class="ellipsis" style="display:inline-block;width:60px;vertical-align: text-bottom;">{{$L(item.showName)}}</span>
                                 <select style="width:60px;" class="ml_10" v-model="item.opt2">
                                     <option value="<">&lt;</option>
                                     <option value="≤">≤</option>
@@ -52,21 +52,21 @@
                                 <input type="text" style="width:75px;" v-enter-number="2" v-model="item.zdy2">
                             </p>
                         </div>
-                        <a v-if="item.type==1" @click="conditionConfig.nodeUserList= [];$func.removeEle(conditionConfig.conditionList,item,'columnId')">删除</a>
-                        <a v-if="item.type==2" @click="$func.removeEle(conditionConfig.conditionList,item,'columnId')">删除</a>
+                        <a v-if="item.type==1" @click="conditionConfig.nodeUserList= [];$func.removeEle(conditionConfig.conditionList,item,'columnId')">{{$L('删除')}}</a>
+                        <a v-if="item.type==2" @click="$func.removeEle(conditionConfig.conditionList,item,'columnId')">{{$L('删除')}}</a>
                     </li>
                 </ul>
-                <el-button type="primary" @click="addCondition">添加条件</el-button>
-                <el-dialog title="选择条件" v-model="conditionVisible" :width="480" append-to-body class="condition_list">
-                    <p>请选择用来区分审批流程的条件字段</p>
+                <el-button type="primary" @click="addCondition">{{$L('添加条件')}}</el-button>
+                <el-dialog :title="$L('选择条件')" v-model="conditionVisible" :width="480" append-to-body class="condition_list">
+                    <p>{{$L('请选择用来区分审批流程的条件字段')}}</p>
                     <p class="check_box">
-                        <a :class="$func.toggleClass(conditionList || [],{columnId:0},'columnId')&&'active'" @click="$func.toChecked(conditionList || [],{columnId:0},'columnId')">发起人</a>
+                        <a :class="$func.toggleClass(conditionList || [],{columnId:0},'columnId')&&'active'" @click="$func.toChecked(conditionList || [],{columnId:0},'columnId')">{{$L('发起人')}}</a>
                         <a v-for="(item,index) in conditions" :key="index" :class="$func.toggleClass(conditionList || [],item,'columnId')&&'active'" 
-                        @click="$func.toChecked(conditionList  || [],item,'columnId')">{{item.showName}}</a>
+                        @click="$func.toChecked(conditionList  || [],item,'columnId')">{{$L(item.showName)}}</a>
                     </p>
                     <template #footer>
-                        <el-button @click="conditionVisible = false">取 消</el-button>
-                        <el-button type="primary" @click="sureCondition">确 定</el-button>
+                        <el-button @click="conditionVisible = false">{{$L('取 消')}}</el-button>
+                        <el-button type="primary" @click="sureCondition">{{$L('确 定')}}</el-button>
                     </template>
                 </el-dialog>
             </div>

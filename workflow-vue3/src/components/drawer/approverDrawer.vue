@@ -1,14 +1,14 @@
 <template>
-    <el-drawer :append-to-body="true" title="审批人设置" v-model="visible" custom-class="set_promoter" :show-close="false" :size="550" :before-close="saveApprover"> 
+    <el-drawer :append-to-body="true" :title="$L('审批人设置')" v-model="visible" custom-class="set_promoter" :show-close="false" :size="550" :before-close="saveApprover"> 
         <div class="demo-drawer__content">
             <div class="drawer_content">
                 <div class="approver_content">
                     <el-radio-group v-model="approverConfig.settype" class="clear" @change="changeType">
-                        <el-radio :label="1">指定成员</el-radio>
-                        <el-radio :label="2">主管</el-radio>
-                        <el-radio :label="3">连续多级主管</el-radio>
+                        <el-radio :label="1">{{$L('指定成员')}}</el-radio>
+                        <el-radio :label="2">{{$L('主管')}}</el-radio>
+                        <el-radio :label="3">{{$L('连续多级主管')}}</el-radio>
                     </el-radio-group>
-                    <el-button type="primary" @click="addApprover" v-if="approverConfig.settype==1 && approverConfig.nodeUserList?.length==0">添加/修改成员</el-button>
+                    <el-button type="primary" @click="addApprover" v-if="approverConfig.settype==1 && approverConfig.nodeUserList?.length==0">{{$L('添加/修改成员')}}</el-button>
                     <p class="selected_list" v-if="approverConfig.settype==1">
                         <span v-for="(item,index) in approverConfig.nodeUserList" :key="index">{{item.name}}
                             <img src="@/assets/images/add-close1.png" @click="$func.removeEle(approverConfig.nodeUserList,item,'targetId')">
@@ -18,65 +18,65 @@
                 </div>
                 <div class="approver_manager" v-if="approverConfig.settype==2">
                     <p>
-                        <span>发起人的：</span>
+                        <span>{{$L('发起人的')}}：</span>
                         <select v-model="approverConfig.directorLevel">
-                            <option v-for="item in directorMaxLevel" :value="item" :key="item">{{item==1?'直接':'第'+item+'级'}}主管</option>
+                            <option v-for="item in directorMaxLevel" :value="item" :key="item">{{$L( (item==1?'直接':'第'+item+'级') + '主管')}}</option>
                         </select>
                     </p>
-                    <p class="tip">找不到主管时，由上级主管代审批</p>
+                    <p class="tip">{{$L('找不到主管时，由上级主管代审批')}}</p>
                 </div>
                 <div class="approver_self" v-if="approverConfig.settype==5">
-                    <p>该审批节点设置“发起人自己”后，审批人默认为发起人</p>
+                    <p>{{$L('该审批节点设置“发起人自己”后，审批人默认为发起人')}}</p>
                 </div>
                 <div class="approver_self_select" v-show="approverConfig.settype==4">
                     <el-radio-group v-model="approverConfig.selectMode" style="width: 100%;">
-                        <el-radio :label="1">选一个人</el-radio>
-                        <el-radio :label="2">选多个人</el-radio>
+                        <el-radio :label="1">{{$L('选一个人')}}</el-radio>
+                        <el-radio :label="2">{{$L('选多个人')}}</el-radio>
                     </el-radio-group>
-                    <h3>选择范围</h3>
+                    <h3>{{$L('选择范围')}}</h3>
                     <el-radio-group v-model="approverConfig.selectRange" style="width: 100%;" @change="changeRange">
-                        <el-radio :label="1">全公司</el-radio>
-                        <el-radio :label="2">指定成员</el-radio>
-                        <el-radio :label="3">指定角色</el-radio>
+                        <el-radio :label="1">{{$L('全公司')}}</el-radio>
+                        <el-radio :label="2">{{$L('指定成员')}}</el-radio>
+                        <el-radio :label="3">{{$L('指定角色')}}</el-radio>
                     </el-radio-group>
-                    <el-button type="primary" @click="addApprover" v-if="approverConfig.selectRange==2">添加/修改成员</el-button>
-                    <el-button type="primary" @click="addRoleApprover" v-if="approverConfig.selectRange==3">添加/修改角色</el-button>
+                    <el-button type="primary" @click="addApprover" v-if="approverConfig.selectRange==2">{{$L('添加/修改成员')}}</el-button>
+                    <el-button type="primary" @click="addRoleApprover" v-if="approverConfig.selectRange==3">{{$L('添加/修改角色')}}</el-button>
                     <p class="selected_list" v-if="approverConfig.selectRange==2||approverConfig.selectRange==3">
                         <span v-for="(item,index) in approverConfig.nodeUserList" :key="index">{{item.name}}
                             <img src="@/assets/images/add-close1.png" @click="$func.removeEle(approverConfig.nodeUserList,item,'targetId')">
                         </span>
-                        <a v-if="approverConfig.nodeUserList.length!=0&&approverConfig.selectRange!=1" @click="approverConfig.nodeUserList=[]">清除</a>
+                        <a v-if="approverConfig.nodeUserList.length!=0&&approverConfig.selectRange!=1" @click="approverConfig.nodeUserList=[]">{{$L('清除')}}</a>
                     </p>
                 </div>
                 <div class="approver_manager" v-if="approverConfig.settype==3">
-                    <p>审批终点</p>
+                    <p>{{$L('审批终点')}}</p>
                     <p style="padding-bottom:20px">
-                        <span>发起人的：</span>
+                        <span>{{$L('发起人的')}}：</span>
                         <select v-model="approverConfig.examineEndDirectorLevel">
-                            <option v-for="item in directorMaxLevel" :value="item" :key="item">{{item==1?'最高':'第'+item}}层级主管</option>
+                            <option v-for="item in directorMaxLevel" :value="item" :key="item">{{$L( (item==1?'最高':'第'+item )+ '层级主管')}}</option>
                         </select>
                     </p>
                 </div>
                 <div class="approver_some" v-if="(approverConfig.settype==1&&approverConfig.nodeUserList.length>1)||approverConfig.settype==2||(approverConfig.settype==4&&approverConfig.selectMode==2)">
-                    <p>多人审批时采用的审批方式</p>
+                    <p>{{$L('多人审批时采用的审批方式')}}</p>
                     <el-radio-group v-model="approverConfig.examineMode" class="clear">
-                        <el-radio :label="1">依次审批</el-radio>
+                        <el-radio :label="1">{{$L('依次审批')}}</el-radio>
                         <br/>
-                        <el-radio :label="2" v-if="approverConfig.settype!=2">会签(须所有审批人同意)</el-radio>
+                        <el-radio :label="2" v-if="approverConfig.settype!=2">{{$L('会签(须所有审批人同意)')}}</el-radio>
                     </el-radio-group>
                 </div>
                 <div class="approver_some" v-if="approverConfig.settype==2||approverConfig.settype==3">
-                    <p>审批人为空时</p>
+                    <p>{{$L('审批人为空时')}}</p>
                     <el-radio-group v-model="approverConfig.noHanderAction" class="clear">
-                        <el-radio :label="1">自动审批通过</el-radio>
+                        <el-radio :label="1">{{$L('自动审批通过')}}</el-radio>
                         <br/>
                         <!-- <el-radio :label="2">转交给审核管理员</el-radio> -->
                     </el-radio-group>
                 </div>
             </div>
             <div class="demo-drawer__footer clear">
-                <el-button type="primary" @click="saveApprover">确 定</el-button>
-                <el-button @click="closeDrawer">取 消</el-button>
+                <el-button type="primary" @click="saveApprover">{{$L('确 定')}}</el-button>
+                <el-button @click="closeDrawer">{{$L('取 消')}}</el-button>
             </div>
             <employees-dialog 
                 v-model:visible="approverVisible"

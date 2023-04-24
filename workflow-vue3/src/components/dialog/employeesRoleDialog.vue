@@ -1,14 +1,14 @@
 <template>
-    <el-dialog title="选择成员" v-model="visibleDialog" :width="600" append-to-body class="promoter_person">
+    <el-dialog :title="$L('选择成员')" v-model="visibleDialog" :width="600" append-to-body class="promoter_person">
         <div class="person_body clear">
             <div class="person_tree l">
-                <input type="text" placeholder="搜索成员" v-model="searchVal" @input="getDebounceData($event, activeName)">
+                <input type="text" :placeholder="$L('搜索成员')" v-model="searchVal" @input="getDebounceData($event, activeName)">
                 <!-- <el-tabs v-model="activeName" @tab-change="handleClick">
                   <el-tab-pane label="组织架构" name="1"></el-tab-pane>
                   <el-tab-pane label="角色列表" name="2"></el-tab-pane>
               </el-tabs> -->
                 <p class="ellipsis tree_nav" v-if="activeName === '1' && !searchVal">
-                    <span @click="getDepartmentList(0)" class="ellipsis">默认部门</span>
+                    <span @click="getDepartmentList(0)" class="ellipsis">{{$L('默认部门')}}</span>
                     <span v-for="(item, index) in departments.titleDepartments" class="ellipsis" :key="index + 'a'" @click="getDepartmentList(item.id)">{{ item.departmentName }}</span>
                 </p>
                 <selectBox :list="list" style="height: 360px;" />
@@ -16,8 +16,8 @@
             <selectResult :total="total" @del="delList" :list="resList" />
         </div>
         <template #footer>
-            <el-button @click="$emit('update:visible', false)">取 消</el-button>
-            <el-button type="primary" @click="saveDialog">确 定</el-button>
+            <el-button @click="$emit('update:visible', false)">{{$L('取 消')}}</el-button>
+            <el-button type="primary" @click="saveDialog">{{$L('确 定')}}</el-button>
         </template>
     </el-dialog>
 </template>

@@ -7,15 +7,28 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-
+import {switchLanguage as $L,languageType,addLocales} from "./language";
 import './assets/main.css'
 import store from './store'
 import './css/override-element-ui.css'
 import 'element-plus/es/components/message/style/css'
-const app = createApp(App).use(store)
-app.use(router)
 
-app.mount('#app')
+// 加载语言
+const loadLang = () =>{
+    return new Promise(async resolve => {
+        await addLocales(languageType)
+        resolve()
+    })
+}
+
+// 
+const app = createApp(App)
+app.config.globalProperties.$L = $L
+app.use(store)
+app.use(router)
+loadLang().then(() => {
+    app.mount('#app')
+})
 
 import nodeWrap from '@/components/nodeWrap.vue'
 app.component('nodeWrap', nodeWrap); //初始化组件

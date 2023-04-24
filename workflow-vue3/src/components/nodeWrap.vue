@@ -21,7 +21,7 @@
         </div>
         <div class="content" >
           <div class="text" @click="setPerson">
-              <span class="placeholder" v-if="!showText">请选择{{defaultText}}</span>
+              <span class="placeholder" v-if="!showText">{{$L('请选择')}}{{defaultText}}</span>
               {{showText}}
           </div>
           <i v-if="props.nodeConfig.type != 'start'" class="anticon anticon-right arrow"></i>
@@ -35,7 +35,7 @@
   <div class="branch-wrap" v-if="nodeConfig.type == 'route'">
     <div class="branch-box-wrap">
       <div class="branch-box">
-        <button class="add-branch" @click="addTerm">添加条件</button>
+        <button class="add-branch" @click="addTerm">{{$L('添加条件')}}</button>
         <div class="col-box" v-for="(item, index) in nodeConfig.conditionNodes" :key="index">
           <div class="condition-node">
             <div class="condition-node-box">
@@ -52,7 +52,7 @@
                     v-model="item.name"
                   />
                   <span v-else class="editable-title" @click="clickEvent(index)">{{ item.name }}</span>
-                  <span class="priority-title" @click="setPerson(item.priorityLevel)">优先级{{ item.priorityLevel }}</span>
+                  <span class="priority-title" @click="setPerson(item.priorityLevel)">{{$L('优先级')}}{{ item.priorityLevel }}</span>
                   <i class="anticon anticon-close close" @click="delTerm(index)"></i>
                 </div>
                 <div class="sort-right" v-if="index != nodeConfig.conditionNodes.length - 1" @click="arrTransfer(index)">&gt;</div>
@@ -84,6 +84,8 @@
 import $func from "@/plugins/preload";
 import { mapState, mapMutations } from "@/plugins/lib.js";
 import { onMounted, ref, watch, getCurrentInstance, computed } from "vue";
+
+const {proxy} = getCurrentInstance()
 let _uid = getCurrentInstance().uid;
 let bgColors = ['87, 106, 149', '255, 148, 62', '50, 150, 250']
 let placeholderList = ["发起人", "审核人", "抄送人"];
@@ -103,7 +105,7 @@ let defaultText = computed(() => {
 });
 
 let showText = computed(() => {
-    if (props.nodeConfig.type == 'start') return $func.arrToStr(props.flowPermission) || '所有人'
+    if (props.nodeConfig.type == 'start') return $func.arrToStr(props.flowPermission) || proxy.$L('所有人')
     if (props.nodeConfig.type == 'approver') return $func.setApproverStr(props.nodeConfig)
     return $func.copyerStr(props.nodeConfig)
 });
@@ -112,7 +114,7 @@ let isInputList = ref([]);
 let isInput = ref(false);
 const resetConditionNodesErr = () => {
     for (var i = 0; i < props.nodeConfig.conditionNodes.length; i++) {
-        props.nodeConfig.conditionNodes[i].error = $func.conditionStr(props.nodeConfig, i) == "请设置条件" && i != props.nodeConfig.conditionNodes.length - 1;
+        props.nodeConfig.conditionNodes[i].error = $func.conditionStr(props.nodeConfig, i) == '请设置条件' && i != props.nodeConfig.conditionNodes.length - 1;
     }
 }
 onMounted(() => {
@@ -168,7 +170,7 @@ const clickEvent = (index) => {
 const blurEvent = (index) => {
     if (index || index === 0) {
         isInputList.value[index] = false;
-        props.nodeConfig.conditionNodes[index].name = props.nodeConfig.conditionNodes[index].name || "条件";
+        props.nodeConfig.conditionNodes[index].name = props.nodeConfig.conditionNodes[index].name || proxy.$L('条件');
     } else {
         isInput.value = false;
         props.nodeConfig.name = props.nodeConfig.name || defaultText.value
@@ -182,7 +184,7 @@ const addTerm = () => {
     props.nodeConfig.conditionNodes.push({
         prevId: props.nodeConfig.nodeId,
         nodeId: '' + new Date().getTime(),
-        name: "条件" + len,
+        name: proxy.$L('条件') + len,
         type: 'route',
         priorityLevel: len,
         conditionList: [],
@@ -196,7 +198,7 @@ const delTerm = (index) => {
     props.nodeConfig.conditionNodes.splice(index, 1);
     props.nodeConfig.conditionNodes.map((item, index) => {
         item.priorityLevel = index + 1;
-        item.name = `条件${index + 1}`;
+        item.name = proxy.$L('条件')+`{index + 1}`;
     });
     resetConditionNodesErr()
     emits("update:nodeConfig", props.nodeConfig);

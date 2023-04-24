@@ -5,23 +5,23 @@
  * @FilePath: /Workflow-Vue3/src/components/drawer/copyerDrawer.vue
 -->
 <template>
-    <el-drawer :append-to-body="true" title="抄送人设置" v-model="visible" custom-class="set_copyer" :show-close="false" :size="550" :before-close="saveCopyer"> 
+    <el-drawer :append-to-body="true" :title="$L('抄送人设置')" v-model="visible" custom-class="set_copyer" :show-close="false" :size="550" :before-close="saveCopyer"> 
         <div class="demo-drawer__content">
             <div class="copyer_content drawer_content">
-                <el-button type="primary" @click="addCopyer">添加成员</el-button>
+                <el-button type="primary" @click="addCopyer">{{$L('添加成员')}}</el-button>
                 <p class="selected_list">
                     <span v-for="(item,index) in copyerConfig.nodeUserList" :key="index">{{item.name}}
                         <img src="@/assets/images/add-close1.png" @click="$func.removeEle(copyerConfig.nodeUserList,item,'targetId')">
                     </span>
-                    <a v-if="copyerConfig.nodeUserList&&copyerConfig.nodeUserList.length!=0" @click="copyerConfig.nodeUserList=[]">清除</a>
+                    <a v-if="copyerConfig.nodeUserList&&copyerConfig.nodeUserList.length!=0" @click="copyerConfig.nodeUserList=[]">{{$L('清除')}}</a>
                 </p>
                 <!-- <el-checkbox-group v-model="ccSelfSelectFlag" class="clear">
-                    <el-checkbox :label="1">允许发起人自选抄送人</el-checkbox>
+                    <el-checkbox :label="1">{{$L('允许发起人自选抄送人')}}</el-checkbox>
                 </el-checkbox-group> -->
             </div>
             <div class="demo-drawer__footer clear">
-                <el-button type="primary" @click="saveCopyer">确 定</el-button>
-                <el-button @click="closeDrawer">取 消</el-button>
+                <el-button type="primary" @click="saveCopyer">{{$L('确 定')}}</el-button>
+                <el-button @click="closeDrawer">{{$L('取 消')}}</el-button>
             </div>
             <employees-role-dialog 
                 v-model:visible="copyerVisible"

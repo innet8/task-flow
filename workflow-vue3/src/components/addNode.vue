@@ -7,19 +7,19 @@
                         <div class="item-wrapper">
                             <span class="iconfont"></span>
                         </div>
-                        <p>审批人</p>
+                        <p>{{$L('审批人')}}</p>
                     </a>
                     <a class="add-node-popover-item notifier" @click="addType('notifier')">
                         <div class="item-wrapper">
                             <span class="iconfont"></span>
                         </div>
-                        <p>抄送人</p>
+                        <p>{{$L('抄送人')}}</p>
                     </a>
                     <a class="add-node-popover-item condition" @click="addType('condition')">
                         <div class="item-wrapper">
                             <span class="iconfont"></span>
                         </div>
-                        <p>条件分支</p>
+                        <p>{{$L('条件分支')}}</p>
                     </a>
                 </div>
                 <template #reference>
@@ -32,7 +32,9 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue'
+import { ref,getCurrentInstance } from 'vue'
+const {proxy} = getCurrentInstance()
+
 let props = defineProps({
     nodeConfig:{
         type: Object,
@@ -51,7 +53,7 @@ const addType = (type)=> {
         var data;
         if (type == 'approver') {
             data = {
-                "name": "审核人",
+                "name": proxy.$L("审核人"),
                 "prevId": props.nodeConfig.nodeId,
                 "nodeId": '' + new Date().getTime(),
                 "error": true,
@@ -68,7 +70,7 @@ const addType = (type)=> {
             }
         } else if (type == 'notifier') {
             data = {
-                "name": "抄送人",
+                "name": proxy.$L("抄送人"),
                 "prevId": props.nodeConfig.nodeId,
                 "nodeId": '' + new Date().getTime(),
                 "type": type,
@@ -82,13 +84,13 @@ const addType = (type)=> {
     } else {
         var nodeId = '' + new Date().getTime();
         emits("update:childNodeP", {
-            "name": "路由",
+            "name": proxy.$L("路由"),
             "type": 'route',
             "prevId": props.nodeConfig.nodeId,
             "nodeId": nodeId,
             "childNode": null,
             "conditionNodes": [{
-                "name": "条件1",
+                "name": proxy.$L("条件1"),
                 "prevId": nodeId,
                 "nodeId": '' + new Date().getTime(),
                 "error": true,
@@ -98,7 +100,7 @@ const addType = (type)=> {
                 "nodeUserList": [],
                 "childNode": props.childNodeP,
             }, {
-                "name": "条件2",
+                "name": proxy.$L("条件2"),
                 "prevId": nodeId,
                 "nodeId": '' + new Date().getTime(),
                 "type": type,

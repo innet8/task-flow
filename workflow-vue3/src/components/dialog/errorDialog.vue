@@ -8,22 +8,22 @@
   <el-dialog title="提示" v-model="visibleDialog">
     <div class="ant-confirm-body">
       <i class="anticon anticon-close-circle" style="color: #f00;"></i>
-      <span class="ant-confirm-title">当前无法发布</span>
+      <span class="ant-confirm-title">{{$L('当前无法发布')}}</span>
       <div class="ant-confirm-content">
         <div>
-          <p class="error-modal-desc">以下内容不完善，需进行修改</p>
+          <p class="error-modal-desc">{{$L('以下内容不完善，需进行修改')}}</p>
           <div class="error-modal-list">
             <div class="error-modal-item" v-for="(item,index) in list" :key="index">
-              <div class="error-modal-item-label">流程设计</div>
-              <div class="error-modal-item-content">{{item.name}} 未选择{{item.type}}</div>
+              <div class="error-modal-item-label">{{$L('流程设计')}}</div>
+              <div class="error-modal-item-content">{{item.name}} {{$L('未选择')}}{{item.type}}</div>
             </div>
           </div>
         </div>
       </div>
     </div>
     <template #footer>
-      <el-button @click="visibleDialog = false">我知道了</el-button>
-      <el-button type="primary" @click="visibleDialog = false">前往修改</el-button>
+      <el-button @click="visibleDialog = false">{{$L('我知道了')}}</el-button>
+      <el-button type="primary" @click="visibleDialog = false">{{$L('前往修改')}}</el-button>
     </template>
   </el-dialog>
 </template>

@@ -1,3 +1,11 @@
+import { getCurrentInstance } from "vue";
+import {switchLanguage as $L} from "../language";
+const proxy = {
+    $L : (lang)=>{
+       return $L(lang)
+    }
+};
+
 function All() {}
 All.prototype = {
     timer: "",
@@ -66,18 +74,18 @@ All.prototype = {
                 if (nodeConfig.examineMode == 1) {
                     return this.arrToStr(nodeConfig.nodeUserList)
                 } else if (nodeConfig.examineMode == 2) {
-                    return nodeConfig.nodeUserList.length + "人会签"
+                    return nodeConfig.nodeUserList.length + proxy.$L("人会签")
                 }
             }
         } else if (nodeConfig.settype == 2) {
-            let level = nodeConfig.directorLevel == 1 ? '直接主管' : '第' + nodeConfig.directorLevel + '级主管'
+            let level = nodeConfig.directorLevel == 1 ? proxy.$L('直接主管') : proxy.$L('第' + nodeConfig.directorLevel + '级主管')
             if (nodeConfig.examineMode == 1) {
                 return level
             } else if (nodeConfig.examineMode == 2) {
-                return level + "会签"
+                return level + proxy.$L("会签")
             }
         }  else if (nodeConfig.settype == 3) {
-            return '从直接主管到通讯录中级别最高的第' + nodeConfig.examineEndDirectorLevel + '个层级主管'
+            return proxy.$L("从直接主管到通讯录中级别最高的第") + nodeConfig.examineEndDirectorLevel + proxy.$L("个层级主管")
         }
     },
     dealStr(str, obj) {
@@ -97,14 +105,14 @@ All.prototype = {
         conditionList = conditionList || [];
         nodeUserList = nodeUserList || [];
         if (!conditionList || conditionList.length == 0) {
-            return (index == nodeConfig.conditionNodes.length - 1) && nodeConfig.conditionNodes[0].conditionList.length != 0 ? '其他条件进入此流程' : '请设置条件'
+            return (index == nodeConfig.conditionNodes.length - 1) && nodeConfig.conditionNodes[0].conditionList.length != 0 ? proxy.$L("其他条件进入此流程") : proxy.$L("请设置条件")
         }else {
             let str = ""
             for (var i = 0; i < conditionList.length; i++) {
                 var { columnId, columnType, showType, showName, optType, zdy1, opt1, zdy2, opt2, fixedDownBoxValue } = conditionList[i];
                 if (columnId == 0) {
                     if (nodeUserList.length != 0) {
-                        str += '发起人属于：'
+                        str += proxy.$L('发起人属于：') 
                         str += nodeUserList.map(item => { return item.name }).join("或") + " 并且 "
                     }
                 }
@@ -122,7 +130,7 @@ All.prototype = {
                     }
                 }
             }
-            return str ? str.substring(0, str.length - 4) : '请设置条件'
+            return str ? str.substring(0, str.length - 4) : proxy.$L('请设置条件')
         }
     },
     copyerStr(nodeConfig) {
@@ -130,7 +138,7 @@ All.prototype = {
             return this.arrToStr(nodeConfig.nodeUserList)
         } else {
             if (nodeConfig.ccSelfSelectFlag == 1) {
-                return "发起人自选"
+                return proxy.$L("发起人自选")
             }
         }
     }, 

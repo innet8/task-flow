@@ -5,17 +5,17 @@
  * @FilePath: /Workflow-Vue3/src/components/dialog/roleDialog.vue
 -->
 <template>
-   <el-dialog title="选择角色" v-model="visibleDialog" :width="600" append-to-body class="promoter_person">
+   <el-dialog :title="$L('选择角色')" v-model="visibleDialog" :width="600" append-to-body class="promoter_person">
       <div class="person_body clear">
           <div class="person_tree l">
-              <input type="text" placeholder="搜索角色" v-model="searchVal" @input="getDebounceData($event,2)">
+              <input type="text" :placeholder="$L('搜索角色')" v-model="searchVal" @input="getDebounceData($event,2)">
               <selectBox :list="list" />
           </div>
           <selectResult :total="total" @del="delList" :list="resList"/>
       </div>
       <template #footer>
-          <el-button @click="closeDialog">取 消</el-button>
-          <el-button type="primary" @click="saveDialog">确 定</el-button>
+          <el-button @click="closeDialog">{{$L('取 消')}}</el-button>
+          <el-button type="primary" @click="saveDialog">{{$L('确 定')}}</el-button>
       </template>
   </el-dialog>
 </template>

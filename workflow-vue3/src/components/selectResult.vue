@@ -6,8 +6,8 @@
 -->
 <template>
   <div class="select-result l">
-    <p class="clear">已选（{{total}}）
-        <a @click="emits('del')">清空</a>
+    <p class="clear">{{$L('已选')}}（{{total}}）
+        <a @click="emits('del')">{{$L('清空')}}</a>
     </p>
     <ul>
         <template v-for="({type, data, cancel}) in list" :key="type">

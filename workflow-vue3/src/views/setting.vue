@@ -15,9 +15,9 @@
             </div>
         </div> -->
 
-        <div class="fd-nav-title" style="position: fixed;left: 30px;z-index: 10;top: 30px;font-size: 20px;">{{ workFlowDef.name || '' }}</div>
+        <div class="fd-nav-title" style="position: fixed;left: 30px;z-index: 10;top: 30px;font-size: 20px;">{{ $L(workFlowDef.name || '') }}</div>
         <button v-if="showbtn" type="button" class="ant-btn button-publish" @click="saveSet" style="position: fixed;right: 40px;z-index: 10;bottom: 30px;font-size: 20px;">
-            <span>发 布</span>
+            <span>{{ $L('发 布')}}</span>
         </button>
         
         <div class="fd-nav-content" style="top: 0px;">
@@ -31,7 +31,7 @@
                     <nodeWrap v-model:nodeConfig="nodeConfig" v-model:flowPermission="flowPermission" />
                     <div class="end-node">
                         <div class="end-node-circle"></div>
-                        <div class="end-node-text">流程结束</div>
+                        <div class="end-node-text">{{$L('流程结束')}}</div>
                     </div>
                 </div>
             </section>
@@ -52,11 +52,12 @@ import approverDrawer from "@/components/drawer/approverDrawer.vue";
 import copyerDrawer from "@/components/drawer/copyerDrawer.vue";
 import conditionDrawer from "@/components/drawer/conditionDrawer.vue";
 import { ElMessage } from 'element-plus'
-import { ref, onMounted } from "vue";
+import { ref, onMounted,getCurrentInstance } from "vue";
 import { useRoute,useRouter } from 'vue-router'
 import { getWorkFlowData, setWorkFlowData } from "@/plugins/api.js";
 import { mapMutations } from "@/plugins/lib.js";
 
+const {proxy} = getCurrentInstance()
 const router=useRouter()
 const route=useRoute()
 let { setTableId, setIsTried } = mapMutations()
@@ -76,7 +77,7 @@ onMounted(async () => {
         showbtn.value = false;
     }
     if(!route.query.name){
-        ElMessage.error("流程名称不能为空")
+        ElMessage.error( proxy.$L("流程名称不能为空") )
         return;
     }
     // token
@@ -89,7 +90,7 @@ onMounted(async () => {
 
 // 初始化
 const init = async () => {
-    let company = "系统默认";
+    let company = proxy.$L("系统默认");
     let {data,status,message} = await getWorkFlowData({ company:company, name:route.query.name })
     if (status != 200) {
         ElMessage.error(message)
@@ -106,7 +107,7 @@ const init = async () => {
             "name": route.query.name,
         };
         nodeConfig.value = {
-            "name": "发起人",
+            "name": proxy.$L("发起人"),
             "type": "start",
             "nodeId": "sid-startevent",
             "childNode": {},
@@ -141,7 +142,7 @@ const reErr = ({ childNode }) => {
             reErr(childNode);
             for (var i = 0; i < conditionNodes.length; i++) {
                 if (conditionNodes[i].error) {
-                    tipList.value.push({ name: conditionNodes[i].name, type: "条件" });
+                    tipList.value.push({ name: conditionNodes[i].name, type:  proxy.$L("条件") });
                 }
                 reErr(conditionNodes[i]);
             }
@@ -170,7 +171,7 @@ const saveSet = async () => {
     processConfig.value.id = Number(workFlowDefId.value || 0);
     let res = await setWorkFlowData(processConfig.value);
     if (res.status == 200) {
-        ElMessage.success("设置成功")
+        ElMessage.success( proxy.$L("设置成功") )
         workFlowDefId.value = res.data;
         // router.replace({
         //     path:'/',

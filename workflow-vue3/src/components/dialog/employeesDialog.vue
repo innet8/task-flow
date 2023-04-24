@@ -1,10 +1,10 @@
 <template>
-    <el-dialog title="选择成员" v-model="visibleDialog" :width="600" append-to-body class="promoter_person">
+    <el-dialog :title="$L('选择成员')" v-model="visibleDialog" :width="600" append-to-body class="promoter_person">
         <div class="person_body clear">
             <div class="person_tree l">
-                <input type="text" placeholder="搜索成员" v-model="searchVal" @input="getDebounceData($event)">
+                <input type="text" :placeholder="$L('搜索成员')" v-model="searchVal" @input="getDebounceData($event)">
                 <p class="ellipsis tree_nav" v-if="!searchVal">
-                    <span @click="getDepartmentList(0)" class="ellipsis">默认部门</span>
+                    <span @click="getDepartmentList(0)" class="ellipsis">{{$L("默认部门")}}</span>
                     <span v-for="(item, index) in departments.titleDepartments" class="ellipsis" :key="index + 'a'"
                         @click="getDepartmentList(item.id)">{{ item.departmentName }}</span>
                 </p>
@@ -13,8 +13,8 @@
             <selectResult :total="total" @del="delList" :list="resList" />
         </div>
         <template #footer>
-            <el-button @click="$emit('update:visible', false)">取 消</el-button>
-            <el-button type="primary" @click="saveDialog">确 定</el-button>
+            <el-button @click="$emit('update:visible', false)">{{$L("取 消")}}</el-button>
+            <el-button type="primary" @click="saveDialog">{{$L("确 定")}}</el-button>
         </template>
     </el-dialog>
 </template>
