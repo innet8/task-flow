@@ -63,19 +63,19 @@ export default {
      * @returns {string}
      */
     getLanguage() {
-        if( this.getParams('lang') ) return this.getParams('lang');
-
-        let lang = window.localStorage.getItem("__language:type__")
-        if (typeof lang === "string" && typeof this.languageTypes[lang] !== "undefined") {
-            return lang;
+        let lang;
+        if(!this.getParams('lang')){
+            lang = window.localStorage.getItem("__language:type__")
+            if (typeof lang === "string" && typeof this.languageTypes[lang] !== "undefined") {
+                return lang;
+            }
         }
-        lang = 'tc';
-        let navLang = ((window.navigator.language || navigator.userLanguage) + "").toLowerCase();
+        let navLang = (this.getParams('lang') || (window.navigator.language || navigator.userLanguage) + "").toLowerCase();
         switch (navLang) {
             case "zh":
             case "cn":
             case "zh-cn":
-                lang = 'tc'
+                lang = 'cn'
                 break;
             case "zh-tw":
             case "zh-tr":

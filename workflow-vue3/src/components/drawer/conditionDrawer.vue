@@ -88,7 +88,9 @@ import employeesRoleDialog from '../dialog/employeesRoleDialog.vue'
 import $func from '@/plugins/preload'
 import { mapState, mapMutations } from '@/plugins/lib.js'
 import { getConditions } from '@/plugins/api.js'
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed,getCurrentInstance } from 'vue'
+
+const {proxy} = getCurrentInstance()
 let conditionVisible = ref(false)
 let conditionsConfig = ref({
     conditionNodes: [],

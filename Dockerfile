@@ -1,7 +1,7 @@
 # 构建镜像
 # DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:1.0.0 .
 # 提交镜像到docker
-# docker commit 2fe777047e57 imagecommit
+# docker commit e394c49951c7 imagecommit
 # 推送 
 # docker push hitosea2020/go-workflow:1.0.0
 

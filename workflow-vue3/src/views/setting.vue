@@ -90,7 +90,7 @@ onMounted(async () => {
 
 // 初始化
 const init = async () => {
-    let company = proxy.$L("系统默认");
+    let company = "系统默认";
     let {data,status,message} = await getWorkFlowData({ company:company, name:route.query.name })
     if (status != 200) {
         ElMessage.error(message)
