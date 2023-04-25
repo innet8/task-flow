@@ -198,7 +198,7 @@ const delTerm = (index) => {
     props.nodeConfig.conditionNodes.splice(index, 1);
     props.nodeConfig.conditionNodes.map((item, index) => {
         item.priorityLevel = index + 1;
-        item.name = proxy.$L('条件')+`{index + 1}`;
+        item.name = proxy.$L('条件')+`${index + 1}`;
     });
     resetConditionNodesErr()
     emits("update:nodeConfig", props.nodeConfig);
