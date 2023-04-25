@@ -115,14 +115,14 @@ func GetUsersByDeptId(deptId int) ([]*Users, error) {
 // GetUserByName 根据用户名称获取用户并分页
 func GetUserByName(name string, page, pageSize int) ([]*Users, error) {
 	var datas []*Users
-	err := db.Where("bot = 0 and (nickname like ? or email like ?)", "%"+name+"%", "%"+name+"%").Limit(pageSize).Offset((page - 1) * pageSize).Find(&datas).Error
+	err := db.Where("bot = 0 and not exists(SELECT  * from pre_user_deletes f where f.userid=pre_users.userid) and (nickname like ? or email like ?)", "%"+name+"%", "%"+name+"%").Limit(pageSize).Offset((page - 1) * pageSize).Find(&datas).Error
 	return datas, err
 }
 
 // GetUserByNameCount 根据用户名称获取用户总数
 func GetUserByNameCount(name string) (int, error) {
 	var count int
-	err := db.Model(&Users{}).Where("bot = 0 and (nickname like ? or email like ?)", "%"+name+"%", "%"+name+"%").Count(&count).Error
+	err := db.Model(&Users{}).Where("bot = 0 and not exists(SELECT  * from pre_user_deletes f where f.userid=pre_users.userid) and (nickname like ? or email like ?)", "%"+name+"%", "%"+name+"%").Count(&count).Error
 	return count, err
 }
 
@@ -136,6 +136,6 @@ func GetUserDeptById(id string) ([]*Users, error) {
 // GetUserInfoById 根据用户id获取用户信息
 func GetUserInfoById(id string) (*Users, error) {
 	var datas Users
-	err := db.Model(&Users{}).Where("userid=?", id).Find(&datas).Error
+	err := db.Model(&Users{}).Where("not exists(SELECT  * from pre_user_deletes f where f.userid=pre_users.userid) and userid=?", id).Find(&datas).Error
 	return &datas, err
 }
