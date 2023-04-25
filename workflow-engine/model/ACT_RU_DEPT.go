@@ -102,7 +102,7 @@ func GetUsersByDeptNames(deptNames []string) ([]*Users, error) {
 // GetUsersByDeptIds 根据部门id获取用户列表，使用find_in_set函数查询
 func GetUsersByDeptId(deptId int) ([]*Users, error) {
 	var datas []*Users
-	modelDb := db.Where("bot=?", 0)
+	modelDb := db.Where("bot=? and not exists(SELECT  * from pre_user_deletes f where f.userid=pre_users.userid)", 0)
 	if deptId > 0 {
 		modelDb = modelDb.Where("find_in_set(?,department)", deptId)
 	} else {
