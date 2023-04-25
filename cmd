@@ -183,7 +183,7 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "build-image" ]]; then
         cd workflow-vue3 && npm run build && cd ../
         GOOS=linux go build -o main main.go
-        DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:1.0.0 .
+        DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:1.0.1 .
         $COMPOSE up -d
         docker ps | grep "task-flow-workflow" | awk '{print $1}'
     else

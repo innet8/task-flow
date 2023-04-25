@@ -52,7 +52,7 @@ export let getDebounceData = (event, type = 1) => {
                 let res = await getEmployees(data)
                 departments.value.employees = res.data.list.map(h =>{
                     h.id = h.userid;
-                    h.employeeName = h.nickname;
+                    h.employeeName = h.nickname || h.email;
                     // "departmentName": "招商事业部",
                     // "employeeDepartmentId": "121",
                     // "departmentNames": "招商事业部"

@@ -1,9 +1,9 @@
 # 构建镜像
-# DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:1.0.0 .
+# DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:1.0.1 .
 # 提交镜像到docker
-# docker commit e394c49951c7 imagecommit
+# docker commit 469f4b02521e imagecommit
 # 推送 
-# docker push hitosea2020/go-workflow:1.0.0
+# docker push hitosea2020/go-workflow:1.0.1
 
 # FROM alpine
 FROM nginx:alpine

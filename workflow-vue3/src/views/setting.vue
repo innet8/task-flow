@@ -140,7 +140,7 @@ const reErr = ({ childNode }) => {
             reErr(childNode);
         } else if (type == 'route') {
             reErr(childNode);
-            for (var i = 0; i < conditionNodes.length; i++) {
+            for (var i = 0; i < conditionNodes?.length; i++) {
                 if (conditionNodes[i].error) {
                     tipList.value.push({ name: conditionNodes[i].name, type:  proxy.$L("条件") });
                 }
@@ -161,7 +161,7 @@ const saveSet = async () => {
     // 
     tipList.value = [];
     reErr(nodeConfig.value);
-    if (tipList.value.length != 0) {
+    if (tipList.value?.length != 0) {
         tipVisible.value = true;
         return;
     }
