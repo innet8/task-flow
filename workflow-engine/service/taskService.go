@@ -359,7 +359,14 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 	}
 
 	//  判断下一流程： 如果审批人是自己，自动通过
-	if nodeInfos[step].AproverId == userID {
+	var startUserID string
+	data, err := model.FindProcInstByID(procInstID)
+	if err == nil {
+		startUserID = data.StartUserID
+	} else {
+		startUserID = userID
+	}
+	if nodeInfos[step].AproverId == startUserID {
 		// 生成新的任务
 		var task = model.Task{
 			NodeID:     nodeInfos[step].NodeID,

@@ -13,7 +13,7 @@
                         <span v-for="(item,index) in approverConfig.nodeUserList" :key="index">{{item.name}}
                             <img src="@/assets/images/add-close1.png" @click="$func.removeEle(approverConfig.nodeUserList,item,'targetId')">
                         </span>
-                        <a v-if="approverConfig.nodeUserList.length!=0" @click="approverConfig.nodeUserList=[]">清除</a>
+                        <a v-if="approverConfig.nodeUserList?.length!=0" @click="approverConfig.nodeUserList=[]">清除</a>
                     </p>
                 </div>
                 <div class="approver_manager" v-if="approverConfig.settype==2">
@@ -45,7 +45,7 @@
                         <span v-for="(item,index) in approverConfig.nodeUserList" :key="index">{{item.name}}
                             <img src="@/assets/images/add-close1.png" @click="$func.removeEle(approverConfig.nodeUserList,item,'targetId')">
                         </span>
-                        <a v-if="approverConfig.nodeUserList.length!=0&&approverConfig.selectRange!=1" @click="approverConfig.nodeUserList=[]">{{$L('清除')}}</a>
+                        <a v-if="approverConfig.nodeUserList?.length!=0&&approverConfig.selectRange!=1" @click="approverConfig.nodeUserList=[]">{{$L('清除')}}</a>
                     </p>
                 </div>
                 <div class="approver_manager" v-if="approverConfig.settype==3">
@@ -57,7 +57,7 @@
                         </select>
                     </p>
                 </div>
-                <div class="approver_some" v-if="(approverConfig.settype==1&&approverConfig.nodeUserList.length>1)||approverConfig.settype==2||(approverConfig.settype==4&&approverConfig.selectMode==2)">
+                <div class="approver_some" v-if="(approverConfig.settype==1&&approverConfig.nodeUserList?.length>1)||approverConfig.settype==2||(approverConfig.settype==4&&approverConfig.selectMode==2)">
                     <p>{{$L('多人审批时采用的审批方式')}}</p>
                     <el-radio-group v-model="approverConfig.examineMode" class="clear">
                         <el-radio :label="1">{{$L('依次审批')}}</el-radio>
