@@ -2,8 +2,10 @@ package model
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -57,13 +59,13 @@ func findProcInstsHistory(maps map[string]interface{}, pageIndex, pageSize int) 
 }
 
 // FindProcHistory 查询历史纪录
-func FindProcHistory(userID, procName, company string, sort string, pageIndex, pageSize int) ([]*ProcInstHistory, int, error) {
+func FindProcHistory(userID, procName, company string, sortStr string, pageIndex, pageSize int) ([]*ProcInstHistory, int, error) {
 	var datas []*ProcInstHistory
 	var count int
 	var err1 error
 	var order string
 	// 判段排序
-	if sort == "asc" {
+	if sortStr == "asc" {
 		order = "start_time asc"
 	} else {
 		order = "start_time desc"
@@ -75,8 +77,8 @@ func FindProcHistory(userID, procName, company string, sort string, pageIndex, p
 
 	go func() {
 		defer wg.Done()
-
 		dbQuery := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID)
+
 		if procName != "" {
 			dbQuery = dbQuery.Where("proc_def_name = ?", procName)
 		}
@@ -105,6 +107,40 @@ func FindProcHistory(userID, procName, company string, sort string, pageIndex, p
 			err1 = err
 		}
 	}
+
+	// 查询包含历史表(identitylink_history)中的数据外，还需要查询现在表（identitylink）的数据是否有我参与审核通过（字段state=1为通过）的数据
+	var datas2 []*ProcInst
+	dbQuery := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink where company=? and user_id=? and state=1)", conf.DbPrefix), company, userID)
+	if procName != "" {
+		dbQuery = dbQuery.Where("proc_def_name = ?", procName)
+	}
+	err := dbQuery.Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas2).Error
+	if err != nil {
+		err1 = err
+	}
+
+	// 判断为空，把现在表中的数据加入到历史表中的数据中
+	if len(datas2) > 0 {
+		// 将 datas2 中的数据加入到 datas 中
+		for _, v := range datas2 {
+			var data ProcInstHistory
+			data.ProcInst = *v
+			datas = append(datas, &data)
+		}
+		// 将 ProcInst.StartTime 转换为 time.Time 类型，然后按照时间排序
+		sort.Slice(datas, func(i, j int) bool {
+			t1, _ := time.Parse("2006-01-02 15:04:05", datas[i].ProcInst.StartTime)
+			t2, _ := time.Parse("2006-01-02 15:04:05", datas[j].ProcInst.StartTime)
+			if sortStr == "asc" {
+				return t1.Before(t2)
+			} else {
+				return t1.After(t2)
+			}
+		})
+		// count 加上 datas2 的长度
+		count += len(datas2)
+	}
+
 	return datas, count, err1
 }
 
