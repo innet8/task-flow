@@ -3,11 +3,8 @@ package flow
 import (
 	"container/list"
 	"errors"
-	"fmt"
-	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"workflow/util"
 	"workflow/workflow-engine/model"
@@ -125,17 +122,18 @@ type NodeCondition struct {
 
 // 节点条件列表
 type NodeConditionList struct {
-	ColumnId     int    `json:"columnId"`
-	Type         int    `json:"type,omitempty"`
-	ShowType     string `json:"showType,omitempty"` //显示类型
-	ShowName     string `json:"showName,omitempty"` //发起人
-	OptType      string `json:"optType,omitempty"`  //选择类型
-	Zdy1         string `json:"zdy1,omitempty"`
-	Opt1         string `json:"opt1,omitempty"`
-	Zdy2         string `json:"zdy2,omitempty"`
-	Opt2         string `json:"opt2,omitempty"`
-	ColumnDbname string `json:"columnDbname,omitempty"`
-	ColumnType   string `json:"columnType,omitempty"`
+	ColumnId          int    `json:"columnId"`
+	Type              int    `json:"type,omitempty"`
+	ShowType          string `json:"showType,omitempty"` //显示类型
+	ShowName          string `json:"showName,omitempty"` //发起人
+	OptType           string `json:"optType,omitempty"`  //选择类型
+	Zdy1              string `json:"zdy1,omitempty"`
+	Opt1              string `json:"opt1,omitempty"`
+	Zdy2              string `json:"zdy2,omitempty"`
+	Opt2              string `json:"opt2,omitempty"`
+	ColumnDbname      string `json:"columnDbname,omitempty"`
+	ColumnType        string `json:"columnType,omitempty"`
+	FixedDownBoxValue string `json:"fixedDownBoxValue,omitempty"`
 }
 
 // 节点气孔导度
@@ -396,7 +394,6 @@ func parseProcessConfig(node *Node, userID string, departmentId int, variable *t
 
 // GetConditionNode 获取条件节点
 func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *types.Vars) (result *Node, err error) {
-	// map2 := *maps
 	// 用户信息
 	// userInfo, errs := model.GetUserInfoById(userID)
 	// if errs != nil {
@@ -413,7 +410,7 @@ func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *type
 	for _, node := range nodes {
 		var flag int
 		for _, v := range node.ConditionList {
-			// 发起人
+			// 1.发起人
 			if v.ColumnId == 0 {
 				for _, vv := range node.NodeUserList {
 					targetId, _ := strconv.Atoi(vv.TargetId)
@@ -433,17 +430,55 @@ func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *type
 					}
 				}
 			}
-			// paramValue := map2[v.ParamKey]
-			// if len(paramValue) == 0 {
-			// 	return nil, errors.New("流程启动变量【var】的key【" + v.ParamKey + "】的值不能为空")
-			// }
-			// yes, err := checkConditions(v, paramValue)
-			// if err != nil {
-			// 	return nil, err
-			// }
-			// if yes {
-			// 	flag++
-			// }
+			// 2.假期类型
+			if v.ColumnId == 2 {
+				for key, val := range types.VacateTypes {
+					if strings.Contains(","+v.Zdy1, ","+strconv.Itoa(key+1)) && val == maps.Type {
+						flag++
+						break
+					}
+				}
+			}
+			// 3.请假时长
+			if v.ColumnId == 3 {
+				hour := maps.GetHourDiffer()                // 当前请求流程的时间（小时）
+				optType, _ := strconv.Atoi(v.OptType)       // 判断类型
+				zdy1, _ := strconv.ParseInt(v.Zdy1, 10, 64) // 判断值（小时）
+				zdy2, _ := strconv.ParseInt(v.Zdy2, 10, 64) // 判断值（小时）
+
+				switch optType {
+				case 1: //小于
+					if hour < zdy1 {
+						flag++
+					}
+					break
+				case 2: //大于
+					if hour > zdy1 {
+						flag++
+					}
+					break
+				case 3: //小于等于
+					if hour <= zdy1 {
+						flag++
+					}
+					break
+				case 4: //等于
+					if hour == zdy1 {
+						flag++
+					}
+					break
+				case 5: //大于等于
+					if hour >= zdy1 {
+						flag++
+					}
+					break
+				case 6: //介于两个数之间
+					if hour >= zdy1 && hour <= zdy2 {
+						flag++
+					}
+					break
+				}
+			}
 		}
 		// 满足所有条件
 		if flag >= len(node.ConditionList) {
@@ -452,177 +487,4 @@ func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *type
 		}
 	}
 	return result, nil
-}
-
-// 获取条件节点
-func getConditionNode(nodes []*Node, maps *map[string]string) (result *Node, err error) {
-	map2 := *maps
-	// 获取所有conditionNodes
-	getNodesChan := func() <-chan *Node {
-		nodesChan := make(chan *Node, len(nodes))
-		go func() {
-			// defer fmt.Println("关闭nodeChan通道")
-			defer close(nodesChan)
-			for _, v := range nodes {
-				nodesChan <- v
-			}
-		}()
-		return nodesChan
-	}
-
-	//获取所有conditions
-	getConditionNode := func(nodesChan <-chan *Node, done <-chan interface{}) <-chan *Node {
-		resultStream := make(chan *Node, 2)
-		go func() {
-			// defer fmt.Println("关闭resultStream通道")
-			defer close(resultStream)
-			for {
-				select {
-				case <-done:
-					return
-				case <-time.After(10 * time.Millisecond):
-					fmt.Println("Time out.")
-				case node, ok := <-nodesChan:
-					if ok {
-						// for _, v := range node.Properties.Conditions[0] {
-						// 	conStream <- v
-						// 	fmt.Printf("接收 condition:%s\n", v.Type)
-						// }
-						var flag int
-						for _, v := range node.Properties.Conditions[0] {
-							// fmt.Println(v.ParamKey)
-							// fmt.Println(map2[v.ParamKey])
-							paramValue := map2[v.ParamKey]
-							if len(paramValue) == 0 {
-								log.Printf("key:%s的值为空\n", v.ParamKey)
-								// nodeAndErr.Err = errors.New("key:" + v.ParamKey + "的值为空")
-								break
-							}
-							yes, err := checkConditions(v, paramValue)
-							if err != nil {
-								// nodeAndErr.Err = err
-								break
-							}
-							if yes {
-								flag++
-							}
-						}
-						// fmt.Printf("flag=%d\n", flag)
-						// 满足所有条件
-						if flag == len(node.Properties.Conditions[0]) {
-							// fmt.Printf("flag=%d\n,send node:%s\n", flag, node.NodeID)
-							resultStream <- node
-						} else {
-							// fmt.Println("条件不完全满足")
-						}
-					}
-				}
-			}
-		}()
-		return resultStream
-	}
-	done := make(chan interface{})
-	// defer fmt.Println("结束所有goroutine")
-	defer close(done)
-	nodeStream := getNodesChan()
-	// for i := len(nodes); i > 0; i-- {
-	// 	getConditionNode(resultStream, nodeStream, done)
-	// }
-	resultStream := getConditionNode(nodeStream, done)
-	// for node := range resultStream {
-	// 	return node, nil
-	// }
-	for {
-		select {
-		case <-time.After(1 * time.Second):
-			fmt.Println("Time out")
-			return
-		case node := <-resultStream:
-			// result = node
-			return node, nil
-		}
-	}
-	// setResult(resultStream, done)
-	// time.Sleep(1 * time.Second)
-	// log.Println("----------寻找节点结束--------")
-	// return result, err
-}
-
-// 检查条件
-func checkConditions(cond *NodeCondition, value string) (bool, error) {
-	// 判断类型
-	switch cond.Type {
-	case ActionConditionTypes[RANGE]:
-		val, err := strconv.Atoi(value)
-		if err != nil {
-			return false, err
-		}
-		if len(cond.LowerBound) == 0 && len(cond.UpperBound) == 0 && len(cond.LowerBoundEqual) == 0 && len(cond.UpperBoundEqual) == 0 && len(cond.BoundEqual) == 0 {
-			return false, errors.New("条件【" + cond.Type + "】的上限或者下限值不能全为空")
-		}
-		// 判断下限，lowerBound
-		if len(cond.LowerBound) > 0 {
-			low, err := strconv.Atoi(cond.LowerBound)
-			if err != nil {
-				return false, err
-			}
-			if val <= low {
-				// fmt.Printf("val:%d小于lowerBound:%d\n", val, low)
-				return false, nil
-			}
-		}
-		if len(cond.LowerBoundEqual) > 0 {
-			le, err := strconv.Atoi(cond.LowerBoundEqual)
-			if err != nil {
-				return false, err
-			}
-			if val < le {
-				// fmt.Printf("val:%d小于lowerBound:%d\n", val, low)
-				return false, nil
-			}
-		}
-		// 判断上限,upperBound包含等于
-		if len(cond.UpperBound) > 0 {
-			upper, err := strconv.Atoi(cond.UpperBound)
-			if err != nil {
-				return false, err
-			}
-			if val >= upper {
-				return false, nil
-			}
-		}
-		if len(cond.UpperBoundEqual) > 0 {
-			ge, err := strconv.Atoi(cond.UpperBoundEqual)
-			if err != nil {
-				return false, err
-			}
-			if val > ge {
-				return false, nil
-			}
-		}
-		if len(cond.BoundEqual) > 0 {
-			equal, err := strconv.Atoi(cond.BoundEqual)
-			if err != nil {
-				return false, err
-			}
-			if val != equal {
-				return false, nil
-			}
-		}
-		return true, nil
-	case ActionConditionTypes[VALUE]:
-		if len(cond.ParamValues) == 0 {
-			return false, errors.New("条件节点【" + cond.Type + "】的 【paramValues】数组不能为空，值如：'paramValues:['调休','年假']")
-		}
-		for _, val := range cond.ParamValues {
-			if value == val {
-				return true, nil
-			}
-		}
-		// log.Printf("key:" + cond.ParamKey + "找不到对应的值")
-		return false, nil
-	default:
-		str, _ := util.ToJSONStr(ActionConditionTypes)
-		return false, errors.New("未知的NodeCondition类型【" + cond.Type + "】,正确类型应为以下中的一个:" + str)
-	}
 }

@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"strings"
+	"time"
 	"workflow/util"
 )
 
@@ -14,7 +15,7 @@ type Vars struct {
 	EndTime     string `json:"endTime"`     //结束时间
 }
 
-var VacateTypes = []string{"年假", "事假", "病假", "调休假", "婚假", "产假", "陪产假", "丧假", "哺乳假"}
+var VacateTypes = []string{"年假", "事假", "病假", "调休假", "产假", "婚假", "例假", "丧假", "陪产假", "哺乳假"}
 
 // 验证请假类型
 func CheckVacateVars(vars *Vars) (bool, error) {
@@ -72,4 +73,18 @@ func CheckOvertimeVars(vars *Vars) (bool, error) {
 		return false, errors.New("开始时间不能大于结束时间")
 	}
 	return true, nil
+}
+
+// 获取时间差 - 单位(小时)
+func (vars *Vars) GetHourDiffer() int64 {
+	var hour int64
+	t1, err := time.ParseInLocation("2006-01-02 15:04", vars.StartTime, time.Local)
+	t2, err := time.ParseInLocation("2006-01-02 15:04", vars.EndTime, time.Local)
+	if err == nil && t1.Before(t2) {
+		diff := t2.Unix() - t1.Unix() //
+		hour = diff / 3600
+		return hour
+	} else {
+		return hour
+	}
 }

@@ -21,13 +21,13 @@
                             </p>
                         </div>
                         <div v-else-if="item.columnType == 'String' && item.showType == 3">
-                            <p class="check_box">
+                            <p class="check_box" v-if="item.fixedDownBoxValue">
                                 <a :class="$func.toggleStrClass(item,item1.key)&&'active'" @click="toStrChecked(item,item1.key)"
                                 v-for="(item1,index1) in JSON.parse(item.fixedDownBoxValue)" :key="index1">{{item1.value}}</a>
                             </p>
                         </div>
                         <div v-else>
-                            <p>
+                            <p style="display: flex;">
                                 <select v-model="item.optType" :style="'width:'+(item.optType==6?370:100)+'px'" @change="changeOptType(item)">
                                     <option value="1">{{$L('小于')}}</option>
                                     <option value="2">{{$L('大于')}}</option>
@@ -37,6 +37,7 @@
                                     <option value="6">{{$L('介于两个数之间')}}</option>
                                 </select>
                                 <input v-if="item.optType!=6" type="text" :placeholder="$L('请输入'+item.showName)" v-enter-number="2" v-model="item.zdy1">
+                                <span style=" width: 40px;line-height: 35px;text-align: center;">小时</span>
                             </p>
                             <p v-if="item.optType==6">
                                 <input type="text" style="width:75px;" class="mr_10" v-enter-number="2" v-model="item.zdy1">
@@ -89,6 +90,7 @@ import $func from '@/plugins/preload'
 import { mapState, mapMutations } from '@/plugins/lib.js'
 import { getConditions } from '@/plugins/api.js'
 import { ref, watch, computed,getCurrentInstance } from 'vue'
+import { useRoute } from 'vue-router'
 
 const {proxy} = getCurrentInstance()
 let conditionVisible = ref(false)
@@ -101,6 +103,7 @@ let conditions = ref([])
 let conditionList = ref([])
 let checkedList = ref([])
 let conditionRoleVisible = ref(false)
+const route=useRoute()
 
 let { tableId, conditionsConfig1, conditionDrawer } = mapState()
 
@@ -125,10 +128,10 @@ let { setCondition, setConditionsConfig } = mapMutations()
 
 const changeOptType = (item) => {
     if (item.optType == 1) {
-        item.zdy1 = 2;
+        item.zdy1 = "2";
     } else {
-        item.zdy1 = 1;
-        item.zdy2 = 2;
+        item.zdy1 = "1";
+        item.zdy2 = "2";
     }
 }
 const toStrChecked = (item, key) => {
@@ -158,6 +161,7 @@ const addCondition = async () => {
     conditionVisible.value = true;
     // let { data } = await getConditions({ tableId: tableId.value })
     // conditions.value = data;
+
     conditions.value = [
         // {
         //     "columnId": "1090",
@@ -167,23 +171,48 @@ const addCondition = async () => {
         //     "columnType": "Double",
         //     "fixedDownBoxValue": ""
         // },
-        // {
-        //     "columnId": "1092",
-        //     "showType": "3",
-        //     "showName": "采购类型",
-        //     "columnName": "procurementType",
-        //     "columnType": "String",
-        //     "fixedDownBoxValue": "{\"1\":{\"key\":\"1\",\"value\":\"新开园区集中采购\",\"column\":\"\",\"type\":\"1\"}}"
-        // },
-        // {
-        //     "columnId": "1093",
-        //     "showType": "1",
-        //     "showName": "园区面积",
-        //     "columnName": "parkArea",
-        //     "columnType": "Double",
-        //     "fixedDownBoxValue": ""
-        // }
     ];
+
+    if((route.query.name || '').indexOf("班") == -1) {
+        conditions.value.push({
+            "columnId": 2,
+            "showType": "3",
+            "showName": "假期类型",
+            "columnName": "type",
+            "columnType": "String",
+            "fixedDownBoxValue": `
+                {
+                    "1":{"key":"1","value":"年假","type":"1"},
+                    "2":{"key":"2","value":"事假","type":"2"},
+                    "3":{"key":"3","value":"病假","type":"3"},
+                    "4":{"key":"4","value":"调休","type":"4"},
+                    "5":{"key":"5","value":"产假","type":"5"},
+                    "6":{"key":"6","value":"婚假","type":"6"},
+                    "7":{"key":"7","value":"例假","type":"7"},
+                    "8":{"key":"8","value":"丧假","type":"8"},
+                    "9":{"key":"9","value":"陪产假","type":"9"},
+                    "10":{"key":"10","value":"哺乳假","type":"10"}
+                }
+            `
+        })
+        conditions.value.push({
+            "columnId": 3,
+            "showType": "3",
+            "showName": "请假时长",
+            "columnName": "lengthOfLeave",
+            "columnType": "Double",
+            "fixedDownBoxValue": ""
+        })
+    }else{
+        conditions.value.push({
+            "columnId": 3,
+            "showType": "3",
+            "showName": "加班时长",
+            "columnName": "overtimeHours",
+            "columnType": "Double",
+            "fixedDownBoxValue": ""
+        })
+    }
     
     if (conditionConfig.value.conditionList) {
         for (var i = 0; i < conditionConfig.value.conditionList.length; i++) {
@@ -211,7 +240,8 @@ const sureCondition = () => {
             conditionConfig.value.conditionList.push({
                 "type": 1,
                 "columnId": columnId,
-                "showName": '发起人'
+                "showName": '发起人',
+                "columnName": "initiator",
             });
         } else {
             if (columnType == "Double") {

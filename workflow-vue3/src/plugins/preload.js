@@ -116,7 +116,7 @@ All.prototype = {
                         str += nodeUserList.map(item => { return item.name }).join("或") + " 并且 "
                     }
                 }
-                if (columnType == "String" && showType == "3") {
+                if (fixedDownBoxValue && columnType == "String" && showType == "3") {
                     if (zdy1) {
                         str += showName + '属于：' + this.dealStr(zdy1, JSON.parse(fixedDownBoxValue)) + " 并且 "
                     }

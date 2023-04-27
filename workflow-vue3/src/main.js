@@ -7,14 +7,14 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import {switchLanguage as $L,languageType,addLocales} from "./language";
+import { switchLanguage as $L, languageType, addLocales } from "./language";
 import './assets/main.css'
 import store from './store'
 import './css/override-element-ui.css'
 import 'element-plus/es/components/message/style/css'
 
 // 加载语言
-const loadLang = () =>{
+const loadLang = () => {
     return new Promise(async resolve => {
         await addLocales(languageType)
         resolve()
@@ -36,18 +36,18 @@ import addNode from '@/components/addNode.vue'
 app.component('addNode', addNode); //初始化组件
 
 app.directive('focus', {
-  mounted(el) {
-    el.focus();
-  }
+    mounted(el) {
+        el.focus();
+    }
 });
 
 app.directive('enterNumber', {
-  mounted(el, { value = 100 }, vnode) {
-    el = el.nodeName == "INPUT" ? el : el.children[0]
-    var RegStr = value == 0 ? `^[\\+\\-]?\\d+\\d{0,0}` : `^[\\+\\-]?\\d+\\.?\\d{0,${value}}`;
-    el.addEventListener('input', function () {
-      el.value = el.value.match(new RegExp(RegStr, 'g'));
-      el.dispatchEvent(new Event('input'))
-    });
-  }
+    mounted(el, { value = 100 }, vnode) {
+        el = el.nodeName == "INPUT" ? el : el.children[0]
+        var RegStr = value == 0 ? `^[\\+\\-]?\\d+\\d{0,0}` : `^[\\+\\-]?\\d+\\.?\\d{0,${value}}`;
+        el.addEventListener('input', function () {
+            el.value = el.value.match(new RegExp(RegStr, 'g'));
+            // el.dispatchEvent(new Event('input'))
+        });
+    }
 });
