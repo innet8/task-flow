@@ -110,7 +110,7 @@ func FindProcHistory(userID, procName, company string, sortStr string, pageIndex
 
 	// 查询包含历史表(identitylink_history)中的数据外，还需要查询现在表（identitylink）的数据是否有我参与审核通过（字段state=1为通过）的数据
 	var datas2 []*ProcInst
-	dbQuery := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink where company=? and user_id=? and state=1)", conf.DbPrefix), company, userID)
+	dbQuery := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink where company=? and user_id=? and step>0 and state=1)", conf.DbPrefix), company, userID)
 	if procName != "" {
 		dbQuery = dbQuery.Where("proc_def_name = ?", procName)
 	}
