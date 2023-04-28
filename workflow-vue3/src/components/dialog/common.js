@@ -21,7 +21,21 @@ export let getRoleList = async () => {
 }
 
 export let getDepartmentList = async (parentId = 0) => {
+    let titleDepartments = departments.value.titleDepartments;
+    let isDel = false;
+    titleDepartments.forEach((h,index) => {
+        if(isDel){
+            titleDepartments.splice(index, 1);
+        }
+        if(h.id == parentId){
+            isDel = true;
+        }
+    });
+    if(parentId===0){
+        titleDepartments = [];
+    }
     let { data } = await getDepartments({ parentId })
+    data.titleDepartments = titleDepartments
     data.childDepartments = data.childDepartments.map(h => {
         h.parentId = h.parent_id;
         h.departmentName = h.name;

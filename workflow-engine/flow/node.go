@@ -412,22 +412,27 @@ func GetConditionNode(nodes []*Node, userID string, departmentId int, maps *type
 		for _, v := range node.ConditionList {
 			// 1.发起人
 			if v.ColumnId == 0 {
-				for _, vv := range node.NodeUserList {
-					targetId, _ := strconv.Atoi(vv.TargetId)
-					// 属于用户条件
-					if vv.Type == 1 && vv.TargetId == userID {
-						flag++
-						break
-					}
-					// 属于部门条件
-					if vv.Type == 3 {
-						for _, dept := range deptList {
-							if targetId == dept.Id {
-								flag++
-								break
+				if len(node.NodeUserList) > 0 {
+					for _, vv := range node.NodeUserList {
+						targetId, _ := strconv.Atoi(vv.TargetId)
+						// 属于用户条件
+						if vv.Type == 1 && vv.TargetId == userID {
+							flag++
+							break
+						}
+						// 属于部门条件
+						if vv.Type == 3 {
+							for _, dept := range deptList {
+								if targetId == dept.Id {
+									flag++
+									break
+								}
 							}
 						}
 					}
+				} else {
+					flag = len(node.ConditionList)
+					break
 				}
 			}
 			// 2.假期类型

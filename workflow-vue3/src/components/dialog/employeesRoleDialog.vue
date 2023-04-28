@@ -28,6 +28,7 @@ import selectResult from '../selectResult.vue';
 import { computed, watch, ref } from 'vue'
 import $func from '@/plugins/preload.js'
 import { departments, roles, getDebounceData, getRoleList, getDepartmentList, searchVal } from './common'
+
 let props = defineProps({
     visible: {
         type: Boolean,
@@ -42,6 +43,7 @@ let props = defineProps({
         default: false
     },
 });
+
 let emits = defineEmits(['update:visible', 'change'])
 let visibleDialog = computed({
     get() {
@@ -71,7 +73,13 @@ let list = computed(() => {
             data: departments.value.childDepartments,
             isActive: (item) => $func.toggleClass(checkedDepartmentList.value, item),
             change: (item) => $func.toChecked(checkedDepartmentList.value, item),
-            next: (item) => getDepartmentList(item.id)
+            next: (item) => {
+                departments.value.titleDepartments.push({
+                    id:item.id,
+                    departmentName: item.name,
+                })
+                getDepartmentList(item.id)
+            }
         }, {
             type: 'employee',
             data: departments.value.employees,
