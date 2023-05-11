@@ -180,7 +180,7 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "build" ]]; then
         run_exec golang "rm -f main & GOOS=linux go build -o main main.go"
         echo -e "${OK} ${GreenBG} 编译完成 ${Font}"
-    elif [[ "$1" == "pull-image" ]]; then
+    elif [[ "$1" == "push-image" ]]; then
         cd workflow-vue3 && npm run build && cd ../
         GOOS=linux go build -o main main.go
         DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:$(env_get DOCKER_VER) .

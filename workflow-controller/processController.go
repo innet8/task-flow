@@ -105,7 +105,7 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 	proc.Department = deptInfo.Name
 
 	// 检测var
-	if !strings.Contains(proc.ProcName, "请班") {
+	if !strings.Contains(proc.ProcName, "请假") {
 		is, err := types.CheckOvertimeVars(proc.Var)
 		if !is {
 			util.Response(writer, fmt.Sprintf("%s", err), false)

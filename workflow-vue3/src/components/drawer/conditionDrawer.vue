@@ -173,7 +173,7 @@ const addCondition = async () => {
         // },
     ];
 
-    if((route.query.name || '').indexOf("请班") !== -1) {
+    if((route.query.name || '').indexOf("请假") !== -1) {
         conditions.value.push({
             "columnId": 2,
             "showType": "3",
