@@ -15,7 +15,7 @@ type Vars struct {
 	EndTime     string `json:"endTime"`     //结束时间
 }
 
-var VacateTypes = []string{"年假", "事假", "病假", "调休假", "产假", "婚假", "例假", "丧假", "陪产假", "哺乳假", "外出"}
+var VacateTypes = []string{"年假", "事假", "病假", "调休假", "产假", "婚假", "例假", "丧假", "陪产假", "哺乳假"}
 
 // 验证请假类型
 func CheckVacateVars(vars *Vars) (bool, error) {
