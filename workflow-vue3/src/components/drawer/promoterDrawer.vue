@@ -9,10 +9,10 @@
         <div class="demo-drawer__content">
             <div class="promoter_content drawer_content">
                 <p>{{ $func.arrToStr(flowPermission) || $L('所有人') }}</p>
-                <el-button type="primary" @click="addPromoter">{{$L('添加/修改发起人')}}</el-button>
+                <el-button @click="addPromoter">{{$L('添加/修改发起人')}}</el-button>
             </div>
             <div class="demo-drawer__footer clear">
-                <el-button type="primary" @click="savePromoter">{{$L('确 定')}}</el-button>
+                <el-button type="success" @click="savePromoter">{{$L('确 定')}}</el-button>
                 <el-button @click="closeDrawer">{{$L('取 消')}}</el-button>
             </div>
             <employees-dialog 

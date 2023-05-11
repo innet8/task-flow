@@ -17,7 +17,7 @@
         </div>
         <template #footer>
             <el-button @click="$emit('update:visible', false)">{{$L('取 消')}}</el-button>
-            <el-button type="primary" @click="saveDialog">{{$L('确 定')}}</el-button>
+            <el-button type="success" @click="saveDialog">{{$L('确 定')}}</el-button>
         </template>
     </el-dialog>
 </template>

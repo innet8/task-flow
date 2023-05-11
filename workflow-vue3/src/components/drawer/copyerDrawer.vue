@@ -8,7 +8,7 @@
     <el-drawer :append-to-body="true" :title="$L('抄送人设置')" v-model="visible" custom-class="set_copyer" :show-close="false" :size="550" :before-close="saveCopyer"> 
         <div class="demo-drawer__content">
             <div class="copyer_content drawer_content">
-                <el-button type="primary" @click="addCopyer">{{$L('添加成员')}}</el-button>
+                <el-button  @click="addCopyer">{{$L('添加成员')}}</el-button>
                 <p class="selected_list">
                     <span v-for="(item,index) in copyerConfig.nodeUserList" :key="index">{{item.name}}
                         <img src="@/assets/images/add-close1.png" @click="$func.removeEle(copyerConfig.nodeUserList,item,'targetId')">
@@ -20,7 +20,7 @@
                 </el-checkbox-group> -->
             </div>
             <div class="demo-drawer__footer clear">
-                <el-button type="primary" @click="saveCopyer">{{$L('确 定')}}</el-button>
+                <el-button type="success" @click="saveCopyer">{{$L('确 定')}}</el-button>
                 <el-button @click="closeDrawer">{{$L('取 消')}}</el-button>
             </div>
             <employees-role-dialog 

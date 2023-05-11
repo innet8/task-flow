@@ -57,7 +57,7 @@
                         <a v-if="item.type==2" @click="$func.removeEle(conditionConfig.conditionList,item,'columnId')">{{$L('删除')}}</a>
                     </li>
                 </ul>
-                <el-button type="primary" @click="addCondition">{{$L('添加条件')}}</el-button>
+                <el-button @click="addCondition">{{$L('添加条件')}}</el-button>
                 <el-dialog :title="$L('选择条件')" v-model="conditionVisible" :width="480" append-to-body class="condition_list">
                     <p>{{$L('请选择用来区分审批流程的条件字段')}}</p>
                     <p class="check_box">
@@ -67,7 +67,7 @@
                     </p>
                     <template #footer>
                         <el-button @click="conditionVisible = false">{{$L('取 消')}}</el-button>
-                        <el-button type="primary" @click="sureCondition">{{$L('确 定')}}</el-button>
+                        <el-button type="success" @click="sureCondition">{{$L('确 定')}}</el-button>
                     </template>
                 </el-dialog>
             </div>
@@ -78,7 +78,7 @@
                 :isDepartment="true"
             />
             <div class="demo-drawer__footer clear">
-                <el-button type="primary" @click="saveCondition">确 定</el-button>
+                <el-button type="success" @click="saveCondition">确 定</el-button>
                 <el-button @click="closeDrawer">取 消</el-button>
             </div>
         </div>

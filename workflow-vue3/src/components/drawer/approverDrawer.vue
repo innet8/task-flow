@@ -8,7 +8,7 @@
                         <el-radio :label="2">{{$L('主管')}}</el-radio>
                         <el-radio :label="3">{{$L('连续多级主管')}}</el-radio>
                     </el-radio-group>
-                    <el-button type="primary" @click="addApprover" v-if="approverConfig.settype==1 && approverConfig.nodeUserList?.length==0">{{$L('添加/修改成员')}}</el-button>
+                    <el-button  @click="addApprover" v-if="approverConfig.settype==1 && approverConfig.nodeUserList?.length==0">{{$L('添加/修改成员')}}</el-button>
                     <p class="selected_list" v-if="approverConfig.settype==1">
                         <span v-for="(item,index) in approverConfig.nodeUserList" :key="index">{{item.name}}
                             <img src="@/assets/images/add-close1.png" @click="$func.removeEle(approverConfig.nodeUserList,item,'targetId')">
@@ -39,8 +39,8 @@
                         <el-radio :label="2">{{$L('指定成员')}}</el-radio>
                         <el-radio :label="3">{{$L('指定角色')}}</el-radio>
                     </el-radio-group>
-                    <el-button type="primary" @click="addApprover" v-if="approverConfig.selectRange==2">{{$L('添加/修改成员')}}</el-button>
-                    <el-button type="primary" @click="addRoleApprover" v-if="approverConfig.selectRange==3">{{$L('添加/修改角色')}}</el-button>
+                    <el-button type="success" @click="addApprover" v-if="approverConfig.selectRange==2">{{$L('添加/修改成员')}}</el-button>
+                    <el-button type="success" @click="addRoleApprover" v-if="approverConfig.selectRange==3">{{$L('添加/修改角色')}}</el-button>
                     <p class="selected_list" v-if="approverConfig.selectRange==2||approverConfig.selectRange==3">
                         <span v-for="(item,index) in approverConfig.nodeUserList" :key="index">{{item.name}}
                             <img src="@/assets/images/add-close1.png" @click="$func.removeEle(approverConfig.nodeUserList,item,'targetId')">
@@ -75,7 +75,7 @@
                 </div>
             </div>
             <div class="demo-drawer__footer clear">
-                <el-button type="primary" @click="saveApprover">{{$L('确 定')}}</el-button>
+                <el-button type="success" @click="saveApprover">{{$L('确 定')}}</el-button>
                 <el-button @click="closeDrawer">{{$L('取 消')}}</el-button>
             </div>
             <employees-dialog 

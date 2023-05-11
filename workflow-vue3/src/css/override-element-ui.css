@@ -24,17 +24,11 @@
 
 .el-button {
     min-width: 79px !important;
-    padding: 8px 12px !important;
-    font-size: 12px !important;
-    border-radius: 2px !important;
-    color: #323232 !important;
-    background: #f2f2f2 !important;
-    height: 30px !important;
 }
 
-.el-button.el-button--primary {
-    background: #46A6FE !important;
-    color: #fff !important;
+.el-button.el-button--success {
+    background-color: #8bcf70 !important;
+    border-color: #8bcf70 !important;
 }
 
 .demo-drawer__footer {

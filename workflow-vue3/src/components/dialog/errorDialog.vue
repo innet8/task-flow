@@ -23,7 +23,7 @@
     </div>
     <template #footer>
       <el-button @click="visibleDialog = false">{{$L('我知道了')}}</el-button>
-      <el-button type="primary" @click="visibleDialog = false">{{$L('前往修改')}}</el-button>
+      <el-button type="success" @click="visibleDialog = false">{{$L('前往修改')}}</el-button>
     </template>
   </el-dialog>
 </template>
