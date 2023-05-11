@@ -191,7 +191,8 @@ const addCondition = async () => {
                     "7":{"key":"7","value":"例假","type":"7"},
                     "8":{"key":"8","value":"丧假","type":"8"},
                     "9":{"key":"9","value":"陪产假","type":"9"},
-                    "10":{"key":"10","value":"哺乳假","type":"10"}
+                    "10":{"key":"10","value":"哺乳假","type":"10"},
+                    "11":{"key":"11","value":"外出","type":"11"}
                 }
             `
         })
