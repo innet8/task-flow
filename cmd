@@ -180,12 +180,13 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "build" ]]; then
         run_exec golang "rm -f main & GOOS=linux go build -o main main.go"
         echo -e "${OK} ${GreenBG} 编译完成 ${Font}"
-    elif [[ "$1" == "build-image" ]]; then
+    elif [[ "$1" == "pull-image" ]]; then
         cd workflow-vue3 && npm run build && cd ../
         GOOS=linux go build -o main main.go
-        DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:1.0.1 .
+        DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:$(env_get DOCKER_VER) .
         $COMPOSE up -d
-        docker ps | grep "task-flow-workflow" | awk '{print $1}'
+        docker commit task-flow-workflow-$(env_get APP_ID) imagecommit
+        docker push hitosea2020/go-workflow:$(env_get DOCKER_VER)
     else
         $COMPOSE "$@"
     fi
