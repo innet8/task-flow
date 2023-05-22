@@ -63,6 +63,7 @@ func Setup() {
 		AutoMigrate(&Execution{}).
 		AutoMigrate(&Task{}).
 		AutoMigrate(&ProcInst{}).
+		AutoMigrate(&ProcMsgs{}).
 		AutoMigrate(&Identitylink{}).
 		AutoMigrate(&ExecutionHistory{}).
 		AutoMigrate(&IdentitylinkHistory{}).

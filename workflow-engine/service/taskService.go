@@ -97,6 +97,12 @@ func Complete(taskID int, userID, username, company, comment, candidate string, 
 		return nil, err
 	}
 	tx.Commit()
+	// 发送消息
+	action := "refuse"
+	if pass {
+		action = "pass"
+	}
+	NewDooService().HandleProcInfoMsg(task.ProcInstID, action)
 	return task, nil
 }
 
@@ -292,6 +298,8 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 	//
 	tx.Commit()
 	// fmt.Printf("撤回流程耗时：%v\n", time.Since(timesx))
+	// 发送消息
+	NewDooService().HandleProcInfoMsg(procInstID, "")
 	return nil
 }
 

@@ -257,6 +257,8 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (string
 	//
 	var datas = &ProcInsts{}
 	Var2Json(procInst, datas)
+	// 发送消息
+	NewDooService().HandleProcInfoMsg(procInstID, "")
 	return util.ToJSONStr(datas)
 }
 
