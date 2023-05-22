@@ -10,6 +10,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/xuri/excelize/v2"
+
 	"workflow/util"
 	"workflow/workflow-engine/model"
 )
@@ -415,4 +417,54 @@ func (s *DooService) SendNotifierNotification(procInfoMap map[string]interface{}
 		return nil, err
 	}
 	return send, nil
+}
+
+// 获取申请状态描述
+func (s *DooService) getStateDescription(state int) string {
+	stateMap := map[int]string{
+		0: "全部",
+		1: "审批中",
+		2: "通过",
+		3: "拒绝",
+		4: "撤回",
+	}
+	if desc, ok := stateMap[state]; ok {
+		return desc
+	}
+	return ""
+}
+
+// 导出Excel文件
+func (s *DooService) ExportExcel(filename string, title []string, data [][]string) error {
+	// 创建一个Excel文件
+	xlsx := excelize.NewFile()
+	// 创建一个工作表
+	xlsx.NewSheet("Sheet1")
+	// 设置工作表高度
+	// xlsx.SetRowHeight("Sheet1", 1, 25)
+	// 设置工作表列宽
+	xlsx.SetColWidth("Sheet1", "A", "Z", 20)
+	// 设置字体样式
+	boldFont, _ := xlsx.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold: true, // Bold字体
+			Size: 12,
+			// Italic: true,
+			// Family: "黑体",
+			// Color:  "#000000",
+		},
+	})
+	xlsx.SetCellStyle("Sheet1", "A1", "Z1", boldFont) // 设置A1字体为Bold
+	// 添加标题行
+	xlsx.SetSheetRow("Sheet1", "A1", &title)
+	// 添加数据行
+	for i, row := range data {
+		xlsx.SetSheetRow("Sheet1", fmt.Sprintf("A%d", i+2), &row)
+	}
+	// 保存excel文件
+	err := xlsx.SaveAs("./" + filename)
+	if err != nil {
+		return err
+	}
+	return nil
 }
