@@ -60,3 +60,69 @@ export function getWorkFlowData(data) {
 export function setWorkFlowData(data) {
     return http.post(`/workflow/procdef/save`, data)
 }
+
+/**
+ * 获取待办列表
+ * @param {*} data 
+ * @returns 
+ */
+export function getBacklogData(data) {
+    return http.post(`/workflow/process/findTask`, data)
+}
+
+
+
+/**
+ * 获取已办列表
+ * @param {*} data 
+ * @returns 
+ */
+export function getDoneData(data) {
+    return http.post(`/workflow/procHistory/findTask`, data)
+}
+
+
+/**
+ * 获取详情
+ * @param {*} id 
+ * @returns 
+ */
+export function getProcessData(id) {
+    return http.get(`/workflow/process/findById?id=${id}` )
+}
+
+/**
+ * 审批中心同意或拒绝申请
+ * @param {*} data 
+ * @returns 
+ */
+export function agreeOrRefuse(data) {
+    return http.post(`/workflow/task/complete`, data)
+}
+
+/**
+ * 审批中心撤销
+ * @param {*} data 
+ * @returns 
+ */
+export function revocationTask(data) {
+    return http.post(`/workflow/task/withdraw`, data)
+}
+
+/**
+ * 获取抄送列表
+ * @param {*} data 
+ * @returns 
+ */
+export function getNotifyData(data) {
+    return http.post(`/workflow/procHistory/findProcNotify`, data)
+}
+
+/**
+ * 获取已发起列表
+ * @param {*} data 
+ * @returns 
+ */
+export function getInitiatedData(data) {
+    return http.post(`/workflow/process/startByMyselfAll`, data)
+}

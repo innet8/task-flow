@@ -17,7 +17,7 @@
 
         <div class="fd-nav-title" style="position: fixed;left: 30px;z-index: 10;top: 30px;font-size: 20px;">{{ $L(workFlowDef.name || '') }}</div>
         <el-button type="success" @click="saveSet" style="position: fixed;right: 40px;z-index: 10;bottom: 30px;">{{ $L('发 布')}}</el-button>
-        
+
         <div class="fd-nav-content" style="top: 0px;">
             <section class="dingflow-design">
                 <div class="zoom">
@@ -34,7 +34,7 @@
                 </div>
             </section>
         </div>
-        
+
         <errorDialog v-model:visible="tipVisible" :list="tipList" />
         <promoterDrawer />
         <approverDrawer :directorMaxLevel="directorMaxLevel" />
@@ -82,7 +82,7 @@ onMounted(async () => {
     if(route.query.token){
         sessionStorage.token = route.query.token
     }
-    // 
+    //
     init()
 });
 
@@ -120,7 +120,7 @@ const init = async () => {
 
 /**
  * 返回错误
- * @param {*} param0 
+ * @param {*} param0
  */
 const reErr = ({ childNode }) => {
     if (childNode) {
@@ -156,14 +156,14 @@ const reErr = ({ childNode }) => {
  */
 const saveSet = async () => {
     setIsTried(true);
-    // 
+    //
     tipList.value = [];
     reErr(nodeConfig.value);
     if (tipList.value?.length != 0) {
         tipVisible.value = true;
         return;
     }
-    // 
+    //
     processConfig.value.flowPermission = flowPermission.value;
     processConfig.value.resource = nodeConfig.value;
     processConfig.value.id = Number(workFlowDefId.value || 0);
@@ -216,7 +216,7 @@ window.addEventListener('message', (e) => {
 
 </script>
 <style>
-@import "../css/workflow.css";
+@import "../../css/workflow.css";
 /* .error-modal-list {
     width: 455px;
 } */
