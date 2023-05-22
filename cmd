@@ -183,6 +183,7 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "push-image" ]]; then
         cd workflow-vue3 && npm run build && cd ../
         GOOS=linux go build -o main main.go
+        # --pull --rm
         DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:$(env_get DOCKER_VER) .
         $COMPOSE up -d
         docker commit task-flow-workflow-$(env_get APP_ID) imagecommit
