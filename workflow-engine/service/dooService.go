@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -282,8 +281,6 @@ func (s *DooService) HandleProcInfoMsg(procInstID int, action string) (map[strin
 	notifier := s.handleProcNode(procInfoMap)
 	if len(notifier) > 0 {
 		// 循环发送给抄送人
-		// 打印调试
-		fmt.Println(notifier)
 		for _, val := range notifier {
 			targetID := val.(map[string]interface{})["targetId"].(string)
 			userID, _ := strconv.Atoi(targetID)
@@ -378,10 +375,6 @@ func (s *DooService) sendNotification(procInfoMap map[string]interface{}, userID
 	} else {
 		updateID = 0
 	}
-	log.Printf("action: ", action)
-	log.Printf("dialogInfo: %d", dialogInfo["id"])
-	log.Printf("updateID: %d", updateID)
-
 	send, err := s.SendDooRobot(updateID, int(dialogInfo["id"].(float64)), content, int(botInfo["userid"].(float64)))
 	if err != nil {
 		return nil, err
