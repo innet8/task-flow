@@ -326,3 +326,30 @@ func FindAllProcIns(writer http.ResponseWriter, request *http.Request) {
 
 	util.ResponseData(writer, result)
 }
+
+// AddGlobalComment 添加全局评论
+func AddGlobalComment(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != "POST" {
+		util.ResponseErr(writer, "只支持Post方法！！")
+		return
+	}
+	//
+	var receiver = service.GetGlobalComment()
+	err := util.Body2Struct(request, &receiver)
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+	fmt.Println("receiver:", receiver)
+
+	procInstId := receiver.ProcInstID
+	UserID := receiver.UserID
+	Content := receiver.Content
+	Images := receiver.Images
+	err = service.AddGlobalComment(procInstId, UserID, Content, Images)
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+	util.ResponseOk(writer)
+}

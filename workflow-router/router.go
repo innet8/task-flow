@@ -44,6 +44,7 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/process/startByMyselfAll", intercept(controller.StartByMyselfAll)) // 查询我启动的流程（所有）
 	Mux.HandleFunc("/api/v1/workflow/process/startByMyself", intercept(controller.StartByMyself))       // 查询我启动的流程（审批中）
 	Mux.HandleFunc("/api/v1/workflow/process/findProcNotify", intercept(controller.FindProcNotify))     // 查询抄送我的流程（审批中）
+	Mux.HandleFunc("/api/v1/workflow/process/addGlobalComment", intercept(controller.AddGlobalComment)) // 新增全局评论
 	// Mux.HandleFunc("/workflow/process/moveToHistory", controller.MoveFinishedProcInstToHistory)
 	// -----------------------任务--------------------------
 	Mux.HandleFunc("/api/v1/workflow/task/complete", intercept(controller.CompleteTask)) //审批任务
