@@ -65,5 +65,12 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/dootask/getAllDept", intercept(controller.GetAllDept))                     // 查询所有部门
 	Mux.HandleFunc("/api/v1/workflow/dootask/getDeptUserByDept", intercept(controller.GetDeptUserByDept))       // 根据部门单一获取用户和子部门
 	Mux.HandleFunc("/api/v1/workflow/dootask/getAllDeptUserByDept", intercept(controller.GetAllDeptUserByDept)) // 根据部门全部获取用户和子部门
-	Mux.HandleFunc("/api/v1/workflow/dootask/getUserByName", intercept(controller.GetUserByName))               // 根据用户名筛选用户
+	Mux.HandleFunc("/api/v1/workflow/dootask/getUserByName", intercept(controller.GetUserByName))
+
+	Mux.HandleFunc("/api/v1/workflow/dootask/getDooRobot", intercept(controller.GetDooRobot))
+	Mux.HandleFunc("/api/v1/workflow/dootask/sendDooRobot", intercept(controller.SendDooRobot))
+	Mux.HandleFunc("/api/v1/workflow/dootask/getDialog", intercept(controller.GetDialog))
+	Mux.HandleFunc("/api/v1/workflow/dootask/sendNotification", intercept(controller.SendNotification))
+	Mux.HandleFunc("/api/v1/workflow/dootask/export", intercept(controller.Export))
+
 }

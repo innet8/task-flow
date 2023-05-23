@@ -434,37 +434,201 @@ func (s *DooService) getStateDescription(state int) string {
 	return ""
 }
 
+type Process struct {
+	StartTime string
+}
+
+type Participant struct {
+	Type     string
+	Step     int
+	Username string
+	Comment  string
+}
+
+func handleParticipant(process Process, participant []Participant) map[string]interface{} {
+	if len(participant) == 0 {
+		return make(map[string]interface{})
+	}
+
+	res := make(map[string]interface{})
+	historicalApprover := make([]string, 0)
+	approvedNode := 0
+	approvedNum := 0
+	var approvalRecord strings.Builder
+
+	for _, val := range participant {
+		if val.Type == "participant" {
+			if val.Step != 0 {
+				if val.Comment == "" || contains(historicalApprover, val.Username) {
+					continue
+				}
+				historicalApprover = appendUnique(historicalApprover, strings.Split(val.Username, ","))
+				approvedNode++
+				approvedNum++
+			}
+
+			name := val.Username + "|"
+			call := ""
+			if val.Step == 0 {
+				call = "发起审批" + "|"
+			} else {
+				call = "同意" + "|"
+			}
+
+			timeString := ""
+			if val.Step == 0 {
+				timeString = process.StartTime + "|"
+			}
+
+			comment := ""
+			if val.Step != 0 {
+				comment = val.Comment + "|"
+			}
+
+			approvalRecord.WriteString(name + call + timeString + comment)
+		}
+	}
+
+	res["approval_record"] = approvalRecord.String()
+	res["historical_approver"] = strings.Trim(strings.Join(historicalApprover, ";"), ";")
+	res["approved_node"] = approvedNode
+	res["approved_num"] = approvedNum
+	res["historical_agent"] = res["historical_approver"]
+
+	return res
+}
+
+func contains(slice []string, value string) bool {
+	for _, v := range slice {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
+func appendUnique(slice []string, values []string) []string {
+	for _, value := range values {
+		if !contains(slice, value) {
+			slice = append(slice, value)
+		}
+	}
+	return slice
+}
+
+// GetProcExportData 获取申请的数据
+func (s *DooService) GetProcExportData(receiver *ProcessPageReceiver) ([][]string, error) {
+	// 打印接收到的参数
+	fmt.Printf("receiver: %+v\n", receiver)
+	var exportData [][]string
+	datas, _, _ := model.FindAllProcIns(receiver.UserID, receiver.ProcName, receiver.State, receiver.StartTime, receiver.EndTime, receiver.IsFinished)
+	result, _ := AllVar2Json(datas)
+	// 处理数据
+	for _, v := range result {
+		var ret []string
+		ret = append(ret, strconv.Itoa(v.ID))             //申请编号
+		ret = append(ret, v.ProcDefName)                  //申请标题
+		ret = append(ret, s.getStateDescription(v.State)) //申请状态
+		ret = append(ret, v.StartTime)                    //申请时间
+		ret = append(ret, v.EndTime)                      //结束时间
+		ret = append(ret, "")                             // 发起人工号
+		ret = append(ret, v.StartUserID)                  // 发起人ID
+		ret = append(ret, v.StartUserName)                // 发起人姓名
+		ret = append(ret, v.Department)                   // 发起人部门
+		ret = append(ret, strconv.Itoa(v.DepartmentId))   // 发起人部门ID
+		ret = append(ret, "")                             // 部门负责人
+		// 查找所有与流程实例相关的参与者
+		data2s, _ := model.FindParticipantAllByProcInstID(v.ID)
+		participant := make([]Participant, 0)
+		for _, data2 := range data2s {
+			participant = append(participant, Participant{
+				Type:     data2.Type,
+				Step:     data2.Step,
+				Username: data2.UserName,
+				Comment:  data2.Comment,
+			})
+		}
+		process := Process{
+			StartTime: v.StartTime,
+		}
+		ParticipantMap := handleParticipant(process, participant)
+		ret = append(ret, ParticipantMap["historical_approver"].(string))      // 历史审批人
+		ret = append(ret, "")                                                  // 历史办理人
+		ret = append(ret, ParticipantMap["approval_record"].(string))          // 审批记录
+		ret = append(ret, "")                                                  // 当前处理人
+		ret = append(ret, strconv.Itoa(ParticipantMap["approved_node"].(int))) // 审批节点
+		ret = append(ret, strconv.Itoa(ParticipantMap["approved_num"].(int)))  // 审批人数
+		// 计算审批耗时 单位小时
+		startTime, _ := time.Parse("2006-01-02 15:04:05", v.StartTime)
+		endTime, _ := time.Parse("2006-01-02 15:04:05", v.EndTime)
+		if endTime.Before(startTime) {
+			endTime = startTime
+		}
+		duration := endTime.Sub(startTime)
+		ret = append(ret, strconv.FormatFloat(duration.Hours(), 'f', 1, 64)) // 审批耗时
+		// 把var字段指针转换为map
+		varMap := *v.Var
+		ret = append(ret, varMap.Type)      // 假期类型
+		ret = append(ret, varMap.StartTime) // 开始时间
+		ret = append(ret, varMap.EndTime)   // 结束时间
+		// 计算请假时长 单位小时
+		startTime2, _ := time.Parse("2006-01-02 15:04", varMap.StartTime)
+		endTime2, _ := time.Parse("2006-01-02 15:04", varMap.EndTime)
+		duration2 := endTime2.Sub(startTime2)
+		ret = append(ret, strconv.FormatFloat(duration2.Hours(), 'f', 1, 64)) // 时长
+		ret = append(ret, varMap.Description)                                 // 请假事由
+		ret = append(ret, "小时")                                               // 请假单位
+
+		exportData = append(exportData, ret)
+	}
+	return exportData, nil
+}
+
+// 创建一个Excel文件
+func createExcelFile() (*excelize.File, error) {
+	xlsx := excelize.NewFile()
+	xlsx.NewSheet("Sheet1")
+	xlsx.SetColWidth("Sheet1", "A", "Z", 20)
+	return xlsx, nil
+}
+
+// 设置Excel文件的标题行
+func setExcelTitleRow(xlsx *excelize.File, title []string) error {
+	boldFont, _ := xlsx.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold: true,
+			Size: 12,
+		},
+	})
+	xlsx.SetCellStyle("Sheet1", "A1", "Z1", boldFont)
+	xlsx.SetSheetRow("Sheet1", "A1", &title)
+	return nil
+}
+
 // 导出Excel文件
 func (s *DooService) ExportExcel(filename string, title []string, data [][]string) error {
 	// 创建一个Excel文件
-	xlsx := excelize.NewFile()
-	// 创建一个工作表
-	xlsx.NewSheet("Sheet1")
-	// 设置工作表高度
-	// xlsx.SetRowHeight("Sheet1", 1, 25)
-	// 设置工作表列宽
-	xlsx.SetColWidth("Sheet1", "A", "Z", 20)
-	// 设置字体样式
-	boldFont, _ := xlsx.NewStyle(&excelize.Style{
-		Font: &excelize.Font{
-			Bold: true, // Bold字体
-			Size: 12,
-			// Italic: true,
-			// Family: "黑体",
-			// Color:  "#000000",
-		},
-	})
-	xlsx.SetCellStyle("Sheet1", "A1", "Z1", boldFont) // 设置A1字体为Bold
-	// 添加标题行
-	xlsx.SetSheetRow("Sheet1", "A1", &title)
-	// 添加数据行
-	for i, row := range data {
-		xlsx.SetSheetRow("Sheet1", fmt.Sprintf("A%d", i+2), &row)
-	}
-	// 保存excel文件
-	err := xlsx.SaveAs("./" + filename)
+	xlsx, err := createExcelFile()
 	if err != nil {
 		return err
 	}
+
+	// 设置Excel文件的标题行
+	err = setExcelTitleRow(xlsx, title)
+	if err != nil {
+		return err
+	}
+
+	// 写入数据到Excel文件
+	for i, row := range data {
+		xlsx.SetSheetRow("Sheet1", fmt.Sprintf("A%d", i+2), &row)
+	}
+
+	// 保存Excel文件
+	err = xlsx.SaveAs(filename)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
