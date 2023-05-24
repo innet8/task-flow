@@ -545,7 +545,17 @@ func (s *DooService) GetProcExportData(receiver *ProcessPageReceiver) ([][]strin
 		ret = append(ret, v.StartUserName)                // 发起人姓名
 		ret = append(ret, v.Department)                   // 发起人部门
 		ret = append(ret, strconv.Itoa(v.DepartmentId))   // 发起人部门ID
-		ret = append(ret, "")                             // 部门负责人
+		dep, _ := model.GetDeptByID(v.DepartmentId)
+		if dep != nil {
+			depUser, _ := model.GetUserInfoById(dep.OwnerUserid)
+			if depUser != nil {
+				ret = append(ret, depUser.Nickname) // 部门负责人
+			} else {
+				ret = append(ret, "") // 部门负责人
+			}
+		} else {
+			ret = append(ret, "") // 部门负责人
+		}
 		// 查找所有与流程实例相关的参与者
 		data2s, _ := model.FindParticipantAllByProcInstID(v.ID)
 		participant := make([]Participant, 0)
