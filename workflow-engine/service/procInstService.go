@@ -56,9 +56,9 @@ type ProcessPageReceiver struct {
 // 格式化返回参数
 type ProcInsts struct {
 	model.ProcInst
-	Var              *types.Vars  `json:"var,omitempty"`
-	NodeInfos        []*NodeInfos `json:"nodeInfos,omitempty"`
-	GlobalCommentObj interface{}  `json:"globalCommentObj,omitempty"`
+	Var            *types.Vars  `json:"var,omitempty"`
+	NodeInfos      []*NodeInfos `json:"nodeInfos,omitempty"`
+	GlobalComments interface{}  `json:"globalComments,omitempty"`
 }
 
 var copyLock sync.Mutex
@@ -99,22 +99,20 @@ func AddGlobalComment(procInstID int, userID string, content string) error {
 			CreatedAt:  time.Now().Format("2006-01-02 15:04:05"),
 		}
 		// 追加到现在的评论中
-		globalCommentMap := make(map[int]interface{})
+		var globalCommentSlice []GlobalComment
 		if procInst.GlobalComment != "" {
-			err = json.Unmarshal([]byte(procInst.GlobalComment), &globalCommentMap)
+			err = json.Unmarshal([]byte(procInst.GlobalComment), &globalCommentSlice)
 			if err != nil {
 				return err
 			}
-			index := len(globalCommentMap) - 1
-			index++
 			// 追加评论
-			globalCommentMap[index] = globalComment
+			globalCommentSlice = append(globalCommentSlice, *globalComment)
 		} else {
-			globalCommentMap[0] = globalComment
+			globalCommentSlice = append(globalCommentSlice, *globalComment)
 		}
 
 		// 转为json格式
-		globalCommentStr, err := json.Marshal(globalCommentMap)
+		globalCommentStr, err := json.Marshal(globalCommentSlice)
 		if err != nil {
 			return err
 		}
@@ -144,14 +142,13 @@ func FindProcInstByID(id int) (string, error) {
 	}
 	// 如果全局评论不为空，则转为json格式
 	if datas.GlobalComment != "" {
-		// 新的结构体
-		var globalComment map[string]interface{}
-		err = json.Unmarshal([]byte(datas.GlobalComment), &globalComment)
+		var globalComment []GlobalComment
+		err := json.Unmarshal([]byte(datas.GlobalComment), &globalComment)
 		if err != nil {
 			return "", err
 		}
 		// 赋值该map给datas
-		datas.GlobalCommentObj = globalComment
+		datas.GlobalComments = globalComment
 	}
 
 	// 节点信息
