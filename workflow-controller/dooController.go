@@ -12,65 +12,8 @@ import (
 	"workflow/workflow-engine/service"
 )
 
-// GetDooRobot 获取机器人信息 by name
-func GetDooRobot(w http.ResponseWriter, r *http.Request) {
-	dooRobotSvc := service.NewDooService()
-	resp, err := dooRobotSvc.GetDooRobot("")
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	fmt.Fprint(w, string(resp))
-}
-
-// SendDooRobot 机器人发送信息
-func SendDooRobot(w http.ResponseWriter, r *http.Request) {
-	dooRobotSvc := service.NewDooService()
-
-	// 获取模板内容
-	var context string
-	// context, _ = dooRobotSvc.GetContentTemplate()
-
-	updateId := 0
-	dialogId := 50
-	text := context
-	sender := 10
-	resp, err := dooRobotSvc.SendDooRobot(updateId, dialogId, text, sender)
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	fmt.Fprint(w, string(resp))
-}
-
-// GetDialog 获取/创建会话
-func GetDialog(w http.ResponseWriter, r *http.Request) {
-	botId := 10
-	userId := 4
-	dooRobotSvc := service.NewDooService()
-	resp, err := dooRobotSvc.GetDialog(botId, userId)
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	fmt.Fprint(w, string(resp))
-}
-
-// 流程启动发送通知
-func SendNotification(w http.ResponseWriter, r *http.Request) {
-	service.NewDooService().HandleProcInfoMsg(20, "")
-	// resp, err := dooRobotSvc.SendNotifierNotification(userId)
-	// resp, err := dooRobotSvc.SendSubmitterNotification(userId)
-	// if err != nil {
-	// 	handleError(w, err)
-	// 	return
-	// }
-	// fmt.Fprint(w, resp)
-}
-
 // 导出Excel文件
 func Export(w http.ResponseWriter, r *http.Request) {
-	// 打印调试信息
 	fmt.Println("开始导出Excel文件...")
 	// 数据标题
 	headings := []string{
@@ -127,6 +70,23 @@ func Export(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 	http.ServeFile(w, r, "./"+filename)
+}
+
+// VerifyToken 验证token
+func VerifyToken(w http.ResponseWriter, r *http.Request) {
+	token := r.FormValue("token")
+	if token == "" {
+		token = r.PostFormValue("token")
+	}
+	fmt.Println("token: ", token)
+	// 验证token
+	dooRobotSvc := service.NewDooService()
+	resp, err := dooRobotSvc.ValidateToken(token)
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	fmt.Fprint(w, resp)
 }
 
 func handleError(w http.ResponseWriter, err error) {

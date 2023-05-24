@@ -85,6 +85,13 @@ func getDeptTreeList(nodes []*UserDepartments, ParentId int) []*UserDepartments 
 	return result
 }
 
+// 根据多部门id获取部门信息
+func GetDepByDeptIds(deptIds []int) ([]*UserDepartments, error) {
+	var datas []*UserDepartments
+	err := db.Where("id in (?)", deptIds).Find(&datas).Error
+	return datas, err
+}
+
 // GetUsersByDept 根据部门名称获取用户列表
 func GetUsersByDept(deptName string) ([]*Users, error) {
 	var datas []*Users

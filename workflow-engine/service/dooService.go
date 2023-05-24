@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -19,6 +20,8 @@ import (
 const (
 	apiBaseURL = "http://192.168.100.219:2222/api/"
 )
+
+var globalToken string
 
 type Notification struct {
 	Type   string `json:"type"`
@@ -146,6 +149,11 @@ func handleNotification(n *Notification) (string, error) {
 	return buf.String(), nil
 }
 
+// 校验token
+func (s *DooService) checkToken(token string) ([]byte, error) {
+	return s.client.PostToken(apiBaseURL+"plugin/verifyToken", "", token)
+}
+
 // GetUsers 获取用户信息
 func (s *DooService) GetUsers(userId int) ([]byte, error) {
 	post := map[string]int{
@@ -185,6 +193,15 @@ func (s *DooService) SendDooRobot(updateId int, dialogId int, text string, sende
 		"sender":    sender,
 	}
 	return s.client.Post(apiBaseURL+"plugin/msg/sendtext", userData)
+}
+
+// 校验token
+func (s *DooService) getUserInfoByToken(token string) (map[string]interface{}, error) {
+	user, err := s.checkToken(token)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user info by token: %w", err)
+	}
+	return s.unmarshalAndCheckResponse(user)
 }
 
 // 获取用户信息
@@ -449,13 +466,11 @@ func handleParticipant(process Process, participant []Participant) map[string]in
 	if len(participant) == 0 {
 		return make(map[string]interface{})
 	}
-
 	res := make(map[string]interface{})
 	historicalApprover := make([]string, 0)
 	approvedNode := 0
 	approvedNum := 0
 	var approvalRecord strings.Builder
-
 	for _, val := range participant {
 		if val.Type == "participant" {
 			if val.Step != 0 {
@@ -466,7 +481,6 @@ func handleParticipant(process Process, participant []Participant) map[string]in
 				approvedNode++
 				approvedNum++
 			}
-
 			name := val.Username + "|"
 			call := ""
 			if val.Step == 0 {
@@ -474,27 +488,22 @@ func handleParticipant(process Process, participant []Participant) map[string]in
 			} else {
 				call = "同意" + "|"
 			}
-
 			timeString := ""
 			if val.Step == 0 {
 				timeString = process.StartTime + "|"
 			}
-
 			comment := ""
 			if val.Step != 0 {
 				comment = val.Comment + "|"
 			}
-
 			approvalRecord.WriteString(name + call + timeString + comment)
 		}
 	}
-
 	res["approval_record"] = approvalRecord.String()
 	res["historical_approver"] = strings.Trim(strings.Join(historicalApprover, ";"), ";")
 	res["approved_node"] = approvedNode
 	res["approved_num"] = approvedNum
 	res["historical_agent"] = res["historical_approver"]
-
 	return res
 }
 
@@ -518,7 +527,6 @@ func appendUnique(slice []string, values []string) []string {
 
 // GetProcExportData 获取申请的数据
 func (s *DooService) GetProcExportData(receiver *ProcessPageReceiver) ([][]string, error) {
-	// 打印接收到的参数
 	fmt.Printf("receiver: %+v\n", receiver)
 	var exportData [][]string
 	datas, _, _ := model.FindAllProcIns(receiver.UserID, receiver.ProcName, receiver.State, receiver.StartTime, receiver.EndTime, receiver.IsFinished)
@@ -607,28 +615,52 @@ func setExcelTitleRow(xlsx *excelize.File, title []string) error {
 
 // 导出Excel文件
 func (s *DooService) ExportExcel(filename string, title []string, data [][]string) error {
-	// 创建一个Excel文件
 	xlsx, err := createExcelFile()
 	if err != nil {
 		return err
 	}
-
-	// 设置Excel文件的标题行
 	err = setExcelTitleRow(xlsx, title)
 	if err != nil {
 		return err
 	}
-
-	// 写入数据到Excel文件
 	for i, row := range data {
 		xlsx.SetSheetRow("Sheet1", fmt.Sprintf("A%d", i+2), &row)
 	}
-
 	// 保存Excel文件
 	err = xlsx.SaveAs(filename)
 	if err != nil {
 		return err
 	}
-
 	return nil
+}
+
+// 校验token
+func (s *DooService) ValidateToken(tokenString string) (map[string]interface{}, error) {
+	// 检验 token 是否有效
+	user, err := s.getUserInfoByToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("Invalid token")
+	}
+	// 打印用户信息
+	fmt.Println("用户信息：", user)
+	departments := user["department"].([]interface{})
+	var lists []byte
+	if len(user["department"].([]interface{})) >= 1 {
+		var numbers []int
+		for _, department := range departments {
+			// 将department转换为int类型，并添加到numbers切片中
+			number, err := strconv.Atoi(fmt.Sprintf("%v", department))
+			if err != nil {
+				return nil, err
+			}
+			numbers = append(numbers, number)
+		}
+		list, _ := model.GetDepByDeptIds(numbers)
+		lists, _ = json.Marshal(list)
+	}
+	user["departmentLists"] = string(lists)
+	return user, nil
 }

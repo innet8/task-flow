@@ -43,3 +43,25 @@ func (c *HTTPClient) Post(url string, data interface{}) ([]byte, error) {
 	defer resp.Body.Close()
 	return ioutil.ReadAll(resp.Body)
 }
+
+// 校验token POST请求
+func (c *HTTPClient) PostToken(url string, data interface{}, token string) ([]byte, error) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+	//设置请求头
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("token", token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
