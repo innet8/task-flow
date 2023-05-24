@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -644,10 +645,8 @@ func (s *DooService) ValidateToken(tokenString string) (map[string]interface{}, 
 	if user == nil {
 		return nil, errors.New("Invalid token")
 	}
-	// 打印用户信息
-	fmt.Println("用户信息：", user)
 	departments := user["department"].([]interface{})
-	var lists []byte
+	var lists []model.UserDepartments
 	if len(user["department"].([]interface{})) >= 1 {
 		var numbers []int
 		for _, department := range departments {
@@ -659,8 +658,29 @@ func (s *DooService) ValidateToken(tokenString string) (map[string]interface{}, 
 			numbers = append(numbers, number)
 		}
 		list, _ := model.GetDepByDeptIds(numbers)
-		lists, _ = json.Marshal(list)
+		listsBytes, _ := json.Marshal(list)
+		err := json.Unmarshal(listsBytes, &lists)
+		if err != nil {
+			return nil, err
+		}
 	}
-	user["departmentLists"] = string(lists)
+	user["departmentLists"] = lists
 	return user, nil
+}
+
+// 获取token 支持从url参数、post参数、header中获取
+func GetToken(r *http.Request) string {
+	token := r.URL.Query().Get("token")
+	if token != "" {
+		return token
+	}
+	token = r.PostFormValue("token")
+	if token != "" {
+		return token
+	}
+	token = r.Header.Get("Authorization")
+	if token != "" {
+		return strings.TrimPrefix(token, "Bearer ")
+	}
+	return ""
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 
 // 导出Excel文件
 func Export(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("开始导出Excel文件...")
 	// 数据标题
 	headings := []string{
 		"申请编号",
@@ -60,7 +60,7 @@ func Export(w http.ResponseWriter, r *http.Request) {
 	filename := "审批记录_" + time.Now().Format("2006-01-02_15-04-05") + ".xlsx"
 	err = service.NewDooService().ExportExcel(filename, headings, data)
 	if err != nil {
-		handleError(w, err)
+		util.ResponseErr(w, err)
 	}
 	// 延迟一分钟删除文件
 	time.AfterFunc(time.Minute, func() {
@@ -74,21 +74,19 @@ func Export(w http.ResponseWriter, r *http.Request) {
 
 // VerifyToken 验证token
 func VerifyToken(w http.ResponseWriter, r *http.Request) {
-	token := r.FormValue("token")
-	if token == "" {
-		token = r.PostFormValue("token")
-	}
+	token := service.GetToken(r)
 	fmt.Println("token: ", token)
 	// 验证token
 	dooRobotSvc := service.NewDooService()
 	resp, err := dooRobotSvc.ValidateToken(token)
 	if err != nil {
-		handleError(w, err)
+		util.ResponseErr(w, err)
 		return
 	}
-	fmt.Fprint(w, resp)
-}
-
-func handleError(w http.ResponseWriter, err error) {
-	fmt.Fprint(w, "Request error: ", err)
+	respStr, err := json.Marshal(resp)
+	if err != nil {
+		util.ResponseErr(w, err)
+	}
+	respStrPlain := string(respStr)
+	util.ResponseData(w, respStrPlain)
 }
