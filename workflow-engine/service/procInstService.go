@@ -90,7 +90,6 @@ func AddGlobalComment(procInstID int, userID string, content string) error {
 	if err != nil {
 		return err
 	}
-	// 如果流程不为空，则构造全局评论map，然后插入到流程信息中
 	if procInst != nil {
 		// 根据已有的结构体GlobalComment
 		globalComment := &GlobalComment{
@@ -100,16 +99,18 @@ func AddGlobalComment(procInstID int, userID string, content string) error {
 			CreatedAt:  time.Now().Format("2006-01-02 15:04:05"),
 		}
 		// 追加到现在的评论中
-		globalCommentMap := make(map[string]interface{})
+		globalCommentMap := make(map[int]interface{})
 		if procInst.GlobalComment != "" {
 			err = json.Unmarshal([]byte(procInst.GlobalComment), &globalCommentMap)
 			if err != nil {
 				return err
 			}
-			globalCommentMap[globalComment.CreatedAt] = globalComment
-
+			index := len(globalCommentMap) - 1
+			index++
+			// 追加评论
+			globalCommentMap[index] = globalComment
 		} else {
-			globalCommentMap[globalComment.CreatedAt] = globalComment
+			globalCommentMap[0] = globalComment
 		}
 
 		// 转为json格式
