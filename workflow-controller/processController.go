@@ -340,7 +340,6 @@ func AddGlobalComment(writer http.ResponseWriter, request *http.Request) {
 		util.ResponseErr(writer, err)
 		return
 	}
-	fmt.Println("receiver:", receiver)
 
 	procInstId := receiver.ProcInstID
 	UserID := receiver.UserID
