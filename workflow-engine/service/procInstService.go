@@ -33,7 +33,6 @@ type GlobalComment struct {
 	ProcInstID int    `json:"procInstId"` // 流程实例ID
 	UserID     string `json:"userId"`
 	Content    string `json:"content"`
-	Images     string `json:"images"`
 	CreatedAt  string `json:"createdAt"`
 }
 
@@ -85,7 +84,7 @@ func findAll(pr *ProcessPageReceiver) ([]*model.ProcInst, int, error) {
 }
 
 // AddGlobalComment 添加全局评论
-func AddGlobalComment(procInstID int, userID string, content string, images string) error {
+func AddGlobalComment(procInstID int, userID string, content string) error {
 	// 获取流程信息
 	procInst, err := model.FindProcInstByID(procInstID)
 	if err != nil {
@@ -98,11 +97,23 @@ func AddGlobalComment(procInstID int, userID string, content string, images stri
 			ProcInstID: procInstID,
 			UserID:     userID,
 			Content:    content,
-			Images:     images,
 			CreatedAt:  time.Now().Format("2006-01-02 15:04:05"),
 		}
+		// 追加到现在的评论中
+		globalCommentMap := make(map[string]interface{})
+		if procInst.GlobalComment != "" {
+			err = json.Unmarshal([]byte(procInst.GlobalComment), &globalCommentMap)
+			if err != nil {
+				return err
+			}
+			globalCommentMap[globalComment.CreatedAt] = globalComment
+
+		} else {
+			globalCommentMap[globalComment.CreatedAt] = globalComment
+		}
+
 		// 转为json格式
-		globalCommentStr, err := json.Marshal(globalComment)
+		globalCommentStr, err := json.Marshal(globalCommentMap)
 		if err != nil {
 			return err
 		}

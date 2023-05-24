@@ -342,10 +342,14 @@ func AddGlobalComment(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	procInstId := receiver.ProcInstID
+	// 判断procInstId是否为空
+	if procInstId == 0 {
+		util.ResponseErr(writer, "procInstId不能为空")
+		return
+	}
 	UserID := receiver.UserID
 	Content := receiver.Content
-	Images := receiver.Images
-	err = service.AddGlobalComment(procInstId, UserID, Content, Images)
+	err = service.AddGlobalComment(procInstId, UserID, Content)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return

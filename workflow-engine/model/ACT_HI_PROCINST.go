@@ -369,5 +369,25 @@ func FindFinishedProc() ([]*ProcInst, error) {
 
 // UpdateProcInstByID 更新流程实例
 func UpdateProcInstByID(id int, data map[string]interface{}) error {
-	return db.Model(&ProcInst{}).Where("id=?", id).Updates(data).Error
+	// 先找审核中表的数据，如果没有则去结束表找
+	var procInst ProcInst
+	err := db.Where("id=?", id).First(&procInst).Error
+	if err != nil {
+		// 如果没有找到，则去结束表找
+		var procInstHistory ProcInstHistory
+		err = db.Where("id=?", id).First(&procInstHistory).Error
+		if err != nil {
+			return err
+		}
+		err = db.Model(&ProcInstHistory{}).Where("id=?", id).Updates(data).Error
+		if err != nil {
+			return err
+		}
+	}
+	err = db.Model(&ProcInst{}).Where("id=?", id).Updates(data).Error
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
