@@ -70,5 +70,6 @@ func setMux() {
 
 	Mux.HandleFunc("/api/v1/workflow/dootask/export", intercept(controller.Export))
 	Mux.HandleFunc("/api/v1/workflow/dootask/verifyToken", intercept(controller.VerifyToken))
+	Mux.HandleFunc("/api/v1/workflow/dootask/upload", intercept(controller.Upload))
 
 }

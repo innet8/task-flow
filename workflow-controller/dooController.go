@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"workflow/util"
@@ -89,4 +90,26 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	}
 	respStrPlain := string(respStr)
 	util.ResponseData(w, respStrPlain)
+}
+
+// 上传文件
+func Upload(w http.ResponseWriter, r *http.Request) {
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		util.ResponseErr(w, "Bad Request")
+		return
+	}
+	defer file.Close()
+
+	uploadDir := filepath.Join(".", "workflow-vue3", "public", "uploads")
+	filename, err := util.UploadFile(file, header, uploadDir)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		util.ResponseErr(w, "Internal Server Error")
+		return
+	}
+	// 返回路径去掉workflow-vue3
+	filename = filename[14:]
+	util.ResponseData(w, filename)
 }
