@@ -31,6 +31,7 @@ type ProcInst struct {
 	Var           string `gorm:"size:4000;comment:'执行流程的附加参数'" json:"var"`
 	State         int    `gorm:"not null;default:0;comment:'当前状态: 0待审批，1审批中，2通过，3拒绝，4撤回'" json:"state"`
 	LatestComment string `gorm:"size:500;comment:'最新评论'" json:"latestComment"`
+	GlobalComment string `gorm:"size:4000;default:null;comment:'全局评论'" json:"globalComment"`
 }
 
 type ProcInstUnion struct {
@@ -364,4 +365,27 @@ func FindFinishedProc() ([]*ProcInst, error) {
 	var datas []*ProcInst
 	err := db.Where("is_finished=1").Find(&datas).Error
 	return datas, err
+}
+
+// UpdateProcInstByID 更新流程实例
+func UpdateProcInstByID(id int, data map[string]interface{}) error {
+	var procInst ProcInst
+	err := db.Where("id=?", id).First(&procInst).Error
+	if err != nil {
+		// 如果没有找到，则去结束表找
+		var procInstHistory ProcInstHistory
+		err = db.Where("id=?", id).First(&procInstHistory).Error
+		if err != nil {
+			return err
+		}
+		err = db.Model(&ProcInstHistory{}).Where("id=?", id).Updates(data).Error
+		if err != nil {
+			return err
+		}
+	}
+	err = db.Model(&ProcInst{}).Where("id=?", id).Updates(data).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

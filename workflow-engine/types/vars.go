@@ -13,6 +13,7 @@ type Vars struct {
 	Description string `json:"description"` //请假事由
 	StartTime   string `json:"startTime"`   //开始时间
 	EndTime     string `json:"endTime"`     //结束时间
+	Other       string `json:"other"`       //其他
 }
 
 var VacateTypes = []string{"年假", "事假", "病假", "调休假", "产假", "婚假", "例假", "丧假", "陪产假", "哺乳假"}

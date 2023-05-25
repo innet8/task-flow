@@ -28,6 +28,14 @@ type ProcessReceiver struct {
 	Var          *types.Vars `json:"var"`
 }
 
+// GlobalComment 全局评论
+type GlobalComment struct {
+	ProcInstID int    `json:"procInstId"` // 流程实例ID
+	UserID     string `json:"userId"`
+	Content    string `json:"content"`
+	CreatedAt  string `json:"createdAt"`
+}
+
 // ProcessPageReceiver 分页参数
 type ProcessPageReceiver struct {
 	util.Page
@@ -48,11 +56,18 @@ type ProcessPageReceiver struct {
 // 格式化返回参数
 type ProcInsts struct {
 	model.ProcInst
-	Var       *types.Vars  `json:"var,omitempty"`
-	NodeInfos []*NodeInfos `json:"nodeInfos,omitempty"`
+	Var            *types.Vars  `json:"var,omitempty"`
+	NodeInfos      []*NodeInfos `json:"nodeInfos,omitempty"`
+	GlobalComments interface{}  `json:"globalComments,omitempty"`
 }
 
 var copyLock sync.Mutex
+
+// GetGlobalComment 获取全局评论
+func GetGlobalComment() *GlobalComment {
+	var p = GlobalComment{}
+	return &p
+}
 
 // GetDefaultProcessPageReceiver GetDefaultProcessPageReceiver
 func GetDefaultProcessPageReceiver() *ProcessPageReceiver {
@@ -68,6 +83,50 @@ func findAll(pr *ProcessPageReceiver) ([]*model.ProcInst, int, error) {
 	return model.FindProcInsts(pr.UserID, pr.ProcName, pr.Company, pr.Groups, pr.Departments, pr.Sort, pr.PageIndex, pr.PageSize)
 }
 
+// AddGlobalComment 添加全局评论
+func AddGlobalComment(procInstID int, userID string, content string) error {
+	// 获取流程信息
+	procInst, err := model.FindProcInstByID(procInstID)
+	if err != nil {
+		return err
+	}
+	if procInst != nil {
+		// 根据已有的结构体GlobalComment
+		globalComment := &GlobalComment{
+			ProcInstID: procInstID,
+			UserID:     userID,
+			Content:    content,
+			CreatedAt:  time.Now().Format("2006-01-02 15:04:05"),
+		}
+		// 追加到现在的评论中
+		var globalCommentSlice []GlobalComment
+		if procInst.GlobalComment != "" {
+			err = json.Unmarshal([]byte(procInst.GlobalComment), &globalCommentSlice)
+			if err != nil {
+				return err
+			}
+			// 追加评论
+			globalCommentSlice = append(globalCommentSlice, *globalComment)
+		} else {
+			globalCommentSlice = append(globalCommentSlice, *globalComment)
+		}
+
+		// 转为json格式
+		globalCommentStr, err := json.Marshal(globalCommentSlice)
+		if err != nil {
+			return err
+		}
+		// 更新流程信息
+		data := make(map[string]interface{})
+		data["global_comment"] = string(globalCommentStr)
+		err = model.UpdateProcInstByID(procInstID, data)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // FindProcInstByID 根据ID获取流程信息
 func FindProcInstByID(id int) (string, error) {
 	// 流程信息
@@ -81,6 +140,17 @@ func FindProcInstByID(id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// 如果全局评论不为空，则转为json格式
+	if datas.GlobalComment != "" {
+		var globalComment []GlobalComment
+		err := json.Unmarshal([]byte(datas.GlobalComment), &globalComment)
+		if err != nil {
+			return "", err
+		}
+		// 赋值该map给datas
+		datas.GlobalComments = globalComment
+	}
+
 	// 节点信息
 	nodeInfos, err := GetExecNodeInfosDetailsByProcInstID(id)
 	if err != nil {
