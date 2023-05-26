@@ -110,6 +110,6 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 返回路径去掉workflow-vue3
-	filename = filename[14:]
+	filename = `"` + filename[14:] + `"`
 	util.ResponseData(w, filename)
 }
