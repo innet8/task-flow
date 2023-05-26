@@ -15,6 +15,11 @@ const  routes = [
         name:'manage-review',
         path: 'review',
         component:()=>import('@/views/manage/review/index.vue'),
+      },
+      {
+        name:'manage-add',
+        path: 'add',
+        component:()=>import('@/views/manage/addApplication/index.vue'),
       }
     ]
   }

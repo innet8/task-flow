@@ -35,6 +35,14 @@
                 <h4>{{ $L('请假事由') }}</h4>
                 <p>{{ datas.var?.description }}</p>
             </div>
+            <div class="review-details-text"  v-if="datas.var?.other">
+                <h4>{{$L('图片')}}</h4>
+                <div class="img-body">
+                    <div v-for="(src,key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
+                        <img :src="src" :key="key" class="img-view"/>
+                    </div>
+                </div>
+            </div>
             <el-divider />
             <h3 class="review-details-subtitle">{{ $L('审批记录') }}</h3>
             <el-timeline style="margin-top: 20px;">
@@ -311,6 +319,11 @@ const regret = async () => {
         ElMessage.success(message);
         getInfo()
     }
+}
+
+
+const onViewPicture = (src)=>{
+
 }
 </script>
 

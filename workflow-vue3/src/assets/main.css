@@ -24,3 +24,11 @@ a,
   }
 }
 
+.el-button--primary{
+  background-color: #8bcf70 !important;
+  border-color: #8bcf70 !important;
+}
+.el-button--primary:hover{
+  background-color: #a2d98d !important;
+  border-color: #a2d98d !important;
+}

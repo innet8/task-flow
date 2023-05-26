@@ -20,6 +20,22 @@ export default defineConfig(({ mode }) => {
     process.env.VITE_PUBLIC_URL =  env.PUBLIC_URL
     
     return {
+        server: {
+            host: '0.0.0.0',
+            port: 5173,
+            strictPort: true,               // 设为 true 时若端口已被占用则会直接退出，而不是尝试下一个可用端口。
+            // 代理
+            proxy: {
+                '/api': {
+                    target: "http://192.168.100.219:8700",
+                    changeOrigin: true,
+                    pathRewrite: {
+                        '^/api': ''
+                    }
+                }
+            }
+        },
+
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, "src"),

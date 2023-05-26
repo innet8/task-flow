@@ -186,7 +186,7 @@
 
 <script setup>
 import { ref, onMounted, getCurrentInstance, nextTick } from "vue";
-import { getBacklogData, getNotifyData , getDoneData ,getInitiatedData} from "@/plugins/api.js";
+import { getBacklogData, getNotifyData , getDoneData ,getInitiatedData ,getUserInfo} from "@/plugins/api.js";
 import { ElMessage } from 'element-plus';
 import list from "./list.vue";
 import listDetails from "./details.vue";
@@ -195,7 +195,7 @@ let minDate = ref(new Date(2020, 0, 1))
 let maxDate = ref(new Date(2025, 10, 1))
 let currentDate = (new Date(2021, 0, 17))
 
-let userID = ref(1)
+let userID = ref(0)
 
 let procdefList = ref([])
 let page = ref(1)
@@ -232,29 +232,7 @@ let detailsShow = ref(false)
 //
 let addTitle = ref('')
 let addShow = ref(false)
-let startTimeOpen = ref(false)
-let endTimeOpen = ref(false)
-let addData = ref({
-  department_id: 0,
-  applyType: '',
-  type: '',
-  startTime: "2023-04-20",
-  startTimeHour: "09",
-  startTimeMinute: "00",
-  endTime: "2023-04-20",
-  endTimeHour: "18",
-  endTimeMinute: "00",
 
-})
-let addRule = ref({
-  department_id: { type: 'number', required: true, message: proxy.$L('请选择部门！'), trigger: 'change' },
-  applyType: { type: 'string', required: true, message: proxy.$L('请选择申请类型！'), trigger: 'change' },
-  type: { type: 'string', required: true, message: proxy.$L('请选择假期类型！'), trigger: 'change' },
-  startTime: { type: 'string', required: true, message: proxy.$L('请选择开始时间！'), trigger: 'change' },
-  endTime: { type: 'string', required: true, message: proxy.$L('请选择结束时间！'), trigger: 'change' },
-  description: { type: 'string', required: true, message: proxy.$L('请输入事由！'), trigger: 'change' },
-})
-let selectTypes = ref(["年假", "事假", "病假", "调休", "产假", "陪产假", "婚假", "丧假", "哺乳假"])
 
 //
 let showDateTime = ref(false)
@@ -283,9 +261,16 @@ let showDateTime = ref(false)
 // },
 
 onMounted(() => {
-  tabsValue.value = "backlog"
-  tabsClick()
-  getBacklogList()
+  const queryString = window.location.search.slice(1);
+  const params = {};
+  const pairs = queryString.split('&');
+  for (let i = 0; i < pairs.length; i++) {
+    const pair = pairs[i].split('=');
+    params[pair[0]] = decodeURIComponent(pair[1] || '');
+  }
+  if(params.token){
+    getUserData(params.token)
+  }
 });
 
 // mounted() {
@@ -345,11 +330,29 @@ const clickList = (item) => {
   })
 }
 
+// 获取用户信息
+const getUserData = async (token) => {
+
+const upToken = token;
+let { data, status, message } = await getUserInfo(upToken)
+if (status != 200) {
+  ElMessage.error(message)
+  return;
+}
+  if(data){
+    userID.value = data.userid;
+    tabsValue.value = "backlog"
+    getBacklogList()
+  }
+}
+
+
 // 获取待办列表
 const getBacklogList = async () => {
 
 
   const getDate = {
+    userID:userID.value.toString(),
     page: page.value,
     pageSize: pageSize.value,
     procName: approvalType.value == 'all' ? '' : approvalType.value,
@@ -378,6 +381,7 @@ const getBacklogList = async () => {
 // 获取已办列表
 const getDoneList = async () => {
   const getDate = {
+    userID:userID.value.toString(),
     page: page.value,
     pageSize: pageSize.value,
     procName: approvalType.value == 'all' ? '' : approvalType.value,

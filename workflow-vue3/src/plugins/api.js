@@ -126,3 +126,31 @@ export function getNotifyData(data) {
 export function getInitiatedData(data) {
     return http.post(`/workflow/process/startByMyselfAll`, data)
 }
+
+/**
+ * 获取用户信息
+ * @param {*} data 
+ * @returns 
+ */
+export function getUserInfo(data) {
+    return http.post(`/workflow/dootask/verifyToken?token=${data}` )
+}
+
+/**
+ * 获取请假类型
+ * @param {*} data 
+ * @returns 
+ */
+export function getProcdefFindAll(data) {
+    return http.post(`/workflow/procdef/findAll`,data )
+}
+
+/**
+ * 获取提交申请
+ * @param {*} data 
+ * @returns 
+ */
+export function submitAnApplication(data) {
+    return http.post(`/workflow/process/start`, data )
+}
+
