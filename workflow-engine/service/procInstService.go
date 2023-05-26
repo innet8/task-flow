@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"sync"
 	"time"
 
@@ -129,6 +130,7 @@ func AddGlobalComment(procInstID int, userID string, content string) error {
 
 // FindProcInstByID 根据ID获取流程信息
 func FindProcInstByID(id int) (string, error) {
+	dooRobotSvc := NewDooService()
 	// 流程信息
 	data, err := model.FindProcInstByID(id)
 	if err != nil {
@@ -147,14 +149,54 @@ func FindProcInstByID(id int) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		// 循环评论，新增用户信息，用户头像和用户昵称
+		globalCommentAdds := make([]map[string]interface{}, len(globalComment))
+		for i := 0; i < len(globalComment); i++ {
+			userID, err := strconv.Atoi(globalComment[i].UserID)
+			if err != nil {
+				return "", err
+			}
+			user, err := dooRobotSvc.getUserInfo(userID)
+			if err != nil {
+				return "", err
+			}
+			globalCommentAdds[i] = map[string]interface{}{
+				"avatar":   user["userimg"],
+				"nickName": user["nickname"],
+				"userID":   globalComment[i].UserID,
+				"content":  globalComment[i].Content,
+				"createAt": globalComment[i].CreatedAt,
+			}
+		}
 		// 赋值该map给datas
-		datas.GlobalComments = globalComment
+		datas.GlobalComments = globalCommentAdds
 	}
 
 	// 节点信息
 	nodeInfos, err := GetExecNodeInfosDetailsByProcInstID(id)
 	if err != nil {
 		return "", err
+	}
+
+	if len(nodeInfos) > 0 {
+		for _, nodeInfo := range nodeInfos {
+			if len(nodeInfo.NodeUserList) > 0 {
+				for _, nodeUser := range nodeInfo.NodeUserList {
+					if nodeUser.TargetId != "" {
+						TartgetID, _ := strconv.Atoi(nodeUser.TargetId)
+						userInfo, _ := dooRobotSvc.getUserInfo(TartgetID)
+						nodeUser.Avatar = userInfo["userimg"].(string)
+					}
+				}
+
+			} else {
+				if nodeInfo.AproverId != "" {
+					userID, _ := strconv.Atoi(nodeInfo.AproverId)
+					user, _ := dooRobotSvc.getUserInfo(userID)
+					nodeInfo.Avatar = user["userimg"].(string)
+				}
+			}
+		}
 	}
 	datas.NodeInfos = nodeInfos
 	//

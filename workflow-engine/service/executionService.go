@@ -21,6 +21,7 @@ type NodeInfos struct {
 	Identitylink *model.Identitylink `json:"identitylink"` // 关联信息
 	ClaimTime    string              `json:"claimTime"`
 	IsFinished   bool                `json:"isFinished"`
+	Avatar       string              `json:"avatar,omitempty"`
 }
 
 // SaveExecution
