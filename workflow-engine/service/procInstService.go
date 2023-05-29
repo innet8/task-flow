@@ -158,7 +158,7 @@ func FindProcInstByID(id int) (string, error) {
 			}
 			user, err := dooRobotSvc.getUserInfo(userID)
 			if err != nil {
-				return "", err
+				user = make(map[string]interface{})
 			}
 			globalCommentAdds[i] = map[string]interface{}{
 				"avatar":   user["userimg"],
@@ -185,7 +185,11 @@ func FindProcInstByID(id int) (string, error) {
 					if nodeUser.TargetId != "" {
 						TartgetID, _ := strconv.Atoi(nodeUser.TargetId)
 						userInfo, _ := dooRobotSvc.getUserInfo(TartgetID)
-						nodeUser.Avatar = userInfo["userimg"].(string)
+						if userInfo != nil {
+							if userimg, ok := userInfo["userimg"].(string); ok {
+								nodeUser.Avatar = userimg
+							}
+						}
 					}
 				}
 
@@ -193,7 +197,11 @@ func FindProcInstByID(id int) (string, error) {
 				if nodeInfo.AproverId != "" {
 					userID, _ := strconv.Atoi(nodeInfo.AproverId)
 					user, _ := dooRobotSvc.getUserInfo(userID)
-					nodeInfo.Avatar = user["userimg"].(string)
+					if user != nil {
+						if userimg, ok := user["userimg"].(string); ok {
+							nodeInfo.Avatar = userimg
+						}
+					}
 				}
 			}
 		}
