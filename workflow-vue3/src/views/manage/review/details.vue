@@ -35,11 +35,11 @@
                 <h4>{{ $L('请假事由') }}</h4>
                 <p>{{ datas.var?.description }}</p>
             </div>
-            <div class="review-details-text"  v-if="datas.var?.other">
-                <h4>{{$L('图片')}}</h4>
+            <div class="review-details-text" v-if="datas.var?.other">
+                <h4>{{ $L('图片') }}</h4>
                 <div class="img-body">
-                    <div v-for="(src,key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
-                        <img :src="src" :key="key" class="img-view"/>
+                    <div v-for="(src, key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
+                        <img :src="src" :key="key" class="img-view" />
                     </div>
                 </div>
             </div>
@@ -130,8 +130,37 @@
                 </template>
 
             </el-timeline>
+
+            <template v-if="datas.globalComments">
+                <el-divider />
+                <h3 class="review-details-subtitle">{{ $L('全文评论') }}</h3>
+                <div class="review-record-comment">
+
+                    <div class="review-record-box" v-for="(item, key) in datas.globalComments" :key="key">
+
+                        <div class="top">
+                            <el-avatar :src="item.avatar" :size="38" />
+                            <div>
+                                <p>{{ item.nickName }}</p>
+                                <p class="time">{{ item.createAt }}</p>
+                            </div>
+                            <span>{{ getTimeAgo(item.createAt, 2) }}</span>
+                        </div>
+                        <div class="content">
+                            {{ getContent(item.content) }}
+                        </div>
+                        <div class="content" style="display: flex; gap: 10px;">
+                            <div v-for="(src, k) in getPictures(item.content)" :key="k" @click="onViewPicture(src)">
+                                <img :src="src" class="img-view" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </template>
         </div>
-        <div class="review-operation" v-if="datas.state <= 1">
+        <div class="review-operation">
             <div style="flex: 1;"></div>
             <el-button type="success" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1"
                 @click="approve(true)">{{
@@ -140,13 +169,14 @@
                 @click="approve(false)">{{
                     $L('拒绝') }}</el-button>
             <el-button type="warning" v-if="isShowWarningBtn" @click="revocation">{{ $L('撤销') }}</el-button>
+            <el-button @click="comment" type="success" ghost>+{{ $L('添加评论') }}</el-button>
         </div>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch, nextTick, computed, getCurrentInstance, defineEmits } from 'vue';
-import { getProcessData, agreeOrRefuse ,revocationTask } from "@/plugins/api.js";
+import { getProcessData, agreeOrRefuse, revocationTask ,getUserInfo } from "@/plugins/api.js";
 import { useRoute, useRouter } from 'vue-router'
 const { proxy } = getCurrentInstance()
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -155,7 +185,7 @@ import 'element-plus/es/components/message-box/style/css';
 let modalTransferIndex = ref(window.modalTransferIndex)
 let datas = ref({})
 let showTimeNum = ref(24)
-let userId = ref(1)
+let userId = ref(0)
 
 let props = defineProps({
     data: {
@@ -167,28 +197,51 @@ let props = defineProps({
 
 watch(() => props.data, (newValue) => {
     if (newValue.id) {
-        getInfo()
+        const queryString = window.location.search.slice(1);
+    const params = {};
+    const pairs = queryString.split('&');
+    for (let i = 0; i < pairs.length; i++) {
+        const pair = pairs[i].split('=');
+        params[pair[0]] = decodeURIComponent(pair[1] || '');
     }
-}, { deep: true })
-
-
+    if (params.token) {
+        getUserData(params.token)
+    }
+  
+    }
+})
 
 const isShowWarningBtn = computed(() => {
     let is = userId.value == datas.value.startUserId;
     (datas.value.nodeInfos || []).map(h => {
-        if (h.type != 'starter' && h.isFinished == true && h.identitylink.userid != userId.value) {
+        if (h.type != 'starter' && h.isFinished == true && h.identitylink?.userid != userId.value) {
             is = false;
         }
     })
     return is;
 })
 
-
 const router = useRouter()
 const route = useRoute()
 onMounted(() => {
     modalTransferIndex.value = window.modalTransferIndex = window.modalTransferIndex + 1
 });
+
+// 获取用户信息
+const getUserData = async (token) => {
+    const upToken = token;
+    let { data, status, message } = await getUserInfo(upToken)
+    if (status != 200) {
+        ElMessage.error(message)
+        return;
+    }
+    if (data) {
+        userId.value = data.userid;
+        getInfo();
+    }
+}
+
+
 // 把时间转成几小时前
 const getTimeAgo = (time, type) => {
     const currentTime = new Date();
@@ -234,7 +287,7 @@ const getInfo = async () => {
     }
     if (data) {
         let show = true;
-        data.nodeInfos = data.nodeInfos.map(item => {
+        data.nodeInfos = (data.nodeInfos || []).map(item => {
             item._show = show;
             if (item.identitylink?.state == 2 || item.identitylink?.state == 3) {
                 show = false;
@@ -269,7 +322,7 @@ const approve = (type) => {
 
         })
 }
-const emit = defineEmits(['approve','revocation'])
+const emit = defineEmits(['approve', 'revocation'])
 const audit = async (upData) => {
     let { data, status, message } = await agreeOrRefuse(upData)
     if (status != 200) {
@@ -288,18 +341,18 @@ const revocation = () => {
     ElMessageBox.confirm(
         proxy.$L('你确定要撤销吗？'),
         proxy.$L('撤销'),
-    {
-      confirmButtonText:  proxy.$L('确定'),
-      cancelButtonText:  proxy.$L('取消'),
-      type: 'warning',
-    }
-  )
-    .then(() => {
-        regret();
-    })
-    .catch(() => {
-  
-    })
+        {
+            confirmButtonText: proxy.$L('确定'),
+            cancelButtonText: proxy.$L('取消'),
+            type: 'warning',
+        }
+    )
+        .then(() => {
+            regret();
+        })
+        .catch(() => {
+
+        })
 
 }
 
@@ -322,9 +375,29 @@ const regret = async () => {
 }
 
 
-const onViewPicture = (src)=>{
+// 获取内容
+const getContent = (content) => {
+    try {
+        return JSON.parse(content).content || ''
+    } catch (error) {
+        return ''
+    }
+}
+
+// 获取内容
+const getPictures = (content) => {
+    try {
+        return JSON.parse(content).pictures || []
+    } catch (error) {
+        return ''
+    }
+}
+
+// 打开图片
+const onViewPicture = (currentUrl) => {
 
 }
+
 </script>
 
 <style  lang="less">
