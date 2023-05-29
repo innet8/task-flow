@@ -21,7 +21,7 @@ func GetAllDept(writer http.ResponseWriter, request *http.Request) {
 		parentId, _ = strconv.Atoi(request.Form["parentId"][0])
 	}
 
-	result, err := service.GetAllDept(parentId)
+	result, err := service.GetAllDepartments(parentId)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return
@@ -46,8 +46,7 @@ func GetDeptUserByDept(writer http.ResponseWriter, request *http.Request) {
 	}
 	var deptID int
 	deptID, _ = strconv.Atoi(request.Form["deptID"][0])
-	deptName := request.Form["deptName"][0]
-	result, err := service.GetUsersByDeptTree(deptID, deptName)
+	result, err := service.GetUserAndChildDepts(deptID)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return

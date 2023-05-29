@@ -1,111 +1,121 @@
 package service
 
 import (
+	"fmt"
 	"workflow/workflow-engine/model"
 
 	"workflow/util"
 )
 
-// GetAllDept 所有部门列表
-func GetAllDept(parentId int) (string, error) {
-	datas, err := model.GetAllDept(parentId)
+// GetAllDepartments 获取所有部门列表
+func GetAllDepartments(parentID int) (string, error) {
+	departments, err := model.GetAllDept(parentID)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get all departments: %v", err)
 	}
-	str, err := util.ToJSONStr(datas)
+
+	jsonStr, err := util.ToJSONStr(departments)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to convert departments to JSON string: %v", err)
 	}
-	return str, nil
+
+	return jsonStr, nil
 }
 
-// GetUsersByDeptTree 单一获取部门下的用户列表和子部门列表
-func GetUsersByDeptTree(deptID int, deptName string) (string, error) {
-	//获取子部门列表
-	childDept, err := model.GetDeptByParentID(deptID)
+// GetUserAndChildDepts 根据部门ID获取子部门列表和所有子部门下的用户
+func GetUserAndChildDepts(deptID int) (string, error) {
+	// 获取子部门列表
+	childDepts, err := model.GetDeptByParentID(deptID)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get child departments: %v", err)
 	}
+
 	// 获取父级部门
 	parentDept, err := model.GetDeptByID(deptID)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get parent department: %v", err)
 	}
-	// 部门父级下的用户列表
+
+	// 获取部门父级下的用户列表
 	users, err := model.GetUsersByDept(parentDept.Name)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get users by department: %v", err)
 	}
-	//声明构造返回树形结构 子部门：childDepartments 用户：employees
-	dept := make(map[string]interface{})
-	dept["childDepartments"] = childDept
-	dept["employees"] = users
-	dept["titleDepartments"] = parentDept.Name
 
-	//返回查询数据
-	str, err := util.ToJSONStr(dept)
-	if err != nil {
-		return "", err
+	dept := map[string]interface{}{
+		"childDepartments": childDepts,
+		"employees":        users,
+		"titleDepartments": parentDept.Name,
 	}
-	return str, nil
+
+	jsonStr, err := util.ToJSONStr(dept)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert result to JSON string: %v", err)
+	}
+
+	return jsonStr, nil
 }
 
-// GetUsersByDeptAllTree 1. 根据部门ID（deptId）和名称（deptName）获取子部门列表，所有子部门下的用户 3.构造树形结构，递归处理子部门，childDepartments：子部门 employees:部门用户
-func GetUsersByDeptAllTree(parentId int) (string, error) {
-	//获取父部门列表
-	childDept, err := model.GetDeptByParentID(parentId)
+// GetUsersByDeptAllTree 根据部门ID获取子部门列表和所有子部门下的用户
+func GetUsersByDeptAllTree(parentID int) (string, error) {
+	// 获取子部门列表
+	childDepts, err := model.GetDeptByParentID(parentID)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get child departments: %v", err)
 	}
 
-	// 获取父部门列表中的名称放入数组deptIds,用于查询父部门下的用户
-	var deptIds []int
+	// 获取子部门列表中的 ID 和名称，用于查询子部门下的用户
+	var deptIDs []int
 	var deptNames []string
-	for _, v := range childDept {
-		deptIds = append(deptIds, v.Id)
-		deptNames = append(deptNames, v.Name)
+	for _, dept := range childDepts {
+		deptIDs = append(deptIDs, dept.Id)
+		deptNames = append(deptNames, dept.Name)
 	}
 
-	// 部门父级下的用户列表
-	users, err := model.GetUsersByDeptId(parentId)
+	// 获取子部门下的用户列表
+	users, err := model.GetUsersByDeptId(parentID)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get users by department ID: %v", err)
 	}
 
-	//构造树形结构 递归处理父部门childDepartments：父部门 employees:部门用户
-	dept := make(map[string]interface{})
-	dept["childDepartments"] = childDept
-	dept["employees"] = users
-	dept["titleDepartments"] = deptNames
+	dept := map[string]interface{}{
+		"childDepartments": childDepts,
+		"employees":        users,
+		"titleDepartments": deptNames,
+	}
 
-	//返回查询数据
-	str, err := util.ToJSONStr(dept)
+	jsonStr, err := util.ToJSONStr(dept)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to convert result to JSON string: %v", err)
 	}
-	return str, nil
+
+	return jsonStr, nil
 }
 
-// GetUserByName 根据用户名称获取用户并分页
-func GetUserByName(employeeName string, pageNum int, pageSize int) (string, error) {
-	datas, err := model.GetUserByName(employeeName, pageNum, pageSize)
+// GetUserByName 根据员工姓名分页查询员工信息
+func GetUserByName(name string, pageNum, pageSize int) (string, error) {
+	employees, err := model.GetUserByName(name, pageNum, pageSize)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get employees by name: %v", err)
 	}
-	//获取总数
-	total, err := model.GetUserByNameCount(employeeName)
+
+	// 获取员工总数
+	total, err := model.GetUserByNameCount(name)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get employee count by name: %v", err)
 	}
-	//构造返回数据
-	var result = make(map[string]interface{})
-	result["pageNum"] = pageNum
-	result["pageSize"] = pageSize
-	result["total"] = total
-	result["list"] = datas
-	str, err := util.ToJSONStr(result)
+
+	result := map[string]interface{}{
+		"pageNum":  pageNum,
+		"pageSize": pageSize,
+		"total":    total,
+		"list":     employees,
+	}
+
+	jsonStr, err := util.ToJSONStr(result)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to convert result to JSON string: %v", err)
 	}
-	return str, nil
+
+	return jsonStr, nil
 }

@@ -68,8 +68,8 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/dootask/getAllDeptUserByDept", intercept(controller.GetAllDeptUserByDept)) // 根据部门全部获取用户和子部门
 	Mux.HandleFunc("/api/v1/workflow/dootask/getUserByName", intercept(controller.GetUserByName))
 
-	Mux.HandleFunc("/api/v1/workflow/dootask/export", intercept(controller.Export))
-	Mux.HandleFunc("/api/v1/workflow/dootask/verifyToken", intercept(controller.VerifyToken))
-	Mux.HandleFunc("/api/v1/workflow/dootask/upload", intercept(controller.Upload))
+	Mux.HandleFunc("/api/v1/workflow/dootask/export", intercept(controller.Export))           // 导出
+	Mux.HandleFunc("/api/v1/workflow/dootask/verifyToken", intercept(controller.VerifyToken)) // 验证token
+	Mux.HandleFunc("/api/v1/workflow/dootask/upload", intercept(controller.Upload))           // 上传
 
 }
