@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -37,30 +38,6 @@ type ProcInst struct {
 type ProcInstUnion struct {
 	*ProcInst
 	Total int
-}
-
-// GroupsNotNull 候选组
-func GroupsNotNull(groups []string, sql string) func(db *gorm.DB) *gorm.DB {
-	if len(groups) > 0 {
-		return func(db *gorm.DB) *gorm.DB {
-			return db.Or("candidate in (?) and "+sql, groups)
-		}
-	}
-	return func(db *gorm.DB) *gorm.DB {
-		return db
-	}
-}
-
-// DepartmentsNotNull 分管部门
-func DepartmentsNotNull(departments []string, sql string) func(db *gorm.DB) *gorm.DB {
-	if len(departments) > 0 {
-		return func(db *gorm.DB) *gorm.DB {
-			return db.Or("department in (?) and candidate=? and "+sql, departments, IdentityTypes[MANAGER])
-		}
-	}
-	return func(db *gorm.DB) *gorm.DB {
-		return db
-	}
 }
 
 // FindAllProcIns 查询所有流程实例
@@ -213,63 +190,80 @@ func findProcInsts(maps map[string]interface{}, pageIndex, pageSize int) ([]*Pro
 
 // FindProcInstByID 根据ID查询流程实例
 func FindProcInstByID(id int) (*ProcInst, error) {
+	// 查询流程实例
 	var data = &ProcInst{}
 	err := db.Where("id=?", id).Find(data).Error
-	if err != nil {
-		if fmt.Sprintf("%s", err) == "record not found" {
-			var datas = &ProcInstHistory{}
-			err = db.Where("id=?", id).Find(datas).Error
-			if err != nil {
-				return nil, err
-			}
-			strjson, _ := util.ToJSONStr(datas)
-			util.Str2Struct(strjson, data)
-		}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("failed to find process instance: %v", err)
 	}
+
+	// 如果流程实例不存在，则查询历史流程实例
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		var datas = &ProcInstHistory{}
+		err = db.Where("id=?", id).Find(datas).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to find process instance history: %v", err)
+		}
+		strjson, _ := util.ToJSONStr(datas)
+		util.Str2Struct(strjson, data)
+	}
+
 	return data, nil
 }
 
 // FindProcNotify 查询抄送我的流程
 func FindProcNotify(userID, procName, company string, groups []string, sort string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
-	var datas []*ProcInst
-	var count int
-	var sql string
+	// 构建查询条件
+	var sql strings.Builder
 	var values []interface{}
 	var order string
-	// 判断排序
+
 	if sort == "asc" {
-		order = "start_time asc"
+		order = "start_time ASC"
 	} else {
-		order = "start_time desc"
+		order = "start_time DESC"
 	}
-	if len(groups) != 0 {
-		var placeholders []string
-		for range groups {
-			placeholders = append(placeholders, "?")
-		}
-		sql = "SELECT proc_inst_id FROM %sidentitylink i WHERE i.type='notifier' AND i.company=? AND (FIND_IN_SET(?, i.user_id) OR i.group IN (" + strings.Join(placeholders, ",") + "))"
-		values = append(values, company, userID)
-		for _, group := range groups {
-			values = append(values, group)
-		}
-	} else {
-		sql = "SELECT proc_inst_id FROM %sidentitylink i WHERE i.type='notifier' AND i.company=? AND FIND_IN_SET(?, i.user_id)"
-		values = append(values, company, userID)
-	}
+
+	sql.WriteString("SELECT proc_inst_id FROM ")
+	sql.WriteString(conf.DbPrefix)
+	sql.WriteString("identitylink i WHERE i.type='notifier' AND i.company=? AND FIND_IN_SET(?, i.user_id)")
+
+	values = append(values, company, userID)
+
 	if procName != "" {
-		sql += " AND proc_def_name = ?"
+		sql.WriteString(" AND proc_def_name = ?")
 		values = append(values, procName)
 	}
-	sql = fmt.Sprintf(sql, conf.DbPrefix)
-	err := db.Where("id in ("+sql+")", values...).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
-	if err != nil {
-		return datas, count, err
+
+	if len(groups) != 0 {
+		sql.WriteString(" AND (FIND_IN_SET(?, i.user_id) OR i.group IN (")
+
+		for i := range groups {
+			if i != 0 {
+				sql.WriteString(",")
+			}
+			sql.WriteString("?")
+			values = append(values, groups[i])
+		}
+
+		sql.WriteString("))")
 	}
-	err = db.Model(&ProcInst{}).Where("id in ("+sql+")", values...).Count(&count).Error
+
+	// 执行查询
+	var datas []*ProcInst
+	var count int
+
+	err := db.Where("id IN ("+sql.String()+")", values...).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
 	if err != nil {
-		return nil, count, err
+		return datas, count, fmt.Errorf("failed to find process instances: %v", err)
 	}
-	return datas, count, err
+
+	err = db.Model(&ProcInst{}).Where("id IN ("+sql.String()+")", values...).Count(&count).Error
+	if err != nil {
+		return nil, count, fmt.Errorf("failed to count process instances: %v", err)
+	}
+
+	return datas, count, nil
 }
 
 // FindProcInsts 分页查询
@@ -277,54 +271,78 @@ func FindProcInsts(userID, procName, company string, groups, departments []strin
 	var datas []*ProcInst
 	var count int
 	var order string
-	var sql = " company='" + company + "' and is_finished=0 "
+
+	// 构建查询条件
+	sql := "company = ? AND is_finished = 0"
+	values := []interface{}{company}
+
 	if len(procName) > 0 {
-		sql += "and proc_def_name='" + procName + "'"
+		sql += " AND proc_def_name = ?"
+		values = append(values, procName)
 	}
+
 	// 判断排序
 	if sort == "asc" {
-		order = "start_time asc"
+		order = "start_time ASC"
 	} else {
-		order = "start_time desc"
+		order = "start_time DESC"
 	}
-	// fmt.Println(sql)
-	selectDatas := func(in chan<- error, wg *sync.WaitGroup) {
-		go func() {
-			err := db.Scopes(GroupsNotNull(groups, sql), DepartmentsNotNull(departments, sql)).
-				Or("find_in_set(?,candidate) and "+sql, userID).
-				Offset((pageIndex - 1) * pageSize).Limit(pageSize).
-				Order(order).
-				Find(&datas).Error
-			in <- err
-			wg.Done()
-		}()
-	}
-	selectCount := func(in chan<- error, wg *sync.WaitGroup) {
-		go func() {
-			err := db.Scopes(GroupsNotNull(groups, sql), DepartmentsNotNull(departments, sql)).Model(&ProcInst{}).Or("candidate=? and "+sql, userID).Count(&count).Error
-			in <- err
-			wg.Done()
-		}()
-	}
-	var err1 error
-	var wg sync.WaitGroup
-	numberOfRoutine := 2
-	wg.Add(numberOfRoutine)
-	errStream := make(chan error, numberOfRoutine)
-	// defer fmt.Println("close channel")
-	selectDatas(errStream, &wg)
-	selectCount(errStream, &wg)
-	wg.Wait()
-	defer close(errStream) // 关闭通道
 
-	for i := 0; i < numberOfRoutine; i++ {
-		// log.Printf("send: %v", <-errStream)
-		if err := <-errStream; err != nil {
-			err1 = err
+	// 构建查询函数
+	queryFunc := func(db *gorm.DB) *gorm.DB {
+		return db.Where(sql, values...).Scopes(GroupsNotNull(groups, sql), DepartmentsNotNull(departments, sql, userID))
+	}
+
+	// 查询数据
+	err := queryFunc(db).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
+	if err != nil {
+		return datas, count, fmt.Errorf("failed to find process instances: %v", err)
+	}
+
+	// 查询数据总数
+	err = queryFunc(db.Model(&ProcInst{})).Count(&count).Error
+	if err != nil {
+		return datas, count, fmt.Errorf("failed to count process instances: %v", err)
+	}
+
+	return datas, count, nil
+}
+
+// GroupsNotNull 候选组
+func GroupsNotNull(groups []string, sql string) func(db *gorm.DB) *gorm.DB {
+	if len(groups) > 0 {
+		placeholders := make([]string, len(groups))
+		values := make([]interface{}, len(groups))
+		for i, group := range groups {
+			placeholders[i] = "?"
+			values[i] = group
+		}
+		return func(db *gorm.DB) *gorm.DB {
+			return db.Where("candidate IN ("+strings.Join(placeholders, ",")+") AND "+sql, values...)
 		}
 	}
-	// fmt.Println("结束")
-	return datas, count, err1
+	return func(db *gorm.DB) *gorm.DB {
+		return db
+	}
+}
+
+// DepartmentsNotNull 分管部门
+func DepartmentsNotNull(departments []string, sql string, userID string) func(db *gorm.DB) *gorm.DB {
+	if len(departments) > 0 {
+		placeholders := make([]string, len(departments))
+		values := make([]interface{}, len(departments)+1)
+		for i, department := range departments {
+			placeholders[i] = "?"
+			values[i] = department
+		}
+		values[len(departments)] = IdentityTypes[MANAGER]
+		return func(db *gorm.DB) *gorm.DB {
+			return db.Where("department IN ("+strings.Join(placeholders, ",")+") AND candidate=? AND "+sql, append(values, userID)...)
+		}
+	}
+	return func(db *gorm.DB) *gorm.DB {
+		return db
+	}
 }
 
 // Save
