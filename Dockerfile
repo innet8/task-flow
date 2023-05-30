@@ -3,7 +3,7 @@
 # 提交镜像到docker
 # docker commit 469f4b02521e imagecommit
 # 推送 
-# docker push hitosea2020/go-workflow:1.0.1
+# docker push hitosea2020/go-approve:latest
 
 # FROM alpine
 FROM nginx:alpine

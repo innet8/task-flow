@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
 
             /** If you set esmExternals to true, this plugins assumes that 
               all external dependencies are ES modules */
-            assetsDir: "workflow/assets",
+            assetsDir: "approve/assets",
             commonjsOptions: {
                 esmExternals: true
             },
