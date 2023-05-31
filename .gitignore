@@ -6,7 +6,7 @@ server.crt
 server.key
 /tmp/
 /.env
-
+/workflow-vue3/public/uploads
 /docker/mysql/backup
 /docker/mysql/logs
 /docker/mysql/repassword.sh

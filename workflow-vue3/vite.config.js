@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
 
     const env = loadEnv(mode, '../', '');
     process.env.VITE_PUBLIC_URL =  env.PUBLIC_URL
-    
+
     return {
         server: {
             host: '0.0.0.0',
@@ -65,9 +65,9 @@ export default defineConfig(({ mode }) => {
         ],
         build: {
 
-            /** If you set esmExternals to true, this plugins assumes that 
+            /** If you set esmExternals to true, this plugins assumes that
               all external dependencies are ES modules */
-            assetsDir: "workflow/assets",
+            assetsDir: "approve/assets",
             commonjsOptions: {
                 esmExternals: true
             },

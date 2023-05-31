@@ -287,7 +287,7 @@ func (s *DooService) HandleProcInfoMsg(procInstID int, action string) (map[strin
 		// 发送给审核人 改变信息状态
 		toProcMsgsUser, _ := model.GetProcMsgsByProcInstID(int(procInfoMap["id"].(float64)))
 		for _, val := range toProcMsgsUser {
-			s.SendReviewerNotification(procInfoMap, val.UserID, action)
+			s.SendReviewerNotification(procInfoMap, val.Userid, action)
 		}
 	} else if len(procInfoMap["candidate"].(string)) > 0 {
 		candidate := strings.Split(procInfoMap["candidate"].(string), ",")

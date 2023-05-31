@@ -4,7 +4,7 @@ package model
 type ProcMsgs struct {
 	Model
 	ProcInstID int    `gorm:"comment:'流程实例ID'" json:"procInstID"`
-	UserID     int    `gorm:"comment:'会员ID'" json:"userId"`
+	Userid     int    `gorm:"comment:'会员ID'" json:"userid"`
 	MsgID      int    `gorm:"comment:'消息ID'" json:"msgId"`
 	CreatedAt  string `gorm:"autoCreateTime;not null;comment:'创建时间'" json:"createdAt"`
 	UpdatedAt  string `gorm:"autoCreateTime;not null;comment:'更新时间'" json:"updatedAt"`
@@ -14,7 +14,7 @@ type ProcMsgs struct {
 func InsertProcMsgs(procInstID, userID, msgID int) error {
 	var data = ProcMsgs{
 		ProcInstID: procInstID,
-		UserID:     userID,
+		Userid:     userID,
 		MsgID:      msgID,
 	}
 	err := db.Create(&data).Error
@@ -24,7 +24,7 @@ func InsertProcMsgs(procInstID, userID, msgID int) error {
 // 根据流程实例ID和用户ID获取消息ID
 func GetMsgIDByProcInstIDAndUserID(procInstID, userID int) (int, error) {
 	var data ProcMsgs
-	err := db.Where("proc_inst_id=? and user_id=?", procInstID, userID).Find(&data).Error
+	err := db.Where("proc_inst_id=? and userid=?", procInstID, userID).Find(&data).Error
 	if err != nil {
 		return 0, err
 	}

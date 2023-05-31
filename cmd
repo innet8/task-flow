@@ -183,10 +183,10 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "push-image" ]]; then
         cd workflow-vue3 && npm run build && cd ../
         GOOS=linux go build -o main main.go
-        DOCKER_BUILDKIT=1 docker build -t hitosea2020/go-workflow:$(env_get DOCKER_VER) .
+        DOCKER_BUILDKIT=1 docker build --pull --rm -t hitosea2020/go-approve:$(env_get DOCKER_VER) .
         $COMPOSE up -d
-        docker commit task-flow-workflow-$(env_get APP_ID) imagecommit
-        docker push hitosea2020/go-workflow:$(env_get DOCKER_VER)
+        docker commit task-flow-approve-$(env_get APP_ID) imagecommit
+        docker push hitosea2020/go-approve:$(env_get DOCKER_VER)
     else
         $COMPOSE "$@"
     fi
