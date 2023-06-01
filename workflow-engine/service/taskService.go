@@ -32,22 +32,22 @@ type TaskReceiver struct {
 
 var completeLock sync.Mutex
 
-// NewTask 新任务
-func NewTask(t *model.Task) (int, error) {
+// CreateTask 新任务
+func CreateTask(t *model.Task) (int, error) {
 	if len(t.NodeID) == 0 {
 		return 0, errors.New("request param nodeID can not be null / 任务当前所在节点nodeId不能为空！")
 	}
 	t.CreateTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
-	return t.NewTask()
+	return t.CreateTask()
 }
 
-// NewTaskTx 开启事务
-func NewTaskTx(t *model.Task, tx *gorm.DB) (int, error) {
+// CreateTaskTx 开启事务
+func CreateTaskTx(t *model.Task, tx *gorm.DB) (int, error) {
 	if len(t.NodeID) == 0 {
 		return 0, errors.New("request param nodeID can not be null / 任务当前所在节点nodeId不能为空！")
 	}
 	t.CreateTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
-	return t.NewTaskTx(tx)
+	return t.CreateTaskTx(tx)
 }
 
 // DeleteTask 删除任务
@@ -60,14 +60,14 @@ func GetTaskByID(id int) (task *model.Task, err error) {
 	return model.GetTaskByID(id)
 }
 
-// GetTaskByProInstID 通过流程实例id获取任务
-func GetTaskByProInstID(procInstID int) ([]*model.Task, error) {
-	return model.GetTaskByProInstID(procInstID)
+// GetTasksByProcInstID 通过流程实例id获取任务
+func GetTasksByProcInstID(procInstID int) ([]*model.Task, error) {
+	return model.GetTasksByProcInstID(procInstID)
 }
 
-// GetTaskLastByProInstID 通过流程实例id获取最后一个任务
-func GetTaskLastByProInstID(procInstID int) (*model.Task, error) {
-	return model.GetTaskLastByProInstID(procInstID)
+// GetLastFinishedTaskByProcInstID 通过流程实例id获取最后一个任务
+func GetLastFinishedTaskByProcInstID(procInstID int) (*model.Task, error) {
+	return model.GetLastFinishedTaskByProcInstID(procInstID)
 }
 
 // CompleteByToken 通过token 审批任务
@@ -152,7 +152,7 @@ func UpdateTaskWhenComplete(taskID int, userID string, pass bool, tx *gorm.DB) (
 	if task.UnCompleteNum == 0 {
 		task.IsFinished = true
 	}
-	err = task.UpdateTx(tx)
+	err = task.UpdateTaskTx(tx)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +233,7 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 		wg.Done()
 	}()
 	go func() {
-		lastTask, err2 = GetTaskLastByProInstID(procInstID)
+		lastTask, err2 = GetLastFinishedTaskByProcInstID(procInstID)
 		wg.Done()
 	}()
 	wg.Wait()
@@ -274,7 +274,7 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 	tx := model.GetTx()
 	// 更新当前的任务
 	currentTask.IsFinished = true
-	err := currentTask.UpdateTx(tx)
+	err := currentTask.UpdateTaskTx(tx)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -354,7 +354,7 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 			IsFinished: true,
 		}
 		task.IsFinished = true
-		_, err := task.NewTaskTx(tx)
+		_, err := task.CreateTaskTx(tx)
 		if err != nil {
 			return err
 		}
@@ -383,7 +383,7 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 			IsFinished: true,
 		}
 		task.IsFinished = true
-		_, err := task.NewTaskTx(tx)
+		_, err := task.CreateTaskTx(tx)
 		if err != nil {
 			return err
 		}
@@ -416,7 +416,7 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	procInst.ID = procInstID
 	if (step + 1) != len(nodeInfos) { // 下一步不是【结束】
 		// 生成新的任务
-		taksID, err := task.NewTaskTx(tx)
+		taksID, err := task.CreateTaskTx(tx)
 		if err != nil {
 			return err
 		}
@@ -437,7 +437,7 @@ func MoveToNextStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 		// 生成新的任务
 		task.IsFinished = true
 		task.ClaimTime = currentTime
-		taksID, err := task.NewTaskTx(tx)
+		taksID, err := task.CreateTaskTx(tx)
 		if err != nil {
 			return err
 		}
@@ -469,7 +469,7 @@ func MoveToPrevStage(nodeInfos []*flow.NodeInfo, userID, company string, current
 	// task.IsFinished = true
 	// task.ClaimTime = currentTime
 	// task.ClaimTime = currentTime
-	// taksID, err := task.NewTaskTx(tx)
+	// taksID, err := task.CreateTaskTx(tx)
 	// if err != nil {
 	// 	return err
 	// }

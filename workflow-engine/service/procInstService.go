@@ -344,7 +344,7 @@ func (p *ProcessReceiver) StartProcessInstanceByID(variable *types.Vars) (string
 		task.UnCompleteNum = nodeinfos[0].MemberCount
 		task.MemberCount = nodeinfos[0].MemberCount
 	}
-	_, err = NewTaskTx(task, tx)
+	_, err = CreateTaskTx(task, tx)
 	if err != nil {
 		tx.Rollback()
 		return "", err

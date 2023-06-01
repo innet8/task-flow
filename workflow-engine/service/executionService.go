@@ -116,7 +116,7 @@ func GetExecNodeInfosDetailsByProcInstID(procInstID int) ([]*NodeInfos, error) {
 	}
 
 	// 任务信息
-	taskInfos, err := GetTaskByProInstID(procInstID)
+	taskInfos, err := GetTasksByProcInstID(procInstID)
 	if err != nil {
 		return nil, err
 	}

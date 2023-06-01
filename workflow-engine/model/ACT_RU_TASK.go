@@ -6,8 +6,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// import _ "github.com/jinzhu/gorm"
-
 // Task 流程任务表
 type Task struct {
 	Model
@@ -24,8 +22,8 @@ type Task struct {
 	IsFinished    bool   `gorm:"default:false;comment:'是否完成'" json:"isFinished"`
 }
 
-// NewTask 新建任务
-func (t *Task) NewTask() (int, error) {
+// CreateTask 新建任务
+func (t *Task) CreateTask() (int, error) {
 	err := db.Create(t).Error
 	if err != nil {
 		return 0, err
@@ -33,46 +31,50 @@ func (t *Task) NewTask() (int, error) {
 	return t.ID, nil
 }
 
-// UpdateTx 更新任务
-func (t *Task) UpdateTx(tx *gorm.DB) error {
+// UpdateTask 更新任务
+func (t *Task) UpdateTaskTx(tx *gorm.DB) error {
 	err := tx.Model(&Task{}).Updates(t).Error
 	return err
 }
 
-// GetTaskByID
+// GetTaskByID 根据任务ID获取任务
 func GetTaskByID(id int) (*Task, error) {
-	var t = &Task{}
-	err := db.Where("id=?", id).Find(t).Error
-	return t, err
+	var t Task
+	err := db.First(&t, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
-// GetTaskByProInstID 根据流程实例id任务列表
-func GetTaskByProInstID(procInstID int) ([]*Task, error) {
-	var datas []*Task
-	err := db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&datas).Error
-	if err != nil || len(datas) == 0 {
-		var datass []*TaskHistory
-		err = db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&datass).Error
+// GetTasksByProcInstID 根据流程实例ID获取任务列表
+func GetTasksByProcInstID(procInstID int) ([]*Task, error) {
+	var tasks []*Task
+	err := db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&tasks).Error
+	if err != nil || len(tasks) == 0 {
+		var taskHistories []*TaskHistory
+		err = db.Where("proc_inst_id=?", procInstID).Order("claim_time desc").Find(&taskHistories).Error
 		if err != nil {
 			return nil, err
 		}
-		strjson, _ := util.ToJSONStr(&datass)
-		util.Str2Struct(strjson, &datas)
+		strJSON, _ := util.ToJSONStr(&taskHistories)
+		util.Str2Struct(strJSON, &tasks)
 	}
-	return datas, err
+	return tasks, nil
 }
 
-// GetTaskLastByProInstID 根据流程实例id获取上一个任务
-func GetTaskLastByProInstID(procInstID int) (*Task, error) {
-	var t = &Task{}
-	err := db.Where("proc_inst_id=? and is_finished=1", procInstID).Order("claim_time desc").First(t).Error
-	return t, err
+// GetLastFinishedTaskByProcInstID 根据流程实例ID获取上一个已完成的任务
+func GetLastFinishedTaskByProcInstID(procInstID int) (*Task, error) {
+	var t Task
+	err := db.Where("proc_inst_id=? and is_finished=1", procInstID).Order("claim_time desc").First(&t).Error
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
-// NewTaskTx 开启事务
-func (t *Task) NewTaskTx(tx *gorm.DB) (int, error) {
-	// str, _ := util.ToJSONStr(t)
-	// fmt.Printf("newTask:%s", str)
+// CreateTaskTx 开启事务并新建任务
+func (t *Task) CreateTaskTx(tx *gorm.DB) (int, error) {
 	err := tx.Create(t).Error
 	if err != nil {
 		return 0, err
@@ -80,7 +82,7 @@ func (t *Task) NewTaskTx(tx *gorm.DB) (int, error) {
 	return t.ID, nil
 }
 
-// DeleteTask 删除任务
+// DeleteTask 根据任务ID删除任务
 func DeleteTask(id int) error {
 	err := db.Where("id=?", id).Delete(&Task{}).Error
 	return err
