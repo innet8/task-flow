@@ -9,14 +9,14 @@ import (
 
 var redisClusterClient *redis.ClusterClient
 var redisClient *redis.Client
-var clusterIsOpen = false
+var clusterIsOpen bool
 
 // RedisOpen 是否连接 redis
-var RedisOpen = false
+var RedisOpen bool
 
-// SetRedis 设置redis
-func SetRedis() {
-	fmt.Println("-------启动redis--------")
+// InitRedis 初始化 redis
+func InitRedis() {
+	fmt.Println("-------启动 Redis--------")
 	if conf.RedisCluster == "true" {
 		clusterIsOpen = true
 		redisClusterClient = redis.NewClusterClient(&redis.ClusterOptions{
@@ -25,10 +25,11 @@ func SetRedis() {
 		})
 		pong, err := redisClusterClient.Ping().Result()
 		if err != nil {
-			fmt.Printf("------------连接 redis cluster：%s 失败,原因：%v\n", conf.RedisHost+":"+conf.RedisPort, err)
+			fmt.Printf("------------连接 Redis 集群：%s 失败，原因：%v\n", conf.RedisHost+":"+conf.RedisPort, err)
+			return
 		}
-		// RedisOpen = true
-		fmt.Printf("---------连接 redis cluster 成功, %v\n", pong)
+		RedisOpen = true
+		fmt.Printf("---------连接 Redis 集群成功，%v\n", pong)
 	} else {
 		redisClient = redis.NewClient(&redis.Options{
 			Addr:     conf.RedisHost + ":" + conf.RedisPort,
@@ -36,23 +37,24 @@ func SetRedis() {
 		})
 		pong, err := redisClient.Ping().Result()
 		if err != nil {
-			fmt.Printf("------------连接 redis：%s 失败,原因：%v\n", conf.RedisHost+":"+conf.RedisPort, err)
+			fmt.Printf("------------连接 Redis：%s 失败，原因：%v\n", conf.RedisHost+":"+conf.RedisPort, err)
+			return
 		}
-		// RedisOpen = true
-		fmt.Printf("---------连接 redis  成功, %v\n", pong)
+		RedisOpen = true
+		fmt.Printf("---------连接 Redis 成功，%v\n", pong)
 	}
 }
 
-// RedisSetVal 将值保存到redis
-func RedisSetVal(key, value string, expiration time.Duration) error {
+// SetRedisVal 将值保存到 Redis
+func SetRedisVal(key, value string, expiration time.Duration) error {
 	if clusterIsOpen {
 		return redisClusterClient.Set(key, value, expiration).Err()
 	}
 	return redisClient.Set(key, value, expiration).Err()
 }
 
-// RedisGetVal 从redis获取值
-func RedisGetVal(key string) (string, error) {
+// GetRedisVal 从 Redis 获取值
+func GetRedisVal(key string) (string, error) {
 	if clusterIsOpen {
 		return redisClusterClient.Get(key).Result()
 	}

@@ -33,5 +33,5 @@ func GetUserinfoFromRedis(token string) (*UserInfo, error) {
 
 // GetValFromRedis 从redis获取值
 func GetValFromRedis(key string) (string, error) {
-	return model.RedisGetVal(key)
+	return model.GetRedisVal(key)
 }
