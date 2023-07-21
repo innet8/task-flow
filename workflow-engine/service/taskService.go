@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -246,19 +245,20 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 	if currentTask.Step == 0 {
 		return errors.New("开始位置无法撤回")
 	}
-	if lastTask.Assignee != userID {
-		return errors.New("只能撤回本人审批过的任务！！")
-	}
 	if currentTask.IsFinished {
 		return errors.New("已经审批结束，无法撤回！")
+	}
+	if lastTask.Assignee != userID {
+		return errors.New("只能撤回本人审批过的任务！！")
+		// return errors.New("只能撤回本人审批过的任务！！")
 	}
 	if currentTask.UnCompleteNum != currentTask.MemberCount {
 		return errors.New("已经有人审批过了，无法撤回！")
 	}
 	sub := currentTask.Step - lastTask.Step
-	if math.Abs(float64(sub)) != 1 {
-		// return errors.New("只能撤回相邻的任务！")
-	}
+	// if math.Abs(float64(sub)) != 1 {
+	// return errors.New("只能撤回相邻的任务！")
+	// }
 	var pass = false
 	if sub < 0 {
 		pass = true
@@ -279,7 +279,6 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 		tx.Rollback()
 		return err
 	}
-
 	// 更新状态
 	var procInst = &model.ProcInst{State: 4}
 	procInst.ID = procInstID
@@ -288,7 +287,6 @@ func WithDrawTask(taskID, procInstID int, userID, username, company, comment str
 		tx.Rollback()
 		return err
 	}
-
 	//
 	tx.Commit()
 	// fmt.Printf("撤回流程耗时：%v\n", time.Since(timesx))
@@ -332,9 +330,9 @@ func MoveStage(nodeInfos []*flow.NodeInfo, userID, username, company, comment, c
 	}
 
 	// 指定下一步执行人
-	if len(candidate) > 0 {
-		// nodeInfos[step].Aprover = candidate
-	}
+	// if len(candidate) > 0 {
+	// nodeInfos[step].Aprover = candidate
+	// }
 
 	// 判断下一流程： 如果是审批人是：抄送人
 	if nodeInfos[step].AproverType == flow.NodeTypes[flow.NOTIFIER] {

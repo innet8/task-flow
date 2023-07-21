@@ -156,7 +156,30 @@ func FindProcInstByID(id int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	datas.NodeInfos = nodeInfos
+
+	var newNodeInfos []*NodeInfos
+	for _, v := range nodeInfos {
+		newNodeInfos = append(newNodeInfos, v)
+		if data.IsFinished && data.State == 4 && v.Type == "starter" {
+			newNodeInfos = append(newNodeInfos, &NodeInfos{
+				NodeInfo: flow.NodeInfo{
+					NodeID:      "0",
+					Type:        "approver",
+					Aprover:     v.Aprover,
+					AproverId:   data.StartUserID,
+					AproverType: "start",
+				},
+				Identitylink: &model.Identitylink{
+					State:    3,
+					UserID:   data.StartUserID,
+					UserName: v.Aprover,
+				},
+				ClaimTime:  data.EndTime,
+				IsFinished: true,
+			})
+		}
+	}
+	datas.NodeInfos = newNodeInfos
 	//
 	return util.ToJSONStr(datas)
 }

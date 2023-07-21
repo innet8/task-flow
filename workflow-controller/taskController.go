@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -23,9 +22,7 @@ func WithDrawTask(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	var taskRe = service.TaskReceiver{}
-	err := util.Body2Struct(request, &taskRe)
-	str, _ := util.ToJSONStr(taskRe)
-	log.Println(str)
+	util.Body2Struct(request, &taskRe)
 	if taskRe.TaskID == 0 {
 		util.ResponseErr(writer, "字段taskID不能为空,必须为数字！")
 		return
@@ -40,10 +37,8 @@ func WithDrawTask(writer http.ResponseWriter, request *http.Request) {
 	}
 	if len(taskRe.Company) == 0 {
 		taskRe.Company = "系统默认"
-		// util.ResponseErr(writer, "字段company不能为空！")
-		// return
 	}
-	err = service.WithDrawTask(taskRe.TaskID, taskRe.ProcInstID, taskRe.UserID, taskRe.UserName, taskRe.Company, taskRe.Comment)
+	err := service.WithDrawTask(taskRe.TaskID, taskRe.ProcInstID, taskRe.UserID, taskRe.UserName, taskRe.Company, taskRe.Comment)
 	if err != nil {
 		util.ResponseErr(writer, err)
 		return

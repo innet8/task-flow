@@ -27,7 +27,7 @@ var conf = *config.Config
 func Setup() {
 	var err error
 	log.Println("数据库初始化！！")
-	db, err = gorm.Open(conf.DbType, fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", conf.DbUser, conf.DbPassword, conf.DbHost, conf.DbPort, conf.DbName))
+	db, err = gorm.Open(conf.DbType, fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", conf.DbUser, conf.DbPassword, conf.DbHost, conf.DbPort, conf.DbName))
 	if err != nil {
 		log.Fatalf("数据库连接失败 err: %v", err)
 	}
@@ -58,7 +58,7 @@ func Setup() {
 		return conf.DbPrefix + defaultTableName
 	}
 
-	db.Set("gorm:table_options", "ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;").
+	db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1;").
 		AutoMigrate(&Procdef{}).
 		AutoMigrate(&Execution{}).
 		AutoMigrate(&Task{}).
@@ -82,6 +82,15 @@ func Setup() {
 	db.Model(&IdentitylinkHistory{}).AddForeignKey("proc_inst_id", conf.DbPrefix+"proc_inst_history(id)", "CASCADE", "RESTRICT").AddIndex("idx_id", "id")
 	db.Model(&TaskHistory{}).AddIndex("idx_id", "id")
 
+	// 修改表字段的字符集
+	db.Model(&ProcInst{}).ModifyColumn("var", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&ProcInstHistory{}).ModifyColumn("var", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&ProcInst{}).ModifyColumn("latest_comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&ProcInstHistory{}).ModifyColumn("latest_comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&ProcInst{}).ModifyColumn("global_comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&ProcInstHistory{}).ModifyColumn("global_comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&Procdef{}).ModifyColumn("username", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&ProcdefHistory{}).ModifyColumn("username", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 }
 
 // CloseDB closes database connection (unnecessary)

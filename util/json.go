@@ -115,3 +115,12 @@ func Struct2Struct(data interface{}, newdata interface{}, filtrationKeys_optiona
 	//
 	return nil
 }
+
+// StructToJson 结构体转json
+func StructToJson(data interface{}) string {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+	return string(jsonBytes)
+}

@@ -31,7 +31,7 @@ type ProcInst struct {
 	Var           string `gorm:"size:4000;comment:'执行流程的附加参数'" json:"var"`
 	State         int    `gorm:"not null;default:0;comment:'当前状态: 0待审批，1审批中，2通过，3拒绝，4撤回'" json:"state"`
 	LatestComment string `gorm:"size:500;comment:'最新评论'" json:"latestComment"`
-	GlobalComment string `gorm:"size:4000;default:null;comment:'全局评论'" json:"globalComment"`
+	GlobalComment string `gorm:"type:text;charset=utf8mb4;default:null;comment:'全局评论'" json:"globalComment"`
 }
 
 type ProcInstUnion struct {
