@@ -89,20 +89,24 @@ func StartProcessInstance(writer http.ResponseWriter, request *http.Request) {
 	proc.Company = "系统默认"
 
 	// 部门
-	if proc.DepartmentId == 0 {
-		util.Response(writer, "用户所在部门departmentId不能为空", false)
-		return
+	if proc.DepartmentId > 0 {
+		if proc.DepartmentId == 0 {
+			util.Response(writer, "用户所在部门departmentId不能为空", false)
+			return
+		}
+		if !strings.Contains(userInfo.Department, ","+strconv.Itoa(proc.DepartmentId)+",") {
+			util.Response(writer, "部门不存在", false)
+			return
+		}
+		deptInfo, errs := model.GetDeptByID(proc.DepartmentId)
+		if errs != nil {
+			util.Response(writer, "部门不存在", false)
+			return
+		}
+		proc.Department = deptInfo.Name
+	} else {
+		proc.Department = "默认部门"
 	}
-	if !strings.Contains(userInfo.Department, ","+strconv.Itoa(proc.DepartmentId)+",") {
-		util.Response(writer, "部门不存在", false)
-		return
-	}
-	deptInfo, errs := model.GetDeptByID(proc.DepartmentId)
-	if errs != nil {
-		util.Response(writer, "部门不存在", false)
-		return
-	}
-	proc.Department = deptInfo.Name
 
 	// 检测var
 	if !strings.Contains(proc.ProcName, "请假") {
