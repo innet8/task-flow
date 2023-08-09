@@ -91,6 +91,8 @@ func Setup() {
 	db.Model(&ProcInstHistory{}).ModifyColumn("global_comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 	db.Model(&Procdef{}).ModifyColumn("username", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 	db.Model(&ProcdefHistory{}).ModifyColumn("username", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&Identitylink{}).ModifyColumn("comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+	db.Model(&IdentitylinkHistory{}).ModifyColumn("comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 }
 
 // CloseDB closes database connection (unnecessary)
