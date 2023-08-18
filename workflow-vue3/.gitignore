@@ -26,4 +26,3 @@ coverage
 *.sln
 *.sw?
 package-lock.json
-/dist/*
