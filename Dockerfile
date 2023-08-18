@@ -13,11 +13,11 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64 
 
-WORKDIR /var/www/
+WORKDIR /var/doo/
  
 COPY main .
 COPY config.json .
-COPY workflow-vue3/dist/ /var/www/dist
+COPY workflow-vue3/dist/ /var/doo/dist
 COPY docker/nginx/default.conf /etc/nginx/conf.d/
 
 CMD nginx;./main
