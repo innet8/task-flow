@@ -93,6 +93,9 @@ func Setup() {
 	db.Model(&ProcdefHistory{}).ModifyColumn("username", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 	db.Model(&Identitylink{}).ModifyColumn("comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
 	db.Model(&IdentitylinkHistory{}).ModifyColumn("comment", "text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+
+	// 新增字段 - 给定默认值
+	db.Model(&Procdef{}).Where("created_time IS NULL").UpdateColumn("created_time", gorm.Expr("deploy_time"))
 }
 
 // CloseDB closes database connection (unnecessary)

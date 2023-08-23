@@ -117,11 +117,19 @@ func SaveProcdef(p *model.Procdef) (id int, err error) {
 	if err != nil {
 		return 0, err
 	}
+
 	p.DeployTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
 	if old == nil {
 		p.Version = 1
+		p.CreatedTime = util.FormatDate(time.Now(), util.YYYY_MM_DD_HH_MM_SS)
 		return p.Save()
+	} else if p.CreatedTime == "" {
+		p.CreatedTime = old.CreatedTime
+		if p.CreatedTime == "" {
+			p.CreatedTime = old.DeployTime
+		}
 	}
+
 	tx := model.GetTx()
 	// 保存新版本
 	p.Version = old.Version + 1
