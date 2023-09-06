@@ -123,8 +123,9 @@ func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*P
 	}
 	// 判断开始和结束时间是否存在，如果存在则查询时间段内的数据
 	if maps["start_user_id"] == "" && maps["start_time"] != "" && maps["end_time"] != "" {
-		query += " AND start_time BETWEEN ? AND ?"
-		args = append(args, maps["start_time"], maps["end_time"])
+		query += " AND JSON_UNQUOTE(JSON_EXTRACT(var, '$.startTime')) <= ?"
+		query += " AND JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) >= ?"
+		args = append(args, maps["end_time"], maps["start_time"])
 	}
 	// 判断分页参数是否存在,如果不存在则不分页
 	if pageIndex > 0 && pageSize > 0 {
