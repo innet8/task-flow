@@ -59,7 +59,7 @@ func findProcInstsHistory(maps map[string]interface{}, pageIndex, pageSize int) 
 }
 
 // FindProcHistory 查询历史纪录
-func FindProcHistory(userID, procName, company string, sortStr string, pageIndex, pageSize int) ([]*ProcInstHistory, int, error) {
+func FindProcHistory(userID, procName, company string, sortStr string, pageIndex, pageSize int, username string) ([]*ProcInstHistory, int, error) {
 	var datas []*ProcInstHistory
 	var count int
 	var err1 error
@@ -82,6 +82,10 @@ func FindProcHistory(userID, procName, company string, sortStr string, pageIndex
 		if procName != "" {
 			dbQuery = dbQuery.Where("proc_def_name = ?", procName)
 		}
+		// 用户名模糊查询
+		if username != "" {
+			dbQuery = dbQuery.Where("start_user_name LIKE ?", "%"+username+"%")
+		}
 		err := dbQuery.Offset((pageIndex - 1) * pageSize).Limit(pageSize).
 			Order(order).Find(&datas).Error
 		errStream <- err
@@ -94,6 +98,10 @@ func FindProcHistory(userID, procName, company string, sortStr string, pageIndex
 		dbQuery = dbQuery.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink_history where company=? and user_id=?)", conf.DbPrefix), company, userID)
 		if procName != "" {
 			dbQuery = dbQuery.Where("proc_def_name = ?", procName)
+		}
+		// 用户名模糊查询
+		if username != "" {
+			dbQuery = dbQuery.Where("start_user_name LIKE ?", "%"+username+"%")
 		}
 		err := dbQuery.Count(&count).Error
 		errStream <- err
@@ -113,6 +121,10 @@ func FindProcHistory(userID, procName, company string, sortStr string, pageIndex
 	dbQuery := db.Where(fmt.Sprintf("id in (select distinct proc_inst_id from %sidentitylink where company=? and user_id=? and step>0 and state=1)", conf.DbPrefix), company, userID)
 	if procName != "" {
 		dbQuery = dbQuery.Where("proc_def_name = ?", procName)
+	}
+	// 用户名模糊查询
+	if username != "" {
+		dbQuery = dbQuery.Where("start_user_name LIKE ?", "%"+username+"%")
 	}
 	err := dbQuery.Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas2).Error
 	if err != nil {
@@ -160,7 +172,7 @@ func SaveProcInstHistoryTx(p *ProcInst, tx *gorm.DB) error {
 }
 
 // FindProcHistoryNotify 查询抄送我的历史纪录
-func FindProcHistoryNotify(userID, procName, company string, groups []string, sort string, pageIndex, pageSize int) ([]*ProcInstHistory, int, error) {
+func FindProcHistoryNotify(userID, procName, company string, groups []string, sort string, pageIndex, pageSize int, username string) ([]*ProcInstHistory, int, error) {
 	var datas []*ProcInstHistory
 	var count int
 	var sql string
@@ -190,6 +202,12 @@ func FindProcHistoryNotify(userID, procName, company string, groups []string, so
 		sql += " AND proc_def_name = ?"
 		values = append(values, procName)
 	}
+	// 用户名模糊查询
+	if username != "" {
+		sql += " AND start_user_name LIKE ?"
+		values = append(values, "%"+username+"%")
+	}
+
 	sql = fmt.Sprintf(sql, conf.DbPrefix)
 	err := db.Where("id in ("+sql+")", values...).Offset((pageIndex - 1) * pageSize).Limit(pageSize).Order(order).Find(&datas).Error
 	if err != nil {
@@ -200,4 +218,21 @@ func FindProcHistoryNotify(userID, procName, company string, groups []string, so
 		return nil, count, err
 	}
 	return datas, count, err
+}
+
+// GetProcInstByStarUserIDAndTime 获取申请用户ID在当前时间之前的流程实例
+func GetProcInstByStarUserIDAndTime(StartUserID int) (*ProcInstHistory, error) {
+	var data ProcInstHistory
+	now := time.Now()
+	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+	err := db.Where("start_user_id=?", StartUserID).
+		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) <= ?", endOfDay.Format("2006-01-02 15:04:05")).
+		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) >= ?", now.Format("2006-01-02 15:04:05")).
+		Where("proc_def_name LIKE '%请假%' OR proc_def_name LIKE '%外出%'").
+		Limit(1).
+		Find(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
 }

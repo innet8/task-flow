@@ -64,7 +64,7 @@ func DepartmentsNotNull(departments []string, sql string) func(db *gorm.DB) *gor
 }
 
 // FindAllProcIns 查询所有流程实例
-func FindAllProcIns(userID, procDefName string, state int, startTime string, endTime string, isFinished int) ([]*ProcInst, int, error) {
+func FindAllProcIns(userID, procDefName string, state int, startTime string, endTime string, isFinished int, username string) ([]*ProcInst, int, error) {
 	maps := map[string]interface{}{
 		"start_user_id": userID,
 		"proc_def_name": procDefName,
@@ -72,16 +72,18 @@ func FindAllProcIns(userID, procDefName string, state int, startTime string, end
 		"start_time":    startTime,
 		"end_time":      endTime,
 		"is_finished":   isFinished,
+		"username":      username,
 	}
 	return findProcInstAll(maps, 0, 0)
 }
 
 // StartByMyselfAll 查询我的所有流程实例
-func StartByMyselfAll(userID, procDefName string, state, pageIndex, pageSize int) ([]*ProcInst, int, error) {
+func StartByMyselfAll(userID, procDefName string, state, pageIndex, pageSize int, username string) ([]*ProcInst, int, error) {
 	maps := map[string]interface{}{
 		"start_user_id": userID,
 		"proc_def_name": procDefName,
 		"state":         state,
+		"username":      username,
 	}
 	return findProcInstAll(maps, pageIndex, pageSize)
 }
@@ -120,6 +122,11 @@ func findProcInstAll(maps map[string]interface{}, pageIndex, pageSize int) ([]*P
 	if maps["is_finished"] == 0 || maps["is_finished"] == 1 {
 		query += " and is_finished = ?"
 		args = append(args, maps["is_finished"])
+	}
+	// 用户名称模糊查询
+	if maps["username"] != "" {
+		query += " and start_user_name like ?"
+		args = append(args, "%"+maps["username"].(string)+"%")
 	}
 	// 判断开始和结束时间是否存在，如果存在则查询时间段内的数据
 	if maps["start_user_id"] == "" && maps["start_time"] != "" && maps["end_time"] != "" {
@@ -274,7 +281,7 @@ func FindProcNotify(userID, procName, company string, groups []string, sort stri
 }
 
 // FindProcInsts 分页查询
-func FindProcInsts(userID, procName, company string, groups, departments []string, sort string, pageIndex, pageSize int) ([]*ProcInst, int, error) {
+func FindProcInsts(userID, procName, company string, groups, departments []string, sort string, pageIndex, pageSize int, username string) ([]*ProcInst, int, error) {
 	var datas []*ProcInst
 	var count int
 	var order string
@@ -282,6 +289,11 @@ func FindProcInsts(userID, procName, company string, groups, departments []strin
 	if len(procName) > 0 {
 		sql += "and proc_def_name='" + procName + "'"
 	}
+	// 用户名模糊查询
+	if len(username) > 0 {
+		sql += " and start_user_name like '%" + username + "%'"
+	}
+
 	// 判断排序
 	if sort == "asc" {
 		order = "start_time asc"

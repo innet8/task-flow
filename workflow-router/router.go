@@ -37,14 +37,15 @@ func setMux() {
 	Mux.HandleFunc("/api/v1/workflow/procdef/findByName", intercept(controller.FindByNameProcdef)) // 根据名称查询流程实例
 	Mux.HandleFunc("/api/v1/workflow/procdef/delById", intercept(controller.DelProcdefByID))       // 根据id删除流程定义
 	// -----------------------流程实例-----------------------
-	Mux.HandleFunc("/api/v1/workflow/process/start", intercept(controller.StartProcessInstance))        // 启动流程（审批中）
-	Mux.HandleFunc("/api/v1/workflow/process/findById", intercept(controller.FindProcInstByID))         // 根据id查询流程实例（所有）
-	Mux.HandleFunc("/api/v1/workflow/process/findAllProcIns", intercept(controller.FindAllProcIns))     // 查询所有流程实例（所有）
-	Mux.HandleFunc("/api/v1/workflow/process/findTask", intercept(controller.FindMyProcInstPageAsJSON)) // 查询需要我审批的流程（审批中）
-	Mux.HandleFunc("/api/v1/workflow/process/startByMyselfAll", intercept(controller.StartByMyselfAll)) // 查询我启动的流程（所有）
-	Mux.HandleFunc("/api/v1/workflow/process/startByMyself", intercept(controller.StartByMyself))       // 查询我启动的流程（审批中）
-	Mux.HandleFunc("/api/v1/workflow/process/findProcNotify", intercept(controller.FindProcNotify))     // 查询抄送我的流程（审批中）
-	Mux.HandleFunc("/api/v1/workflow/process/addGlobalComment", intercept(controller.AddGlobalComment)) // 新增全局评论
+	Mux.HandleFunc("/api/v1/workflow/process/start", intercept(controller.StartProcessInstance))                  // 启动流程（审批中）
+	Mux.HandleFunc("/api/v1/workflow/process/findById", intercept(controller.FindProcInstByID))                   // 根据id查询流程实例（所有）
+	Mux.HandleFunc("/api/v1/workflow/process/findAllProcIns", intercept(controller.FindAllProcIns))               // 查询所有流程实例（所有）
+	Mux.HandleFunc("/api/v1/workflow/process/findTask", intercept(controller.FindMyProcInstPageAsJSON))           // 查询需要我审批的流程（审批中）
+	Mux.HandleFunc("/api/v1/workflow/process/startByMyselfAll", intercept(controller.StartByMyselfAll))           // 查询我启动的流程（所有）
+	Mux.HandleFunc("/api/v1/workflow/process/startByMyself", intercept(controller.StartByMyself))                 // 查询我启动的流程（审批中）
+	Mux.HandleFunc("/api/v1/workflow/process/findProcNotify", intercept(controller.FindProcNotify))               // 查询抄送我的流程（审批中）
+	Mux.HandleFunc("/api/v1/workflow/process/addGlobalComment", intercept(controller.AddGlobalComment))           // 新增全局评论
+	Mux.HandleFunc("/api/v1/workflow/process/getUserApprovalStatus", intercept(controller.GetUserApprovalStatus)) // 获取用户审批当前状态
 	// Mux.HandleFunc("/workflow/process/moveToHistory", controller.MoveFinishedProcInstToHistory)
 	// -----------------------任务--------------------------
 	Mux.HandleFunc("/api/v1/workflow/task/complete", intercept(controller.CompleteTask)) //审批任务

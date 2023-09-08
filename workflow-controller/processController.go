@@ -360,3 +360,24 @@ func AddGlobalComment(writer http.ResponseWriter, request *http.Request) {
 	}
 	util.ResponseOk(writer)
 }
+
+// GetUserApprovalStatus 获取用户审批当前状态
+func GetUserApprovalStatus(writer http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	if len(request.Form["userid"]) == 0 || request.Form["userid"][0] == "" {
+		util.ResponseErr(writer, "用户userID不能为空")
+		return
+	}
+	userid, err := strconv.Atoi(request.Form["userid"][0])
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+	result, err := service.GetUserApprovalStatus(userid)
+	if err != nil {
+		util.ResponseErr(writer, err)
+		return
+	}
+
+	util.ResponseData(writer, result)
+}

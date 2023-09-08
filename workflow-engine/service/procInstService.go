@@ -80,7 +80,7 @@ func GetDefaultProcessPageReceiver() *ProcessPageReceiver {
 func findAll(pr *ProcessPageReceiver) ([]*model.ProcInst, int, error) {
 	var page = util.Page{}
 	page.PageRequest(pr.PageIndex, pr.PageSize)
-	return model.FindProcInsts(pr.UserID, pr.ProcName, pr.Company, pr.Groups, pr.Departments, pr.Sort, pr.PageIndex, pr.PageSize)
+	return model.FindProcInsts(pr.UserID, pr.ProcName, pr.Company, pr.Groups, pr.Departments, pr.Sort, pr.PageIndex, pr.PageSize, pr.Username)
 }
 
 // AddGlobalComment 添加全局评论
@@ -125,6 +125,19 @@ func AddGlobalComment(procInstID int, userID string, content string) error {
 		}
 	}
 	return nil
+}
+
+// GetUserStatus 获取用户审批当前状态
+func GetUserApprovalStatus(userID int) (string, error) {
+	info, err := model.GetProcInstByStarUserIDAndTime(userID)
+	if err != nil {
+		return "", err
+	}
+	var data = make(map[string]interface{})
+	data["id"] = info.ID
+	data["proc_def_name"] = info.ProcDefName
+	data["start_user_id"] = info.StartUserID
+	return util.ToJSONStr(data)
 }
 
 // FindProcInstByID 根据ID获取流程信息
@@ -370,7 +383,7 @@ func SetProcInstFinish(procInstID int, endTime string, tx *gorm.DB) error {
 
 // FindAllProcIns 发起的所有流程及节点详情信息
 func FindAllProcIns(receiver *ProcessPageReceiver) (string, error) {
-	datas, _, err := model.FindAllProcIns(receiver.UserID, receiver.ProcName, receiver.State, receiver.StartTime, receiver.EndTime, receiver.IsFinished)
+	datas, _, err := model.FindAllProcIns(receiver.UserID, receiver.ProcName, receiver.State, receiver.StartTime, receiver.EndTime, receiver.IsFinished, receiver.Username)
 	if err != nil {
 		return "", err
 	}
@@ -385,7 +398,7 @@ func FindAllProcIns(receiver *ProcessPageReceiver) (string, error) {
 func StartByMyselfAll(receiver *ProcessPageReceiver) (string, error) {
 	var page = util.Page{}
 	page.PageRequest(receiver.PageIndex, receiver.PageSize)
-	datas, count, err := model.StartByMyselfAll(receiver.UserID, receiver.ProcName, receiver.State, receiver.PageIndex, receiver.PageSize)
+	datas, count, err := model.StartByMyselfAll(receiver.UserID, receiver.ProcName, receiver.State, receiver.PageIndex, receiver.PageSize, receiver.Username)
 	if err != nil {
 		return "", err
 	}
