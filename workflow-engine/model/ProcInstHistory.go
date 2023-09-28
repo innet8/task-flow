@@ -229,6 +229,7 @@ func GetProcInstByStarUserIDAndTime(StartUserID int) (*ProcInstHistory, error) {
 		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) <= ?", endOfDay.Format("2006-01-02 15:04:05")).
 		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) >= ?", now.Format("2006-01-02 15:04:05")).
 		Where("proc_def_name LIKE '%请假%' OR proc_def_name LIKE '%外出%'").
+		Where("state = 2").
 		Limit(1).
 		Find(&data).Error
 	if err != nil {
