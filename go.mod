@@ -10,6 +10,7 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/tealeg/xlsx v1.0.5
 	golang.org/x/text v0.8.0
+	gopkg.in/yaml.v2 v2.3.0
 )
 
 require (

@@ -2,12 +2,15 @@ package model
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 
 	config "workflow/workflow-config"
 
 	"github.com/jinzhu/gorm"
+	"gopkg.in/yaml.v2"
 
 	// mysql
 	_ "github.com/go-sql-driver/mysql"
@@ -31,6 +34,7 @@ func Setup() {
 	if err != nil {
 		log.Fatalf("数据库连接失败 err: %v", err)
 	}
+
 	// 启用Logger，显示详细日志
 	mode, _ := strconv.ParseBool(conf.DbLogMode)
 
@@ -57,6 +61,8 @@ func Setup() {
 		}
 		return conf.DbPrefix + defaultTableName
 	}
+
+	oneCheckTable := db.HasTable(&Procdef{})
 
 	db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1;").
 		AutoMigrate(&Procdef{}).
@@ -96,6 +102,52 @@ func Setup() {
 
 	// 新增字段 - 给定默认值
 	db.Model(&Procdef{}).Where("created_time IS NULL").UpdateColumn("created_time", gorm.Expr("deploy_time"))
+
+	// 演示数据
+	twoCheckTable := db.HasTable(&Procdef{})
+	IsInitOkrEmpty := false
+	if !oneCheckTable && twoCheckTable {
+		IsInitOkrEmpty = true
+	}
+	if os.Getenv("DEMO_DATA") == "true" && IsInitOkrEmpty {
+		if _, err := os.Stat("tmp/demo_data"); os.IsNotExist(err) {
+			executeSQLFromFile(db, "approveProcdefTableSeeder.yaml")
+			executeSQLFromFile(db, "approveProcdefHistoryTableSeeder.yaml")
+			executeSQLFromFile(db, "approveProcInstTableSeeder.yaml")
+			executeSQLFromFile(db, "approveProcInstHistoryTableSeeder.yaml")
+			executeSQLFromFile(db, "approveTaskTableSeeder.yaml")
+			executeSQLFromFile(db, "approveTaskHistoryTableSeeder.yaml")
+			executeSQLFromFile(db, "approveExecutionTableSeeder.yaml")
+			executeSQLFromFile(db, "approveExecutionHistoryTableSeeder.yaml")
+			executeSQLFromFile(db, "approveIdentitylinkTableSeeder.yaml")
+			executeSQLFromFile(db, "approveIdentitylinkHistoryTableSeeder.yaml")
+
+			_, err := os.Create("tmp/demo_data")
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+}
+
+func executeSQLFromFile(db *gorm.DB, filename string) {
+	filename = "workflow-engine/model/seeders/" + filename
+	file, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		panic(err)
+	}
+	var sql string
+	err = yaml.Unmarshal(bytes, &sql)
+	if err != nil {
+		panic(err)
+	}
+	db.Exec(sql)
 }
 
 // CloseDB closes database connection (unnecessary)
