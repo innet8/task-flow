@@ -6,6 +6,7 @@ server.crt
 server.key
 /tmp/
 /.env
+/demo-lock
 
 /docker/mysql/backup
 /docker/mysql/logs

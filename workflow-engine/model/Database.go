@@ -110,7 +110,7 @@ func Setup() {
 		IsInitOkrEmpty = true
 	}
 	if os.Getenv("DEMO_DATA") == "true" && IsInitOkrEmpty {
-		if _, err := os.Stat("tmp/demo_data"); os.IsNotExist(err) {
+		if _, err := os.Stat("demo-lock"); os.IsNotExist(err) {
 			executeSQLFromFile(db, "approveProcdefTableSeeder.yaml")
 			executeSQLFromFile(db, "approveProcdefHistoryTableSeeder.yaml")
 			executeSQLFromFile(db, "approveProcInstTableSeeder.yaml")
@@ -122,7 +122,7 @@ func Setup() {
 			executeSQLFromFile(db, "approveIdentitylinkTableSeeder.yaml")
 			executeSQLFromFile(db, "approveIdentitylinkHistoryTableSeeder.yaml")
 
-			_, err := os.Create("tmp/demo_data")
+			_, err := os.Create("demo-lock")
 			if err != nil {
 				panic(err)
 			}
