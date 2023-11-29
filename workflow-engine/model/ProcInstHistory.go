@@ -223,11 +223,10 @@ func FindProcHistoryNotify(userID, procName, company string, groups []string, so
 // GetProcInstByStarUserIDAndTime 获取申请用户ID在当前时间之前的流程实例
 func GetProcInstByStarUserIDAndTime(StartUserID int) (*ProcInstHistory, error) {
 	var data ProcInstHistory
-	now := time.Now()
-	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+	nowFormat := time.Now().Format("2006-01-02 15:04:05")
 	err := db.Where("start_user_id=?", StartUserID).
-		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) <= ?", endOfDay.Format("2006-01-02 15:04:05")).
-		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) >= ?", now.Format("2006-01-02 15:04:05")).
+		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.startTime')) <= ?", nowFormat).
+		Where("JSON_UNQUOTE(JSON_EXTRACT(var, '$.endTime')) >= ?", nowFormat).
 		Where("proc_def_name LIKE '%请假%' OR proc_def_name LIKE '%外出%'").
 		Where("state = 2").
 		Limit(1).
