@@ -210,6 +210,11 @@ func FindAllPageAsJSON(pr *ProcessPageReceiver) (string, error) {
 	return util.ToPageJSON(result, count, pr.PageIndex, pr.PageSize)
 }
 
+// FindAllTotal
+func FindAllTotal(userId string) int {
+	return model.FindProcInstsTotal(userId)
+}
+
 // FindMyProcInstByToken 根据token获取流程信息
 func FindMyProcInstByToken(token string, receiver *ProcessPageReceiver) (string, error) {
 	// 根据 token 获取用户信息

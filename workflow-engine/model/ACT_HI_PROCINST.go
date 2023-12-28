@@ -340,6 +340,13 @@ func FindProcInsts(userID, procName, company string, groups, departments []strin
 	return datas, count, err1
 }
 
+// FindProcInsts 查询总数
+func FindProcInstsTotal(userId string) int {
+	var count int
+	db.Model(&ProcInst{}).Or("candidate=? and is_finished=0", userId).Count(&count)
+	return count
+}
+
 // Save
 func (p *ProcInst) Save() (int, error) {
 	err := db.Create(p).Error

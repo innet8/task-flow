@@ -166,6 +166,27 @@ func FindMyProcInstPageAsJSON(writer http.ResponseWriter, request *http.Request)
 	util.ResponseData(writer, result)
 }
 
+// FindMyProcInstPageAsJSON 查询到我审批的流程实例 - 总数
+func FindMyProcInstTotal(writer http.ResponseWriter, request *http.Request) {
+	if model.RedisOpen {
+		util.ResponseErr(writer, "已经连接 redis，请使用/workflow/process/findTaskByToken 路径访问")
+		return
+	}
+	if request.Method != "GET" {
+		util.ResponseErr(writer, "只支持GET方法！！Only suppoert Get ")
+		return
+	}
+	userId := request.URL.Query().Get("userid")
+	if len(userId) == 0 {
+		util.Response(writer, "用户userID不能为空", false)
+		return
+	}
+	result := map[string]interface{}{
+		"total": service.FindAllTotal(userId),
+	}
+	util.ResponseData(writer, util.StructToJson(result))
+}
+
 // FindMyProcInstByToken 查询待办的流程
 func FindMyProcInstByToken(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
