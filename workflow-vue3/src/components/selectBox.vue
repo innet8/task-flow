@@ -49,7 +49,7 @@ defineProps({
 </script>
 <style lang="less">
 .select-box {
-  height: 420px;
+  height: calc(100% - 70px);
   overflow-y: auto;
 
   li {

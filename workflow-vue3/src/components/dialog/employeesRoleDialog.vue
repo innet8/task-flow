@@ -11,7 +11,7 @@
                     <span @click="getDepartmentList(0)" class="ellipsis">{{$L('默认部门')}}</span>
                     <span v-for="(item, index) in departments.titleDepartments" class="ellipsis" :key="index + 'a'" @click="getDepartmentList(item.id)">{{ item.departmentName }}</span>
                 </p>
-                <selectBox :list="list" style="height: 360px;" />
+                <selectBox :list="list"/>
             </div>
             <selectResult :total="total" @del="delList" :list="resList" />
         </div>

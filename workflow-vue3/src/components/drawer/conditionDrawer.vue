@@ -188,10 +188,9 @@ const addCondition = async () => {
                     "4":{"key":"4","value":"调休","type":"4"},
                     "5":{"key":"5","value":"产假","type":"5"},
                     "6":{"key":"6","value":"婚假","type":"6"},
-                    "7":{"key":"7","value":"例假","type":"7"},
-                    "8":{"key":"8","value":"丧假","type":"8"},
-                    "9":{"key":"9","value":"陪产假","type":"9"},
-                    "10":{"key":"10","value":"哺乳假","type":"10"}
+                    "7":{"key":"7","value":"丧假","type":"7"},
+                    "8":{"key":"8","value":"陪产假","type":"8"},
+                    "9":{"key":"9","value":"哺乳假","type":"9"}
                 }
             `
         })
